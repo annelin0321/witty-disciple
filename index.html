@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>機智的門徒生活 | 校園地圖</title>
-    <!-- 網站圖示 -->
     <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
     
     <script src="https://cdn.tailwindcss.com"></script>
@@ -12,7 +11,7 @@
     <link rel="stylesheet" href="assets/css/style.css">
     <script src="assets/js/common.js"></script>
     <style>
-        /* 地圖專屬樣式 */
+        /* 地圖與節點樣式 */
         .map-container {
             background-color: var(--bg-paper);
             background-image: 
@@ -25,123 +24,116 @@
             border-radius: 40px;
             box-shadow: inset 0 0 60px rgba(0,0,0,0.05), 0 20px 40px rgba(0,0,0,0.1);
         }
-
-        /* 路徑動畫 */
-        .path-line {
-            stroke-dasharray: 10;
-            animation: dash 60s linear infinite;
-        }
-        @keyframes dash {
-            to { stroke-dashoffset: -1000; }
-        }
-
-        /* 地標節點 */
+        .path-line { stroke-dasharray: 10; animation: dash 60s linear infinite; }
+        @keyframes dash { to { stroke-dashoffset: -1000; } }
         .map-node {
-            position: absolute;
-            transform: translate(-50%, -50%);
+            position: absolute; transform: translate(-50%, -50%);
             transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            cursor: pointer;
-            text-decoration: none; /* 移除連結底線 */
+            z-index: 10; display: flex; flex-direction: column; align-items: center; cursor: pointer; text-decoration: none;
         }
-        
         .node-icon {
-            width: 70px;
-            height: 70px;
-            background: rgba(255, 255, 255, 0.9);
-            border: 2px solid var(--accent-brown);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            width: 70px; height: 70px; background: rgba(255, 255, 255, 0.9);
+            border: 2px solid var(--accent-brown); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
             box-shadow: 0 8px 0 rgba(141, 123, 104, 0.2);
-            transition: all 0.3s ease;
-            position: relative;
-            color: var(--text-primary);
+            transition: all 0.3s ease; position: relative; color: var(--text-primary);
         }
-        
         .map-node:hover .node-icon {
-            transform: translateY(-8px) scale(1.1);
-            background: #fff;
-            border-color: var(--accent-green);
-            box-shadow: 0 15px 30px rgba(107, 142, 35, 0.3);
-            color: var(--accent-green);
+            transform: translateY(-8px) scale(1.1); background: #fff;
+            border-color: var(--accent-green); box-shadow: 0 15px 30px rgba(107, 142, 35, 0.3); color: var(--accent-green);
         }
-
-        /* 標籤 */
         .node-label {
-            background: var(--text-primary);
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 0.85rem;
-            margin-top: 10px;
-            font-family: 'Noto Serif TC', serif;
-            opacity: 0.8;
-            transition: all 0.3s;
-            white-space: nowrap;
+            background: var(--text-primary); color: #fff; padding: 4px 12px;
+            border-radius: 12px; font-size: 0.85rem; margin-top: 10px;
+            font-family: 'Noto Serif TC', serif; opacity: 0.8; transition: all 0.3s; white-space: nowrap;
         }
-        .map-node:hover .node-label {
-            background: var(--accent-green);
-            opacity: 1;
-            transform: scale(1.05);
-        }
+        .map-node:hover .node-label { background: var(--accent-green); opacity: 1; transform: scale(1.05); }
 
-        /* 漂浮動畫 */
+        /* 動畫 */
         .float-slow { animation: float 6s ease-in-out infinite; }
         .float-mid { animation: float 5s ease-in-out infinite 1s; }
         .float-fast { animation: float 4s ease-in-out infinite 2s; }
         .hero-logo { animation: float 6s ease-in-out infinite; }
-        
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
-        }
-
-        /* 樹木裝飾 */
-        .tree-deco {
-            position: absolute;
-            opacity: 0.3;
-            pointer-events: none;
-            transition: opacity 0.5s;
-        }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .tree-deco { position: absolute; opacity: 0.3; pointer-events: none; transition: opacity 0.5s; }
         .map-container:hover .tree-deco { opacity: 0.5; }
 
-        /* RWD 調整 */
+        /* --- 公告欄專屬樣式 (強化版) --- */
+        .notice-board-container {
+            animation: swing 3s ease-in-out infinite;
+            transform-origin: top center;
+        }
+        @keyframes swing { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+        
+        .notice-board-icon {
+            width: 80px; height: 60px; /* 加寬 */
+            background: #8D7B68; /* 深木色 */
+            border: 3px solid #5D4037; /* 深框 */
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 0 #3E2723, 0 10px 15px rgba(0,0,0,0.2); /* 厚度感 */
+            position: relative;
+            transition: all 0.3s;
+        }
+        
+        /* 公告紙張效果 */
+        .notice-paper {
+            width: 60px; height: 40px;
+            background: #FFF;
+            transform: rotate(-2deg);
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .map-node:hover .notice-board-icon {
+            transform: scale(1.1) translateY(-5px);
+            background: #A18E78;
+        }
+
+        .notice-badge {
+            position: absolute; top: -8px; right: -8px;
+            background: #D85C42; color: white; border-radius: 50%;
+            width: 24px; height: 24px; font-size: 13px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; border: 2px solid #fff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            animation: pulse-red 1.5s infinite;
+            z-index: 20;
+        }
+        @keyframes pulse-red { 
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 92, 66, 0.7); }
+            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(216, 92, 66, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 92, 66, 0); }
+        }
+
+        /* Modal 樣式 */
+        #notice-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(60, 60, 58, 0.6); backdrop-filter: blur(4px);
+            z-index: 100; display: none; justify-content: center; align-items: center;
+        }
+        #notice-modal.show { display: flex; }
+        .notice-content {
+            background: #FFF; width: 90%; max-width: 500px; max-height: 80vh;
+            border-radius: 20px; padding: 2rem; overflow-y: auto; position: relative;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+            border: 4px solid #E8ECE9;
+        }
+        .notice-item {
+            border-bottom: 1px solid #eee; padding: 1rem 0;
+        }
+        .notice-item:last-child { border-bottom: none; }
+        .notice-top-tag {
+            background: #D85C42; color: white; font-size: 0.7rem; padding: 2px 6px;
+            border-radius: 4px; margin-right: 6px; vertical-align: middle;
+        }
+
+        /* RWD */
         @media (max-width: 768px) {
-            .map-container {
-                height: auto;
-                min-height: 800px;
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: space-around;
-                padding: 4rem 1rem;
-            }
-            .map-node {
-                position: relative;
-                transform: none;
-                margin-bottom: 2rem;
-                top: auto !important;
-                left: auto !important;
-                right: auto !important;
-                bottom: auto !important;
-            }
+            .map-container { height: auto; min-height: 900px; display: flex; flex-direction: column; align-items: center; justify-content: space-around; padding: 4rem 1rem; }
+            .map-node { position: relative; transform: none; margin-bottom: 2rem; top: auto !important; left: auto !important; right: auto !important; bottom: auto !important; }
             .desktop-svg { display: none; }
-            .mobile-dashed-line {
-                position: absolute;
-                left: 50%;
-                top: 2rem;
-                bottom: 2rem;
-                width: 2px;
-                background-image: linear-gradient(to bottom, var(--accent-brown) 50%, transparent 50%);
-                background-size: 2px 20px;
-                opacity: 0.3;
-                z-index: 0;
-            }
+            .mobile-dashed-line { position: absolute; left: 50%; top: 2rem; bottom: 2rem; width: 2px; background-image: linear-gradient(to bottom, var(--accent-brown) 50%, transparent 50%); background-size: 2px 20px; opacity: 0.3; z-index: 0; }
         }
         @media (min-width: 769px) {
             .mobile-dashed-line { display: none; }
@@ -151,53 +143,35 @@
 </head>
 <body class="min-h-screen flex flex-col">
 
-    <!-- 標題區 -->
     <header class="pt-8 pb-4 text-center z-20">
         <div class="flex flex-col items-center gap-2 mb-4">
-            <!-- Logo (平衡版：樹木十字架+書本) -->
             <div class="w-24 h-24 hero-logo hover:scale-105 transition-transform duration-500 text-[#3E3B39]">
                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <!-- 1. 外圈背景 -->
                     <circle cx="50" cy="50" r="48" fill="#FDFBF7" stroke="#6B8E23" stroke-width="2"/>
-                    
-                    <!-- 2. 樹冠 (生命與成長) -->
                     <circle cx="50" cy="35" r="18" fill="#6B8E23" opacity="0.9"/>
                     <circle cx="35" cy="45" r="12" fill="#6B8E23" opacity="0.8"/>
                     <circle cx="65" cy="45" r="12" fill="#6B8E23" opacity="0.8"/>
-                    
-                    <!-- 3. 十字架樹幹 (信仰核心) -->
                     <path d="M50 35 L 50 75" stroke="#8D7B68" stroke-width="4" stroke-linecap="round"/>
                     <path d="M35 45 L 65 45" stroke="#8D7B68" stroke-width="3" stroke-linecap="round"/>
-
-                    <!-- 4. 打開的書卷 (真理基石) -->
                     <path d="M25 72 Q 50 82 75 72" stroke="#8D7B68" stroke-width="2.5" stroke-linecap="round" fill="none"/>
                     <path d="M50 82 L 50 72" stroke="#8D7B68" stroke-width="1.5"/>
                     <path d="M28 76 Q 50 86 72 76" stroke="#8D7B68" stroke-width="1" stroke-dasharray="2 2" opacity="0.5"/>
                 </svg>
             </div>
-            
             <h1 class="text-3xl md:text-4xl font-serif font-bold text-[#3E3B39] tracking-widest">機智的門徒生活</h1>
         </div>
-        
         <p class="eng-script text-[#8D7B68] text-sm">Forest School Map</p>
     </header>
 
-    <!-- 地圖主體 -->
     <main class="flex-grow container mx-auto px-4 py-4 flex flex-col justify-center">
-        
         <div class="map-container w-full max-w-5xl mx-auto h-[600px]">
-
-            <!-- SVG 路徑 (電腦版) -->
             <svg class="desktop-svg absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
-                <!-- 定義小徑 -->
                 <path d="M500 550 Q 500 450 500 350" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
                 <path d="M500 350 Q 300 350 200 200" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
                 <path d="M500 350 Q 700 350 800 200" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
                 <path d="M500 350 Q 500 250 500 150" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
                 <path d="M500 450 Q 650 480 800 500" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
             </svg>
-
-            <!-- 手機版連接線 -->
             <div class="mobile-dashed-line"></div>
 
             <!-- 裝飾樹木 -->
@@ -206,63 +180,56 @@
             <div class="tree-deco top-1/2 right-10 text-[#6B8E23]"><i data-lucide="trees" class="w-20 h-20"></i></div>
             <div class="tree-deco bottom-10 right-32 text-[#A3C1AD]"><i data-lucide="shrub" class="w-10 h-10"></i></div>
             
-            <!-- 1. 通識中心 (中央樞紐) -->
-            <a href="daily/index.html" class="map-node top-1/2 left-1/2 group">
-                <div class="node-icon w-24 h-24 z-10 float-slow">
-                    <i data-lucide="book-open-check" class="w-10 h-10"></i>
+            <!-- 校園公告欄 (調整至右上角：top-15%, right-10%) -->
+            <div class="map-node top-[15%] right-[10%] group z-30" onclick="openNoticeModal()">
+                <div class="notice-board-container">
+                    <div class="notice-board-icon">
+                        <div class="notice-paper">
+                            <i data-lucide="bell" class="w-6 h-6 text-[#D85C42]"></i>
+                        </div>
+                        <!-- 繩子效果 -->
+                        <div class="absolute -top-3 left-1/2 w-0.5 h-3 bg-[#5D4037]"></div>
+                    </div>
                 </div>
+                <!-- 紅點通知 -->
+                <div id="notice-badge" class="notice-badge hidden">!</div>
+                <div class="node-label mt-3" style="background: #8D7B68; border: 2px solid #5D4037;">校園公告</div>
+            </div>
+
+            <a href="daily/index.html" class="map-node top-1/2 left-1/2 group">
+                <div class="node-icon w-24 h-24 z-10 float-slow"><i data-lucide="book-open-check" class="w-10 h-10"></i></div>
                 <div class="node-label text-lg font-bold">通識中心</div>
                 <div class="text-xs text-[#8D7B68] mt-1 bg-white/80 px-2 rounded backdrop-blur-sm shadow-sm">每日靈糧</div>
             </a>
 
-            <!-- 2. 圖書館 (左上) -->
             <a href="library/index.html" class="map-node top-[30%] left-[20%] group">
-                <div class="node-icon float-mid">
-                    <i data-lucide="library" class="w-8 h-8"></i>
-                </div>
+                <div class="node-icon float-mid"><i data-lucide="library" class="w-8 h-8"></i></div>
                 <div class="node-label">圖書館</div>
-                <div class="absolute -top-8 -left-8 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i data-lucide="search" class="w-6 h-6 text-[#6B8E23] animate-bounce"></i>
-                </div>
+                <div class="absolute -top-8 -left-8 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="search" class="w-6 h-6 text-[#6B8E23] animate-bounce"></i></div>
             </a>
 
-            <!-- 3. 學霸養成班 (右上) -->
             <a href="school/index.html" class="map-node top-[30%] right-[20%] group">
-                <div class="node-icon float-fast">
-                    <i data-lucide="graduation-cap" class="w-8 h-8"></i>
-                </div>
+                <div class="node-icon float-fast"><i data-lucide="graduation-cap" class="w-8 h-8"></i></div>
                 <div class="node-label">學霸養成班</div>
-                <div class="absolute -top-6 -right-6 opacity-0 group-hover:opacity-100 transition-opacity bg-[#D85C42] text-white text-[10px] px-2 py-1 rounded-full shadow-sm">
-                    Quiz!
-                </div>
+                <div class="absolute -top-6 -right-6 opacity-0 group-hover:opacity-100 transition-opacity bg-[#D85C42] text-white text-[10px] px-2 py-1 rounded-full shadow-sm">Quiz!</div>
             </a>
 
-            <!-- 4. 校牧室 (正上方) -->
             <a href="chaplain/index.html" class="map-node top-[12%] left-1/2 group">
-                <div class="node-icon w-16 h-16 float-mid bg-[#FDFBF7]">
-                    <i data-lucide="church" class="w-6 h-6"></i>
-                </div>
+                <div class="node-icon w-16 h-16 float-mid bg-[#FDFBF7]"><i data-lucide="church" class="w-6 h-6"></i></div>
                 <div class="node-label bg-[#8D7B68]">校牧室</div>
             </a>
 
-            <!-- 5. 課外活動 (右下) -->
             <a href="games/index.html" class="map-node bottom-[15%] right-[15%] group">
-                <div class="node-icon float-mid">
-                    <i data-lucide="tent" class="w-8 h-8"></i>
-                </div>
+                <div class="node-icon float-mid"><i data-lucide="tent" class="w-8 h-8"></i></div>
                 <div class="node-label">課外活動</div>
-                <div class="absolute bottom-0 right-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <i data-lucide="gamepad-2" class="w-5 h-5 text-[#8FA4AE]"></i>
-                </div>
+                <div class="absolute bottom-0 right-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="gamepad-2" class="w-5 h-5 text-[#8FA4AE]"></i></div>
             </a>
 
-            <!-- 設定 (角落) (已移除風格切換，保留按鈕外觀改為資訊) -->
             <div class="absolute bottom-6 left-6 cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onclick="alert('機智的門徒生活 v1.0')">
                 <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200 shadow-sm">
                     <i data-lucide="info" class="w-5 h-5 text-gray-500"></i>
                 </div>
             </div>
-
         </div>
         
         <p class="text-center text-xs text-gray-400 mt-4 md:hidden">↓ 往下滑動探索校園 ↓</p>
@@ -272,8 +239,90 @@
         © 機智的門徒生活 | Map View
     </footer>
 
+    <!-- 公告 Modal -->
+    <div id="notice-modal" onclick="closeNoticeModal(event)">
+        <div class="notice-content" onclick="event.stopPropagation()">
+            <button onclick="closeNoticeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+            <div class="text-center mb-6">
+                <div class="inline-block p-3 bg-[#FDFBF7] rounded-full border-2 border-[#8D7B68] mb-2">
+                    <i data-lucide="bell" class="w-6 h-6 text-[#D85C42]"></i>
+                </div>
+                <h3 class="text-xl font-bold text-[#3E3B39]">校園公告欄</h3>
+                <p class="text-xs text-gray-500 mt-1">LATEST NEWS</p>
+            </div>
+            <div id="notice-list" class="space-y-2">
+                <div class="text-center py-6 text-gray-400">載入中...</div>
+            </div>
+        </div>
+    </div>
+
     <script>
         if(window.lucide) lucide.createIcons();
+
+        // 公告功能
+        const NOTICE_URL = 'assets/data/announcements.json';
+
+        async function initNotice() {
+            try {
+                const res = await fetch(NOTICE_URL);
+                if(res.ok) {
+                    const data = await res.json();
+                    renderNotices(data);
+                    // 顯示紅點 (如果有公告)
+                    if(data.length > 0) {
+                        const badge = document.getElementById('notice-badge');
+                        badge.classList.remove('hidden');
+                        badge.innerText = data.length;
+                    }
+                }
+            } catch(e) {
+                console.log('No notices found or load error');
+                document.getElementById('notice-list').innerHTML = '<div class="text-center py-6 text-gray-400">目前沒有新公告</div>';
+            }
+        }
+
+        function renderNotices(data) {
+            const container = document.getElementById('notice-list');
+            if(data.length === 0) {
+                container.innerHTML = '<div class="text-center py-6 text-gray-400">目前沒有新公告</div>';
+                return;
+            }
+            
+            let html = '';
+            // 排序：置頂優先，然後按日期新到舊
+            data.sort((a,b) => (b.isTop === a.isTop) ? new Date(b.date) - new Date(a.date) : (b.isTop ? 1 : -1));
+
+            data.forEach(item => {
+                html += `
+                    <div class="notice-item">
+                        <div class="flex items-center mb-1">
+                            ${item.isTop ? '<span class="notice-top-tag">置頂</span>' : ''}
+                            <h4 class="font-bold text-[#3E3B39] text-lg">${item.title}</h4>
+                        </div>
+                        <div class="text-xs text-gray-400 mb-2 flex items-center gap-1">
+                            <i data-lucide="calendar" class="w-3 h-3"></i> ${item.date}
+                        </div>
+                        <p class="text-sm text-gray-600 leading-relaxed whitespace-pre-wrap">${item.content}</p>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            if(window.lucide) lucide.createIcons();
+        }
+
+        function openNoticeModal() {
+            document.getElementById('notice-modal').classList.add('show');
+        }
+
+        function closeNoticeModal(event) {
+            if (event && event.target.closest('.notice-content') && event.target.id !== 'notice-modal') return;
+            document.getElementById('notice-modal').classList.remove('show');
+        }
+
+        // 啟動
+        initNotice();
     </script>
 </body>
 </html>
