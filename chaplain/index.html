@@ -7,20 +7,26 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/common.js"></script>
 </head>
 <body class="pb-20">
-    <!-- 導覽列 -->
     <nav class="nature-nav sticky top-0 z-50">
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
                  <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
-                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-sm">Logo</div>
+                    <div class="w-10 h-10 bg-[#6B8E23] rounded-full flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="map" class="w-5 h-5"></i>
+                    </div>
                     <div class="flex flex-col">
                         <span class="text-lg font-serif font-bold text-[#3E3B39]">機智的門徒生活</span>
                     </div>
                 </div>
                 <div class="flex flex-wrap justify-center gap-1">
-                    <a href="../index.html" class="nav-item">通識中心</a>
+                    <a href="../index.html" class="nav-item font-bold text-[#6B8E23]">
+                        <i data-lucide="home" class="w-4 h-4"></i> 回首頁
+                    </a>
+                    <div class="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+                    <a href="../daily/index.html" class="nav-item">通識中心</a>
                     <a href="../library/index.html" class="nav-item">圖書館</a>
                     <a href="index.html" class="nav-item active">校牧室</a>
                     <a href="../school/index.html" class="nav-item">學霸養成班</a>
@@ -33,39 +39,195 @@
     <div class="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
         <section id="section-prayers" class="page-section fade-in">
             <div id="chaplain-content">
-                <!-- 這裡的內容會由 JS 動態生成，包含靈修筆記、代禱事項等 Tabs -->
+                <!-- JS 將在此處生成內容 -->
             </div>
         </section>
     </div>
 
     <script>
-        // 這裡放置 renderChaplainOffice, savePrayer, saveDiary 等函式
-        // 請確保 localStorage 的 key 是統一的 (例如 'witty_prayers')
         const PRAYERS_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/prayers.json';
         let prayersData = [];
-        
+        let editingPrayerId = null;
+        let currentPrayerFilter = 'all';
+
         async function init() {
-            // fetch prayers then renderChaplainOffice();
-             const res = await fetch(PRAYERS_DATA_URL);
-             prayersData = await res.json();
-             renderChaplainOffice();
-             if(window.lucide) lucide.createIcons();
+            try {
+                const res = await fetch(PRAYERS_DATA_URL);
+                prayersData = await res.json();
+            } catch (e) { console.warn("Using default prayers"); }
+            renderChaplainOffice();
+            if(window.lucide) lucide.createIcons();
         }
 
-        // 請複製原檔中 renderChaplainOffice 及相關函式
         function renderChaplainOffice() {
-            // ... 原有的 HTML 結構生成代碼 ...
-            document.getElementById('chaplain-content').innerHTML = `
+            // 隨機禱告
+            const randomPrayer = prayersData.length > 0 ? prayersData[Math.floor(Math.random() * prayersData.length)] : { title: "寧靜禱文", content: "神啊，請賜給我寧靜，去接受我無法改變的事..." };
+            
+            const html = `
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-serif text-[#3E3B39]">校牧室</h2>
+                    <p class="eng-script text-[#8D7B68]">Chaplain's Office</p>
                 </div>
+                
+                <!-- 今日禱告卡 -->
                 <div class="stationery-card mb-12">
-                    <h3 class="text-center font-bold">今日禱告載入中...</h3>
+                    <div class="flex flex-col items-center text-center mb-6">
+                        <h3 class="text-xl font-bold text-[#6B8E23] mb-2">${randomPrayer.title || randomPrayer.Title}</h3>
+                    </div>
+                    <p class="text-[#585858] leading-relaxed whitespace-pre-wrap mb-6 font-light text-center">${randomPrayer.fullText || randomPrayer.content}</p>
+                    <div class="text-center"><button onclick="renderChaplainOffice()" class="text-xs text-[#8D7B68]">換一則</button></div>
                 </div>
-                <!-- 簡化示意，請填入完整 Tabs 結構 -->
+
+                <!-- 工具 Tabs -->
+                <div class="flex justify-center border-b border-gray-200 mb-8 overflow-x-auto">
+                    <div class="flex whitespace-nowrap px-2 pb-1 gap-2">
+                        <button class="chaplain-tab-btn active" onclick="switchTab('tab-prayer', this)">禱告日記</button>
+                        <button class="chaplain-tab-btn" onclick="switchTab('tab-gratitude', this)">感恩日記</button>
+                        <button class="chaplain-tab-btn" onclick="switchTab('tab-letter', this)">時空膠囊</button>
+                    </div>
+                </div>
+
+                <!-- 禱告日記內容 -->
+                <div id="tab-prayer" class="chaplain-tab-content fade-in">
+                    <div class="bg-white/60 p-6 rounded-xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
+                        <div class="mb-6 space-y-3">
+                            <input id="pray-topic" type="text" class="form-input" placeholder="禱告主題...">
+                            <textarea id="pray-content" class="form-input" rows="3" placeholder="具體內容..."></textarea>
+                            <div class="flex gap-2">
+                                <select id="pray-status" class="form-input w-auto"><option value="praying">禱告中</option><option value="answered">已成就</option></select>
+                                <button onclick="savePrayer()" class="nature-btn flex-1 justify-center">紀錄</button>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mb-4">
+                            <h4 class="font-bold text-[#6B8E23]">我的清單</h4>
+                            <div class="flex gap-1 text-sm">
+                                <button onclick="filterPrayers('all')" class="filter-btn active" id="f-all">全部</button>
+                                <button onclick="filterPrayers('praying')" class="filter-btn" id="f-praying">禱告中</button>
+                            </div>
+                        </div>
+                        <div id="prayer-list-display" class="space-y-2"></div>
+                    </div>
+                </div>
+
+                <!-- 感恩日記內容 -->
+                <div id="tab-gratitude" class="chaplain-tab-content hidden fade-in">
+                    <div class="bg-white/60 p-6 rounded-xl border border-gray-100 shadow-sm max-w-2xl mx-auto text-center">
+                        <p class="text-sm text-[#8D7B68] mb-4">數算恩典，看見神的手。</p>
+                        <textarea id="grat-content" class="form-input" rows="4" placeholder="今天發生了什麼值得感謝的事？"></textarea>
+                        <button onclick="saveGratitude()" class="nature-btn mt-2">存入恩典罐</button>
+                        <div id="gratitude-list" class="mt-6 text-left space-y-2 max-h-60 overflow-y-auto"></div>
+                    </div>
+                </div>
+
+                <!-- 時空膠囊內容 -->
+                <div id="tab-letter" class="chaplain-tab-content hidden fade-in">
+                    <div class="bg-white/60 p-6 rounded-xl border border-gray-100 shadow-sm max-w-2xl mx-auto text-center">
+                        <p class="text-sm text-[#8D7B68] mb-4">寫給未來的自己，信心的宣告。</p>
+                        <input type="date" id="letter-date" class="form-input mb-2">
+                        <textarea id="letter-content" class="form-input" rows="4" placeholder="親愛的自己..."></textarea>
+                        <button onclick="saveLetter()" class="nature-btn mt-2">投遞信件</button>
+                        <p class="text-xs text-gray-400 mt-4">信件將在指定日期後開啟。</p>
+                    </div>
+                </div>
             `;
+            document.getElementById('chaplain-content').innerHTML = html;
+            renderPrayerList();
+            renderGratitudeList();
         }
-        
+
+        function switchTab(id, btn) {
+            document.querySelectorAll('.chaplain-tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+            document.querySelectorAll('.chaplain-tab-btn').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // --- 禱告功能 ---
+        function savePrayer() {
+            const topic = document.getElementById('pray-topic').value;
+            const content = document.getElementById('pray-content').value;
+            const status = document.getElementById('pray-status').value;
+            if(!topic) return alert('請填寫主題');
+
+            const prayers = JSON.parse(localStorage.getItem('witty_prayers') || '[]');
+            prayers.unshift({ id: Date.now(), date: new Date().toLocaleDateString(), topic, content, status });
+            localStorage.setItem('witty_prayers', JSON.stringify(prayers));
+            
+            document.getElementById('pray-topic').value = '';
+            document.getElementById('pray-content').value = '';
+            renderPrayerList();
+        }
+
+        function renderPrayerList() {
+            const list = JSON.parse(localStorage.getItem('witty_prayers') || '[]');
+            const filtered = currentPrayerFilter === 'all' ? list : list.filter(p => p.status === currentPrayerFilter);
+            
+            let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">暫無紀錄</p>';
+            filtered.forEach(p => {
+                const isDone = p.status === 'answered';
+                html += `
+                    <div class="prayer-item-card ${isDone ? 'answered' : ''}">
+                        <div class="flex justify-between items-start">
+                            <h4 class="font-bold text-[#3E3B39]">${p.topic}</h4>
+                            <span class="text-xs ${isDone ? 'text-green-600' : 'text-yellow-600'} border px-1 rounded">${isDone ? '已成就' : '禱告中'}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 mt-1 whitespace-pre-wrap">${p.content}</p>
+                        <div class="mt-2 text-right">
+                            <button onclick="deletePrayer(${p.id})" class="text-xs text-red-400 hover:text-red-600">刪除</button>
+                        </div>
+                    </div>`;
+            });
+            const el = document.getElementById('prayer-list-display');
+            if(el) el.innerHTML = html;
+        }
+
+        function deletePrayer(id) {
+            if(!confirm('確定刪除？')) return;
+            const list = JSON.parse(localStorage.getItem('witty_prayers') || '[]');
+            localStorage.setItem('witty_prayers', JSON.stringify(list.filter(p => p.id !== id)));
+            renderPrayerList();
+        }
+
+        function filterPrayers(type) {
+            currentPrayerFilter = type;
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`f-${type}`).classList.add('active');
+            renderPrayerList();
+        }
+
+        // --- 感恩日記 ---
+        function saveGratitude() {
+            const content = document.getElementById('grat-content').value;
+            if(!content) return;
+            const list = JSON.parse(localStorage.getItem('witty_gratitude') || '[]');
+            list.unshift({ date: new Date().toLocaleDateString(), content });
+            localStorage.setItem('witty_gratitude', JSON.stringify(list));
+            document.getElementById('grat-content').value = '';
+            renderGratitudeList();
+        }
+
+        function renderGratitudeList() {
+            const list = JSON.parse(localStorage.getItem('witty_gratitude') || '[]');
+            let html = '';
+            list.forEach(g => {
+                html += `<div class="p-3 bg-white/50 rounded border border-gray-100 text-sm"><span class="text-xs text-gray-400 block">${g.date}</span>${g.content}</div>`;
+            });
+            const el = document.getElementById('gratitude-list');
+            if(el) el.innerHTML = html;
+        }
+
+        // --- 時空膠囊 ---
+        function saveLetter() {
+            const date = document.getElementById('letter-date').value;
+            const content = document.getElementById('letter-content').value;
+            if(!date || !content) return alert('請填寫完整');
+            const list = JSON.parse(localStorage.getItem('witty_letters') || '[]');
+            list.push({ date, content, read: false });
+            localStorage.setItem('witty_letters', JSON.stringify(list));
+            alert('信件已投遞！');
+            document.getElementById('letter-content').value = '';
+        }
+
         init();
     </script>
 </body>
