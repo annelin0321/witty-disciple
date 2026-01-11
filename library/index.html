@@ -8,16 +8,13 @@
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    <!-- 在預覽模式下，我們將共用 JS 直接內嵌以避免路徑錯誤 -->
-    <!-- <script src="../assets/js/common.js"></script> -->
-    <!-- <script src="../assets/js/bible-db.js"></script> -->
 </head>
 <body class="pb-20">
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
     </div>
 
-    <!-- 導覽列 (已新增首頁按鈕) -->
+    <!-- 導覽列 -->
     <nav class="nature-nav sticky top-0 z-50">
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
@@ -88,14 +85,11 @@
     </div>
 
     <script>
-        // --- 內嵌 common.js 與 bible-db.js 邏輯以修正 ReferenceError ---
-        
-        // common.js 邏輯
         document.addEventListener('DOMContentLoaded', () => {
             if (window.lucide) { lucide.createIcons(); }
         });
 
-        // bible-db.js 邏輯
+        // 1. 初始化資料庫
         const BIBLE_DB_URL = 'https://raw.githubusercontent.com/annelin0321/bible-zh/main/bible_complete.db';
         let db = null;
         let isDbLoading = false;
@@ -104,17 +98,25 @@
         async function initBibleDB() {
             if (db) return db;
             if (isDbLoading) return new Promise(resolve => {
-                const check = setInterval(() => { if(db || !isDbLoading) { clearInterval(check); resolve(db); } }, 100);
+                let timeout = 0;
+                const check = setInterval(() => { 
+                    timeout++;
+                    if(db || !isDbLoading) { clearInterval(check); resolve(db); }
+                    if(timeout > 100) { clearInterval(check); resolve(null); } // 10秒超時
+                }, 100);
             });
 
             isDbLoading = true;
             try {
+                if (typeof initSqlJs === 'undefined') {
+                    console.error("SQL.js not loaded");
+                    return null;
+                }
                 const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm` });
                 const response = await fetch(BIBLE_DB_URL);
                 if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const buffer = await response.arrayBuffer();
                 db = new SQL.Database(new Uint8Array(buffer));
-                console.log("Bible DB Loaded Successfully");
                 
                 const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0].values;
                 let validTable = tables.find(t => /bible|verse|scripture/i.test(t[0]));
@@ -140,6 +142,7 @@
             }
         }
 
+        // 2. 解析經文
         function parseBibleReference(text) {
             if (!text) return null;
             text = text.replace(/[\(\)\uff08\uff09]/g, ' ').replace(/：/g, ':').trim();
@@ -160,6 +163,7 @@
                 };
             }
             
+            // 重要修正：允許書卷與章節之間沒有空格 (例如 "約翰福音3")
             const chapRegex = new RegExp(`${bookPat}\\s*(\\d+)\\s*$`, 'g'); 
             while ((match = chapRegex.exec(text)) !== null) { lastMatch = match; }
             if (lastMatch) {
@@ -168,20 +172,24 @@
             return null;
         }
 
+        // 3. 開啟經文 Modal
         async function openScripture(reference, highlightVerse = null) {
+            console.log("Opening:", reference);
+            
             const modal = document.getElementById('bible-modal');
             const modalTitle = document.getElementById('modal-title');
             const modalBody = document.getElementById('modal-body');
             
             if(!modal) return;
 
+            // 立即顯示 Modal，讓使用者知道有點擊反應
             modal.classList.add('show');
-            modalBody.innerHTML = `<div class="flex justify-center py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin text-[#8D7B68]"></i></div>`;
+            modalBody.innerHTML = `<div class="flex flex-col items-center justify-center py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin text-[#8D7B68] mb-2"></i><span class="text-sm text-gray-500">正在翻閱聖經...</span></div>`;
             if(window.lucide) lucide.createIcons();
 
             const database = await initBibleDB();
             if (!database) { 
-                modalBody.innerHTML = `<p class="text-center text-red-500">資料庫讀取中，請稍後再試...</p>`; 
+                modalBody.innerHTML = `<p class="text-center text-red-500">無法讀取聖經資料庫。<br><span class="text-sm text-gray-400">請檢查網路連線後重試。</span></p>`; 
                 return; 
             }
 
@@ -189,10 +197,17 @@
                 const parsed = parseBibleReference(reference);
                 if (parsed) {
                     let query;
-                    if (parsed.endVerse && parsed.endVerse > parsed.verse) {
-                        query = `SELECT ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} >= ${parsed.verse} AND ${dbCols.ver} <= ${parsed.endVerse} ORDER BY ${dbCols.ver}`;
-                    } else {
+                    // 根據是否有 highlightVerse 或 endVerse 決定查詢範圍
+                    if (highlightVerse) {
                         query = `SELECT ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY ${dbCols.ver}`;
+                    } else if (parsed.endVerse && parsed.endVerse > parsed.verse) {
+                        query = `SELECT ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} >= ${parsed.verse} AND ${dbCols.ver} <= ${parsed.endVerse} ORDER BY ${dbCols.ver}`;
+                    } else if (parsed.endVerse === null) {
+                        query = `SELECT ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY ${dbCols.ver}`;
+                    } else {
+                        // 單節：改為顯示整章並高亮
+                        query = `SELECT ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY ${dbCols.ver}`;
+                        highlightVerse = parsed.verse; 
                     }
 
                     const res = database.exec(query);
@@ -200,53 +215,81 @@
                         let html = '';
                         res[0].values.forEach(row => {
                             const v = row[0], t = row[1];
-                            const highlightClass = (parsed.endVerse && v >= parsed.verse && v <= parsed.endVerse) || (v === highlightVerse) ? 'bg-yellow-100/80 p-1 rounded' : '';
-                            html += `<p class="verse-text ${highlightClass}"><span class="verse-num">${v}</span>${t}</p>`;
+                            const isHighlight = (highlightVerse && v === highlightVerse);
+                            const highlightClass = isHighlight ? 'bg-yellow-100/80 p-2 rounded -mx-2 transition-all duration-500 border-l-4 border-[#6B8E23]' : '';
+                            const idAttr = isHighlight ? `id="target-verse-${v}"` : '';
+                            html += `<p ${idAttr} class="verse-text ${highlightClass}"><span class="verse-num">${v}</span>${t}</p>`;
                         });
                         modalTitle.innerText = `${parsed.book} 第 ${parsed.chapter} 章`;
                         modalBody.innerHTML = html;
+                        
+                        if (highlightVerse) {
+                            setTimeout(() => {
+                                const target = document.getElementById(`target-verse-${highlightVerse}`);
+                                if(target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 300);
+                        }
                     } else {
-                        modalBody.innerHTML = `<p class="text-center">找不到經文資料</p>`;
+                        modalBody.innerHTML = `<p class="text-center py-6">資料庫中找不到：${parsed.book} ${parsed.chapter} 章</p>`;
                     }
                 } else {
                     modalTitle.innerText = "經文引用";
-                    modalBody.innerHTML = `<p class="text-center text-lg mb-4">${reference}</p><p class="text-center text-gray-400 text-sm">請前往圖書館搜尋完整章節。</p>`;
+                    modalBody.innerHTML = `<p class="text-center text-lg mb-4">${reference}</p><p class="text-center text-gray-400 text-sm">無法解析經文格式，請確認書卷名稱。</p>`;
                 }
             } catch (e) {
                 console.error(e);
-                modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤</p>`;
+                modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤: ${e.message}</p>`;
             }
         }
 
-        // --- 本頁邏輯 ---
-
-        // 金句與搜尋邏輯
         const BLESSING_VERSES_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/blessing-verses.json';
         
-        async function init() {
-            if(window.lucide) lucide.createIcons();
-            fetchBlessingVerses();
-            renderBibleBrowserHome();
-        }
-
         async function fetchBlessingVerses() {
             try {
                 const res = await fetch(BLESSING_VERSES_URL);
                 const data = await res.json();
                 if(data.length > 0) {
                     const item = data[Math.floor(Math.random() * data.length)];
-                    const text = item['完整經文'] || item['scripture'];
-                    const ref = item['ref'] || item['出處'] || '';
+                    let text = item['完整經文'] || item['scripture'] || '';
+                    let ref = item['ref'] || item['reference'] || item['source'] || item['出處'] || '';
                     
-                    // 修改處：金句置中，按鈕分開
+                    // 嘗試從內容解析出處
+                    if (!ref && text) {
+                        const match = text.match(/[（(](.*?)[\)）]$/);
+                        if (match) {
+                            ref = match[1];
+                            text = text.replace(match[0], '').trim();
+                        } else {
+                            const parsed = parseBibleReference(text);
+                            if (parsed) {
+                                ref = `${parsed.book} ${parsed.chapter}:${parsed.verse}`;
+                                const startRegex = new RegExp(`^${parsed.book}\\s*${parsed.chapter}[:：]${parsed.verse}`, 'i');
+                                text = text.replace(startRegex, '').trim();
+                            }
+                        }
+                    }
+                    
+                    let chapterRef = '';
+                    let btnLabel = '閱讀整章';
+                    
+                    if (ref) {
+                        btnLabel = `${ref} | 閱讀整章`;
+                        const p = parseBibleReference(ref);
+                        if (p) {
+                            chapterRef = `${p.book} ${p.chapter}`;
+                        } else {
+                            chapterRef = ref.split(/[:：]/)[0]; 
+                        }
+                    }
+
                     document.getElementById('blessing-card-area').innerHTML = `
                         <div class="verse-card-highlight">
-                            <p class="text-xl font-serif text-[#3E3B39] leading-relaxed mb-6 text-center">${text}</p>
+                            <p class="text-xl font-serif text-[#3E3B39] leading-relaxed mb-6 text-center font-bold">${text}</p>
                             ${ref ? `
-                                <div class="flex flex-col items-center gap-3">
-                                    <span class="text-[#8D7B68] font-bold text-sm tracking-wide">— ${ref} —</span>
-                                    <button onclick="openScripture('${ref}')" class="nature-btn mt-2">
-                                        <i data-lucide="book-open" class="w-4 h-4"></i> 閱讀整章
+                                <div class="flex justify-center animate-fadeIn">
+                                    <button onclick="window.openScripture('${chapterRef}')" class="nature-btn mt-2 group flex items-center gap-2">
+                                        <i data-lucide="book-open" class="w-4 h-4 group-hover:scale-110 transition-transform"></i> 
+                                        <span>${btnLabel}</span>
                                     </button>
                                 </div>
                             ` : ''}
@@ -255,6 +298,7 @@
                     if(window.lucide) lucide.createIcons();
                 }
             } catch (e) {
+                console.error(e);
                 document.getElementById('blessing-card-area').innerHTML = '<p class="text-center text-gray-400">今日金句運送中...</p>';
             }
         }
@@ -268,13 +312,12 @@
             }
 
             try {
-                // 讀取所有書卷
                 const res = database.exec(`SELECT DISTINCT ${dbCols.book} FROM ${dbCols.tableName}`);
-                const books = res[0].values.flat();
+                const books = [...new Set(res[0].values.flat())];
 
                 let html = '<div class="bible-book-grid">';
                 books.forEach(book => {
-                    html += `<div class="bible-book-item" onclick="renderChapters('${book}')">${book}</div>`;
+                    html += `<div class="bible-book-item" onclick="window.renderChapters('${book}')">${book}</div>`;
                 });
                 html += '</div>';
                 container.innerHTML = html;
@@ -285,17 +328,17 @@
             const container = document.getElementById('bible-display-area');
             const database = await initBibleDB();
             const res = database.exec(`SELECT DISTINCT ${dbCols.chap} FROM ${dbCols.tableName} WHERE ${dbCols.book} = '${book}'`);
-            const chapters = res[0].values.flat();
+            const chapters = [...new Set(res[0].values.flat())].sort((a,b) => a - b);
 
             let html = `
                 <div class="mb-4 flex items-center gap-2">
-                    <button onclick="renderBibleBrowserHome()" class="text-sm text-[#6B8E23] hover:underline">< 返回書卷</button>
+                    <button onclick="window.renderBibleBrowserHome()" class="text-sm text-[#6B8E23] hover:underline">< 返回書卷</button>
                     <span class="font-bold text-[#3E3B39]">> ${book}</span>
                 </div>
                 <div class="chapter-grid">
             `;
             chapters.forEach(c => {
-                html += `<div class="chapter-item" onclick="openScripture('${book} ${c}')">${c}</div>`;
+                html += `<div class="chapter-item" onclick="window.openScripture('${book} ${c}')">${c}</div>`;
             });
             html += '</div>';
             container.innerHTML = html;
@@ -314,14 +357,14 @@
             const res = database.exec(query);
 
             if (res.length === 0) {
-                container.innerHTML = `<p class="text-center py-10">找不到「${keyword}」相關經文</p><button onclick="renderBibleBrowserHome()" class="block mx-auto text-[#6B8E23]">返回目錄</button>`;
+                container.innerHTML = `<p class="text-center py-10">找不到「${keyword}」相關經文</p><button onclick="window.renderBibleBrowserHome()" class="block mx-auto text-[#6B8E23]">返回目錄</button>`;
                 return;
             }
 
-            let html = `<div class="mb-4 flex justify-between"><span class="text-sm text-gray-500">搜尋結果</span><button onclick="renderBibleBrowserHome()" class="text-sm text-[#6B8E23]">返回目錄</button></div><div class="space-y-2">`;
+            let html = `<div class="mb-4 flex justify-between"><span class="text-sm text-gray-500">搜尋結果</span><button onclick="window.renderBibleBrowserHome()" class="text-sm text-[#6B8E23]">返回目錄</button></div><div class="space-y-2">`;
             res[0].values.forEach(row => {
                 const b=row[0], c=row[1], v=row[2], t=row[3];
-                html += `<div class="search-result-item" onclick="openScripture('${b} ${c}:${v}', ${v})">
+                html += `<div class="search-result-item" onclick="window.openScripture('${b} ${c}:${v}', ${v})">
                             <div class="text-xs text-[#6B8E23] font-bold mb-1">${b} ${c}:${v}</div>
                             <div class="text-[#3E3B39] text-sm">${t}</div>
                          </div>`;
@@ -338,6 +381,19 @@
             if(modal) modal.classList.remove('show');
         }
 
+        // 強制掛載到 window，解決作用域問題
+        window.openScripture = openScripture;
+        window.handleSearch = handleSearch;
+        window.performSearch = performSearch;
+        window.renderChapters = renderChapters;
+        window.renderBibleBrowserHome = renderBibleBrowserHome;
+        window.closeBibleModal = closeBibleModal;
+
+        async function init() {
+            if(window.lucide) lucide.createIcons();
+            fetchBlessingVerses();
+            renderBibleBrowserHome();
+        }
         init();
     </script>
 </body>
