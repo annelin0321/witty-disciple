@@ -7,19 +7,36 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="../assets/js/common.js"></script>
+    <style>
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid rgba(107, 142, 35, 0.2);
+        }
+    </style>
 </head>
 <body class="pb-20">
     <nav class="nature-nav sticky top-0 z-50">
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
                  <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
-                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-sm">Logo</div>
+                    <div class="w-10 h-10 bg-[#6B8E23] rounded-full flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="map" class="w-5 h-5"></i>
+                    </div>
                     <div class="flex flex-col">
                         <span class="text-lg font-serif font-bold text-[#3E3B39]">機智的門徒生活</span>
                     </div>
                 </div>
                 <div class="flex flex-wrap justify-center gap-1">
-                    <a href="../index.html" class="nav-item">通識中心</a>
+                    <a href="../index.html" class="nav-item font-bold text-[#6B8E23]">
+                        <i data-lucide="home" class="w-4 h-4"></i> 回首頁
+                    </a>
+                    <div class="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+                    <a href="../daily/index.html" class="nav-item">通識中心</a>
                     <a href="../library/index.html" class="nav-item">圖書館</a>
                     <a href="../chaplain/index.html" class="nav-item">校牧室</a>
                     <a href="../school/index.html" class="nav-item">學霸養成班</a>
@@ -31,19 +48,125 @@
 
     <div class="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
         <section id="section-games" class="page-section fade-in">
-            <div class="text-center mb-8">
+            <div class="text-center mb-12">
                 <h2 class="text-2xl font-serif text-[#3E3B39]">課外活動</h2>
-                <p class="eng-script text-[#8D7B68]">Fellowship</p>
+                <p class="eng-script text-[#8D7B68]">Fellowship Activities</p>
             </div>
-            <div id="grid-games" class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- 遊戲內容由 JS 生成 -->
-                <div class="col-span-full text-center py-10 opacity-50">暫無活動</div>
+
+            <!-- 新增區塊：線上小遊戲 (Local Games) -->
+            <div class="mb-12">
+                <div class="section-header">
+                    <i data-lucide="joystick" class="w-6 h-6 text-[#D85C42]"></i>
+                    <h3 class="text-xl font-bold text-[#3E3B39]">線上小遊戲</h3>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- 遊戲卡片 1：請修改 href 指向您的遊戲資料夾 -->
+                    <!-- 建議將資料夾命名為 'monopoly' -->
+                    <a href="./monopoly/index.html" class="clean-card group hover:bg-white/80 transition-colors block cursor-pointer" target="_blank">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-[#F1F3F2] rounded-full text-[#D85C42] group-hover:bg-[#D85C42] group-hover:text-white transition-colors">
+                                <i data-lucide="play" class="w-5 h-5"></i>
+                            </div>
+                            <h3 class="font-bold text-[#3E3B39] text-lg leading-tight">天國大富翁-應許之地篇</h3>
+                        </div>
+                        <p class="text-gray-600 text-sm leading-relaxed">點擊這裡開始遊玩！(請確保檔案已放入 games/monopoly 資料夾)</p>
+                    </a>
+
+                    <!-- 如果有第二個遊戲，可以複製上面的 <a> 標籤繼續新增 -->
+
+                </div>
             </div>
+
+            <!-- 原有區塊：破冰熱身 -->
+            <div class="mb-12">
+                <div class="section-header">
+                    <i data-lucide="snowflake" class="w-6 h-6 text-[#8FA4AE]"></i>
+                    <h3 class="text-xl font-bold text-[#3E3B39]">破冰熱身</h3>
+                </div>
+                <div id="grid-icebreakers" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="col-span-full text-center py-4 opacity-50 text-sm">載入中...</div>
+                </div>
+            </div>
+
+            <!-- 原有區塊：團契遊戲 -->
+            <div>
+                <div class="section-header">
+                    <i data-lucide="gamepad-2" class="w-6 h-6 text-[#6B8E23]"></i>
+                    <h3 class="text-xl font-bold text-[#3E3B39]">團契遊戲</h3>
+                </div>
+                <div id="grid-games" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="col-span-full text-center py-4 opacity-50 text-sm">載入中...</div>
+                </div>
+            </div>
+
         </section>
     </div>
     
     <script>
-        if(window.lucide) lucide.createIcons();
+        const DEVOTION_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/devotionals.json';
+
+        async function init() {
+            try {
+                const response = await fetch(DEVOTION_DATA_URL);
+                const data = await response.json();
+                
+                const icebreakers = [];
+                const games = [];
+
+                data.forEach(i => {
+                    let t = ''; 
+                    for(let k in i) if(/title|name/i.test(k)) t = i[k].toLowerCase();
+                    
+                    if (t.includes('破冰')) {
+                        icebreakers.push(i);
+                    } else if (t.includes('遊戲')) {
+                        games.push(i);
+                    }
+                });
+                
+                renderList(icebreakers, 'grid-icebreakers', 'snowflake');
+                renderList(games, 'grid-games', 'gamepad-2');
+
+            } catch(e) { 
+                console.error(e);
+                renderList([
+                    { title: "超級比一比", content: "分組進行，題目包含聖經人物、地名..." }
+                ], 'grid-icebreakers', 'snowflake');
+                renderList([], 'grid-games', 'gamepad-2');
+            }
+        }
+
+        function renderList(items, containerId, iconName) {
+            const container = document.getElementById(containerId);
+            let html = '';
+            
+            if(items.length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center py-6 bg-white/30 rounded-lg text-gray-500 text-sm">目前沒有此類活動</div>';
+                return;
+            }
+
+            items.forEach(i => {
+                let titleKey = Object.keys(i).find(k => /title|name/.test(k)) || Object.keys(i)[0];
+                let contentKey = Object.keys(i).find(k => !/title|name|date|id/.test(k)) || Object.keys(i)[1];
+                
+                html += `
+                    <div class="clean-card group hover:bg-white/80 transition-colors h-full">
+                        <div class="flex items-center gap-3 mb-3">
+                            <div class="p-2 bg-[#F1F3F2] rounded-full text-[#6B8E23] group-hover:bg-[#6B8E23] group-hover:text-white transition-colors">
+                                <i data-lucide="${iconName}" class="w-5 h-5"></i>
+                            </div>
+                            <h3 class="font-bold text-[#3E3B39] text-lg leading-tight">${i[titleKey]}</h3>
+                        </div>
+                        <div class="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">${i[contentKey]}</div>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
+            if(window.lucide) lucide.createIcons();
+        }
+
+        init();
     </script>
 </body>
 </html>
