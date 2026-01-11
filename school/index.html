@@ -60,7 +60,7 @@
             {
                 id: 'exam',
                 title: '聖經大會考',
-                subtitle: '限時挑戰 (3分鐘)',
+                subtitle: '限時挑戰 (3分鐘/40題)',
                 icon: 'timer',
                 type: 'exam',
                 url: 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/bible-quiz.json',
@@ -146,9 +146,14 @@
             try {
                 const res = await fetch(config.url);
                 const data = await res.json();
-                // 隨機排列題目，若大於20題則取20題 (避免練習太長)
+                
+                // 隨機排列題目
                 currentQuizData = data.sort(() => 0.5 - Math.random());
-                if (currentQuizData.length > 20) currentQuizData = currentQuizData.slice(0, 20);
+                
+                // 設定題數：只有「大會考」限制 40 題，其他全部載入不限題數
+                if (config.id === 'exam' && currentQuizData.length > 40) {
+                    currentQuizData = currentQuizData.slice(0, 40);
+                }
                 
                 currentQuestionIndex = 0;
                 userExamAnswers = [];
@@ -185,6 +190,7 @@
             const html = `
                 <div class="max-w-2xl mx-auto">
                     <div class="flex justify-between items-center mb-6 bg-white/50 p-4 rounded-xl border border-white">
+                        <!-- 大會考維持顯示總題數 -->
                         <span class="font-bold text-[#3E3B39]">第 ${currentQuestionIndex + 1}/${currentQuizData.length} 題</span>
                         <span class="font-mono text-xl font-bold text-[#6B8E23]"><span id="timer-display">${quizTimeLeft}</span>s</span>
                     </div>
@@ -277,7 +283,8 @@
                             <i data-lucide="arrow-left" class="w-4 h-4"></i> 退出
                         </button>
                         <span class="font-bold text-[#6B8E23]">Practice Mode</span>
-                        <span class="text-sm text-gray-500">${currentQuestionIndex + 1} / ${currentQuizData.length}</span>
+                        <!-- 修正：只顯示當前題數，不顯示總題數 -->
+                        <span class="text-sm text-gray-500">第 ${currentQuestionIndex + 1} 題</span>
                     </div>
 
                     <div class="stationery-card relative overflow-hidden min-h-[400px] flex flex-col justify-center">
@@ -364,7 +371,8 @@
                 <div class="max-w-md mx-auto h-full flex flex-col">
                     <div class="flex justify-between items-center mb-6">
                         <button onclick="exitQuiz()" class="text-sm text-[#8D7B68] hover:text-[#3E3B39]">退出</button>
-                        <span>${currentQuestionIndex + 1} / ${currentQuizData.length}</span>
+                        <!-- 修正：只顯示當前題數，不顯示總題數 -->
+                        <span>第 ${currentQuestionIndex + 1} 題</span>
                     </div>
                     <div class="flip-card mb-8" onclick="this.classList.toggle('flipped')">
                         <div class="flip-card-inner">
