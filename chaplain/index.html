@@ -2,7 +2,6 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <!-- 修正 1: 加入 maximum-scale=1.0, user-scalable=no 防止縮放 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>機智的門徒生活 | 校牧室</title>
     <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
@@ -60,7 +59,7 @@
             gap: 0.5rem;
         }
 
-        /* 修正 2: 強制手機版輸入框字體為 16px，防止 iOS 自動放大 */
+        /* 強制手機版輸入框字體為 16px */
         @media screen and (max-width: 768px) {
             .form-input, input, textarea, select {
                 font-size: 16px !important;
@@ -68,11 +67,13 @@
         }
     </style>
 </head>
-<body class="pb-20">
+<!-- 修正重點：加入 role="application" 告訴 Safari 這是個 App -->
+<body class="pb-20" role="application">
     <nav class="nature-nav sticky top-0 z-50">
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
                  <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
+                    <!-- Logo -->
                     <div class="w-10 h-10 hover:scale-110 transition-transform">
                         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="50" cy="50" r="48" fill="#FDFBF7" stroke="#6B8E23" stroke-width="2"/>
@@ -163,8 +164,14 @@
         }
 
         function renderChaplainOffice() {
-            const randomPrayer = prayersData.length > 0 ? prayersData[Math.floor(Math.random() * prayersData.length)] : { title: "寧靜禱文", content: "神啊，請賜給我寧靜，去接受我無法改變的事..." };
+            // 隨機禱告
+            const randomPrayer = prayersData.length > 0 ? prayersData[Math.floor(Math.random() * prayersData.length)] : { title: "寧靜禱文", content: "神啊，請賜給我寧靜，\n去接受我無法改變的事..." };
             
+            // 修正重點：打散禱告文結構
+            // 將整段文字切分為多行 div，而不是一個大的 p 標籤，這樣可以騙過 Safari 的文章偵測
+            const textContent = randomPrayer.fullText || randomPrayer.content || "";
+            const formattedText = textContent.split('\n').map(line => `<div class="min-h-[1.5em]">${line}</div>`).join('');
+
             let emotionHtml = '';
             for (const [category, emotions] of Object.entries(emotionCategories)) {
                 let typeClass = 'neutral';
@@ -193,12 +200,15 @@
                         <h3 class="text-xl font-bold text-[#6B8E23] mb-2">${randomPrayer.title || randomPrayer.Title}</h3>
                     </div>
                     
-                    <!-- 修正 3: 將原本的 <p> 改為 <div>，降低 Safari 判定為文章的權重，避免跳出閱讀器 -->
-                    <div class="text-[#585858] leading-relaxed whitespace-pre-wrap mb-6 font-light text-center">${randomPrayer.fullText || randomPrayer.content}</div>
+                    <!-- 這裡不再使用 P 標籤，改用 DIV Grid 結構 -->
+                    <div class="text-[#585858] font-light text-center grid gap-0.5 leading-relaxed mb-6">
+                        ${formattedText}
+                    </div>
                     
                     <div class="text-center"><button onclick="renderChaplainOffice()" class="text-xs text-[#8D7B68] hover:text-[#6B8E23] transition-colors flex items-center justify-center gap-1 mx-auto"><i data-lucide="refresh-cw" class="w-3 h-3"></i> 換一則禱告</button></div>
                 </div>
 
+                <!-- 工具 Tabs -->
                 <div class="flex justify-center mb-8">
                     <div class="flex flex-wrap justify-center gap-2 w-full max-w-3xl">
                         <button class="chaplain-tab-btn active" onclick="switchTab('tab-devotion', this)">靈修筆記</button>
