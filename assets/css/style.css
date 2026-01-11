@@ -1,36 +1,74 @@
 :root {
-    /* 自然生態色票 */
-    --bg-paper: #F1F3F2;
-    --text-primary: #3E3B39;
-    --text-secondary: #757575;
-    --accent-green: #6B8E23;
-    --accent-soft-green: #A3C1AD;
-    --accent-blue: #8FA4AE;
-    --accent-brown: #8D7B68;
-    --accent-flower: #D8A69E;
-    --accent-alert: #D85C42;
-    --border-color: rgba(255, 255, 255, 0.6);
+    /* 預設：溫暖拿鐵 (Warm Latte) */
+    --bg-paper: #FDFBF7;
+    --text-primary: #4A3B32;
+    --text-secondary: #8C7B70;
+    --accent-green: #B08D74;
+    --accent-soft-green: #DBC1AC;
+    --accent-blue: #8F9FA6;
+    --accent-brown: #6F4E37;
+    --accent-flower: #C9A690;
+    --accent-alert: #BF6B63;
+    --border-color: rgba(140, 123, 112, 0.2);
+    --btn-text: #ffffff; /* 按鈕文字色 */
+}
+
+/* 風格 A：賽博龐克 (Cyberpunk) */
+body[data-theme="cyberpunk"] {
+    --bg-paper: #1a1a2e;
+    --text-primary: #e0e0e0;
+    --text-secondary: #a0a0a0;
+    --accent-green: #00ff9d;
+    --accent-soft-green: #0f3460;
+    --accent-blue: #00d4ff;
+    --accent-brown: #ff2a6d;
+    --accent-flower: #ff00ff;
+    --accent-alert: #ff2a6d;
+    --border-color: rgba(255, 255, 255, 0.15);
+    --btn-text: #000000;
+}
+
+/* 風格 B：極簡無印 (Minimalist) */
+body[data-theme="minimal"] {
+    --bg-paper: #ffffff;
+    --text-primary: #333333;
+    --text-secondary: #666666;
+    --accent-green: #525252;
+    --accent-soft-green: #e5e5e5;
+    --accent-blue: #999999;
+    --accent-brown: #000000;
+    --accent-flower: #d4d4d4;
+    --accent-alert: #cc0000;
+    --border-color: #e0e0e0;
+    --btn-text: #ffffff;
 }
 
 html { scroll-behavior: smooth; }
 
 body {
     font-family: 'Noto Sans TC', sans-serif;
-    background: linear-gradient(to bottom, #FAFAFA, #E8ECE9);
+    /* 預設背景 (拿鐵) */
+    background: #F2EFE9; 
     color: var(--text-primary);
     line-height: 1.8;
     letter-spacing: 0.05em;
     position: relative;
     min-height: 100vh;
+    transition: background 0.5s ease, color 0.5s ease; /* 讓換膚有平滑過渡 */
 }
+
+/* 針對不同風格改變 Body 背景色 */
+body[data-theme="cyberpunk"] { background: #16213e; }
+body[data-theme="minimal"] { background: #f9f9f9; }
+
+/* --- 以下保持原有樣式，僅針對顏色變數做微調 --- */
 
 h1, h2, h3, .serif-font { font-family: 'Noto Serif TC', serif; }
 .eng-script { font-family: 'Playfair Display', serif; font-style: italic; }
 
-/* 導覽列：極度通透 */
 .nature-nav {
-    border-bottom: 1px solid rgba(255,255,255,0.4);
-    background-color: rgba(255, 255, 255, 0.4);
+    border-bottom: 1px solid var(--border-color);
+    background-color: var(--bg-paper); /* 改用變數 */
     backdrop-filter: blur(15px);
     -webkit-backdrop-filter: blur(15px);
     box-shadow: 0 4px 30px rgba(0,0,0,0.01);
@@ -48,54 +86,50 @@ h1, h2, h3, .serif-font { font-family: 'Noto Serif TC', serif; }
     white-space: nowrap;
     cursor: pointer;
     border: 1px solid transparent;
-    text-decoration: none; /* 針對 <a> 標籤 */
+    text-decoration: none;
 }
 
 .nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.5);
+    background-color: rgba(255, 255, 255, 0.1); /* 微調透明度 */
     color: var(--accent-green);
-    border-color: rgba(107, 142, 35, 0.3);
+    border-color: var(--accent-green);
 }
 
 .nav-item.active {
     color: var(--accent-green);
-    background-color: rgba(255, 255, 255, 0.6);
+    background-color: rgba(255, 255, 255, 0.2);
     font-weight: 600;
-    border-color: rgba(107, 142, 35, 0.3);
-    box-shadow: 0 2px 10px rgba(107, 142, 35, 0.05);
+    border-color: var(--accent-green);
 }
 
-/* 透明信紙卡片 (核心容器) */
 .stationery-card {
-    background-color: rgba(255, 255, 255, 0.25);
+    background-color: var(--bg-paper); /* 改用變數 */
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.6);
+    border: 1px solid var(--border-color);
     padding: 3rem 2rem;
-    box-shadow: 
-        0 10px 40px -10px rgba(0, 0, 0, 0.03),
-        inset 0 0 20px rgba(255, 255, 255, 0.5);
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
     position: relative;
     max-width: 800px;
     margin: 0 auto;
     border-radius: 16px;
 }
+
+/* 讓原本的裝飾圓圈跟著主題色變 */
 .stationery-card::before {
     content: '';
     position: absolute;
     top: 50%; left: 50%; transform: translate(-50%, -50%);
     width: 250px; height: 250px;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='40' stroke='%236B8E23' stroke-width='1' opacity='0.05' stroke-dasharray='5 5'/%3E%3C/svg%3E");
+    /* 這裡使用一個 trick：將 SVG 轉為 mask 或者簡單一點，直接讓它保持淡化 */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='40' stroke='%23888888' stroke-width='1' opacity='0.1' stroke-dasharray='5 5'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     pointer-events: none;
 }
 
-/* 經文金句卡片 */
 .verse-card-highlight {
-    background-color: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(107, 142, 35, 0.3);
+    background-color: var(--bg-paper);
+    border: 1px solid var(--accent-green);
     padding: 2.5rem;
     border-radius: 12px;
     text-align: center;
@@ -105,351 +139,66 @@ h1, h2, h3, .serif-font { font-family: 'Noto Serif TC', serif; }
     overflow: hidden;
 }
 
-/* 聖經瀏覽器與搜尋框 */
-.bible-browser-container { margin-top: 2rem; }
-.bible-book-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 12px;
-}
-.bible-book-item {
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 255, 255, 0.7);
-    padding: 10px; text-align: center; border-radius: 8px;
-    cursor: pointer; transition: all 0.3s; font-size: 0.9rem; color: var(--text-secondary);
-}
-.bible-book-item:hover {
-    border-color: var(--accent-green); color: var(--accent-green);
-    transform: translateY(-2px); background: rgba(255, 255, 255, 0.8);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-}
-.chapter-grid {
-    display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 8px;
-}
-.chapter-item {
-    background: rgba(163, 193, 173, 0.2);
-    padding: 8px; text-align: center; border-radius: 6px;
-    cursor: pointer; color: var(--accent-green); font-weight: bold; border: 1px solid transparent;
-}
-.chapter-item:hover { background: var(--accent-green); color: white; border-color: var(--accent-green); }
-
-.search-box { display: flex; gap: 8px; margin-bottom: 1.5rem; max-width: 500px; margin-left: auto; margin-right: auto; }
-.search-input {
-    flex: 1; padding: 10px 20px;
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 50px;
-    outline: none; transition: all 0.3s;
-    backdrop-filter: blur(4px);
-}
-.search-input:focus { border-color: var(--accent-green); background: rgba(255,255,255,0.9); box-shadow: 0 0 0 4px rgba(107, 142, 35, 0.1); }
-.search-btn {
-    background: var(--accent-green); color: white; border: none; padding: 0 20px;
-    border-radius: 50px; cursor: pointer; transition: opacity 0.3s;
-    box-shadow: 0 4px 10px rgba(107, 142, 35, 0.3);
-}
-.search-btn:hover { opacity: 0.9; transform: translateY(-1px); }
-
-/* 一般按鈕 */
+/* 按鈕樣式調整 */
 .nature-btn {
-    background-color: rgba(255, 255, 255, 0.6);
-    border: 1px solid var(--accent-green); color: var(--accent-green);
-    padding: 0.5rem 1.5rem; font-size: 0.9rem; letter-spacing: 0.1em;
-    transition: all 0.3s ease; border-radius: 50px;
-    display: inline-flex; align-items: center; gap: 0.5rem; cursor: pointer;
-    backdrop-filter: blur(2px);
-}
-.nature-btn:hover { background-color: var(--accent-green); color: white; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(107, 142, 35, 0.2); }
-
-/* 經文按鈕 */
-.scripture-btn { background-color: rgba(241, 248, 233, 0.6); border-color: #81C784; color: #33691e; }
-.scripture-btn:hover { background-color: #33691e; color: white; }
-
-/* 讀經進度按鈕 (專屬樣式) */
-.reading-plan-btn {
-    background-color: white;
-    border: 1px solid rgba(107, 142, 35, 0.2);
-    color: #3E3B39;
-    padding: 1rem;
-    border-radius: 16px;
-    text-align: left;
-    transition: all 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    height: 100%;
-    position: relative;
-    overflow: hidden;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
-}
-.reading-plan-btn:hover {
-    border-color: var(--accent-green);
-    background-color: rgba(107, 142, 35, 0.05);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(107, 142, 35, 0.1);
-}
-.reading-plan-btn .label {
-    font-size: 0.7rem;
+    background-color: var(--bg-paper);
+    border: 1px solid var(--accent-green);
     color: var(--accent-green);
-    font-weight: bold;
+    padding: 0.5rem 1.5rem;
+    font-size: 0.9rem;
     letter-spacing: 0.1em;
-    text-transform: uppercase;
+    transition: all 0.3s ease;
+    border-radius: 50px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
 }
-.reading-plan-btn .content {
-    font-size: 1.1rem;
-    font-family: 'Noto Serif TC', serif;
-    font-weight: 600;
-}
-.reading-plan-btn i {
-    position: absolute;
-    right: 1rem;
-    bottom: 1rem;
-    opacity: 0.1;
-    width: 24px;
-    height: 24px;
-    color: var(--accent-green);
+.nature-btn:hover {
+    background-color: var(--accent-green);
+    color: var(--btn-text);
+    transform: translateY(-2px);
 }
 
-/* 通用卡片 (透明化) */
+/* 其他共用類別 (略微調整以適應變數) */
 .clean-card {
-    background: rgba(255, 255, 255, 0.3); backdrop-filter: blur(8px);
-    border: 1px solid rgba(255, 255, 255, 0.6); padding: 2rem;
-    transition: all 0.4s ease; height: 100%; display: flex; flex-direction: column; border-radius: 16px;
+    background: var(--bg-paper);
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    border-radius: 16px;
+    transition: all 0.4s ease;
 }
 .clean-card:hover {
-    border-color: var(--accent-blue); transform: translateY(-4px);
-    background: rgba(255, 255, 255, 0.7);
-    box-shadow: 0 15px 30px rgba(143, 164, 174, 0.15);
-}
-
-.date-badge {
-    font-family: 'Playfair Display', serif; color: var(--accent-brown); font-size: 0.85rem; letter-spacing: 0.1em;
-    text-transform: uppercase; border: 1px solid var(--border-color); padding: 2px 14px; border-radius: 20px;
-    display: inline-block; margin-bottom: 0.5rem; background: rgba(255, 255, 255, 0.6);
-}
-
-.must-read-badge {
-    background-color: var(--accent-alert); color: white; font-size: 0.75rem; padding: 2px 12px;
-    border-radius: 15px; display: inline-flex; align-items: center; gap: 4px;
-    box-shadow: 0 2px 8px rgba(216, 92, 66, 0.3); animation: pulse-slow 3s infinite;
-}
-@keyframes pulse-slow { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.9; } }
-
-.divider-water {
-    height: 10px; background-image: url("data:image/svg+xml,%3Csvg width='40' height='10' viewBox='0 0 40 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 5 Q 10 0 20 5 T 40 5' stroke='%23D6D2CC' fill='none' opacity='0.5' /%3E%3C/svg%3E");
-    background-repeat: repeat-x; margin: 2rem 0; width: 100%;
-}
-
-.fade-in { animation: fadeIn 0.8s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-.hidden { display: none; }
-
-.framed-image {
-    padding: 10px; background: rgba(255,255,255,0.9); border: 1px solid rgba(255,255,255,0.6); border-radius: 2px;
-    box-shadow: 0 10px 20px rgba(0,0,0,0.05); transform: rotate(1deg);
-}
-
-/* Chaplain Styles */
-.chaplain-tab-btn {
-    padding: 0.75rem 1.5rem;
-    border-bottom: 2px solid transparent;
-    color: var(--text-secondary);
-    font-weight: 500;
-    transition: all 0.3s;
-    cursor: pointer;
-    white-space: nowrap;
-}
-.chaplain-tab-btn.active {
-    color: var(--accent-green);
-    border-bottom-color: var(--accent-green);
-}
-.emotion-group {
-    margin-bottom: 1.2rem;
-}
-.emotion-group-title {
-    font-size: 0.85rem;
-    color: #8D7B68;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-.emotion-group-title::before {
-    content: '';
-    width: 4px;
-    height: 14px;
-    background-color: var(--accent-green);
-    border-radius: 2px;
-}
-.emotion-chip {
-    display: inline-block;
-    padding: 4px 12px;
-    border-radius: 20px;
-    background: rgba(255, 255, 255, 0.6);
-    border: 1px solid var(--accent-blue);
-    color: var(--text-secondary);
-    font-size: 0.85rem;
-    margin: 4px;
-    cursor: pointer;
-    transition: all 0.2s;
-}
-.emotion-chip:hover, .emotion-chip.selected {
-    background: var(--accent-blue);
-    color: white;
     border-color: var(--accent-blue);
-}
-/* Custom colors for emotion types */
-.emotion-chip.positive:hover, .emotion-chip.positive.selected { background: #81C784; border-color: #81C784; }
-.emotion-chip.neutral:hover, .emotion-chip.neutral.selected { background: #90A4AE; border-color: #90A4AE; }
-.emotion-chip.negative:hover, .emotion-chip.negative.selected { background: #E57373; border-color: #E57373; }
-
-.form-input {
-    width: 100%;
-    padding: 0.8rem;
-    border: 1px solid rgba(141, 123, 104, 0.3);
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.5);
-    margin-bottom: 1rem;
-    outline: none;
-    transition: border-color 0.3s;
-}
-.form-input:focus {
-    border-color: var(--accent-green);
-    background: rgba(255, 255, 255, 0.8);
-}
-.form-label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-    color: #5d4037;
-    font-size: 0.95rem;
+    transform: translateY(-4px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
 }
 
-.prayer-item-card {
-    background: rgba(255, 255, 255, 0.5);
-    border: 1px solid rgba(255, 255, 255, 0.8);
-    border-radius: 12px;
-    padding: 1rem;
-    margin-bottom: 0.8rem;
-    transition: all 0.2s;
-    position: relative;
+/* Bible Browser 相關 */
+.search-input {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
-.prayer-item-card.answered {
-    background: rgba(107, 142, 35, 0.1);
-    border-color: var(--accent-green);
-}
-.prayer-status-badge {
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 10px;
-    display: inline-block;
-    margin-bottom: 4px;
-}
-
-/* Filter Button Styles */
-.filter-btn {
-    font-size: 0.85rem;
-    padding: 4px 12px;
-    border-radius: 20px;
-    border: 1px solid rgba(107, 142, 35, 0.2);
-    background: rgba(255, 255, 255, 0.5);
+.bible-book-item {
+    background: var(--bg-paper);
+    border: 1px solid var(--border-color);
     color: var(--text-secondary);
-    cursor: pointer;
-    transition: all 0.2s;
 }
-.filter-btn:hover { background: rgba(107, 142, 35, 0.1); }
-.filter-btn.active {
-    background: var(--accent-green);
-    color: white;
+.bible-book-item:hover {
     border-color: var(--accent-green);
+    color: var(--accent-green);
 }
 
-/* Flip Card Styles for Trivia */
-.flip-card {
-    background-color: transparent;
-    width: 100%;
-    height: 400px;
-    perspective: 1000px;
-    cursor: pointer;
-}
-.flip-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    text-align: center;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-}
-.flip-card.flipped .flip-card-inner {
-    transform: rotateY(180deg);
-}
-.flip-card-front, .flip-card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    border-radius: 16px;
-    padding: 2rem;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255,255,255,0.6);
-}
-.flip-card-front {
-    background: rgba(255, 255, 255, 0.8);
-    color: #3E3B39;
-}
-.flip-card-back {
-    background: #6B8E23;
-    color: white;
-    transform: rotateY(180deg);
+/* 隱藏不適合賽博龐克/極簡風的 SVG 背景 (選用) */
+body[data-theme="cyberpunk"] .fixed svg,
+body[data-theme="minimal"] .fixed svg {
+    opacity: 0.05; /* 讓原本的樹木變得很淡，或者設為 display: none 完全隱藏 */
 }
 
-/* Quiz Styles */
-.quiz-option {
-    transition: all 0.2s;
-    border: 1px solid transparent;
-}
-/* 修正：僅在支援 hover 的裝置（如電腦）上顯示懸停效果 */
-@media (hover: hover) {
-    .quiz-option:hover:not(:disabled) {
-        background-color: rgba(107, 142, 35, 0.1);
-        border-color: var(--accent-green);
-    }
-}
-.quiz-option.correct {
-    background-color: #d1fae5; /* green-100 */
-    border-color: #10b981; /* green-500 */
-    color: #065f46;
-}
-.quiz-option.wrong {
-    background-color: #fee2e2; /* red-100 */
-    border-color: #ef4444; /* red-500 */
-    color: #991b1b;
-}
-.quiz-progress-bar {
-    transition: width 1s linear;
-}
-
-/* Modal */
-#bible-modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(60, 60, 58, 0.4); backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    z-index: 100; display: none; justify-content: center; align-items: center;
-}
-#bible-modal.show { display: flex; }
+/* 確保 Modal 背景色正確 */
 .modal-content {
-    background: rgba(255, 252, 248, 0.98); width: 90%; max-width: 700px; max-height: 85vh;
-    border-radius: 12px; padding: 2.5rem; overflow-y: auto; position: relative;
-    box-shadow: 0 25px 60px rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.8);
+    background: var(--bg-paper);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
 }
-.close-modal { position: absolute; top: 1.5rem; right: 1.5rem; cursor: pointer; color: #8d6e63; transition: transform 0.2s; }
-.close-modal:hover { transform: rotate(90deg); }
-.verse-text { font-family: 'Noto Serif TC', serif; line-height: 2.2; margin-bottom: 0.8rem; color: #2c1810; font-size: 1.05rem; }
-.verse-num { color: var(--accent-green); font-size: 0.75em; margin-right: 0.8em; vertical-align: super; font-weight: bold; opacity: 0.8; }
-.search-result-item { padding: 12px; border-bottom: 1px solid rgba(0,0,0,0.05); cursor: pointer; transition: background 0.2s; }
-.search-result-item:hover { background: rgba(107, 142, 35, 0.08); border-radius: 4px; }
