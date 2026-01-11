@@ -50,6 +50,15 @@
         let editingPrayerId = null;
         let currentPrayerFilter = 'all';
 
+        // 情緒分類資料
+        const emotionCategories = {
+            "愉悅與連結": ["幸福", "滿足", "興奮", "感激", "自豪", "樂觀", "被愛", "敬畏", "熱情", "平靜"],
+            "憤怒與敵意": ["憤怒", "煩躁", "挫折", "敵意", "憤慨", "激動", "暴怒", "不平"],
+            "悲傷與失落": ["悲傷", "憂鬱", "失望", "絕望", "哀慟", "孤獨", "無助", "受傷"],
+            "恐懼與焦慮": ["焦慮", "擔憂", "恐慌", "緊張", "恐懼", "不安", "脆弱", "驚嚇"],
+            "自覺與認知": ["羞愧", "內疚", "尷尬", "困惑", "矛盾", "茫然", "疲憊", "嫉妒"]
+        };
+
         async function init() {
             try {
                 const res = await fetch(PRAYERS_DATA_URL);
@@ -63,6 +72,23 @@
             // 隨機禱告
             const randomPrayer = prayersData.length > 0 ? prayersData[Math.floor(Math.random() * prayersData.length)] : { title: "寧靜禱文", content: "神啊，請賜給我寧靜，去接受我無法改變的事..." };
             
+            // 產生情緒標籤 HTML
+            let emotionHtml = '';
+            for (const [category, emotions] of Object.entries(emotionCategories)) {
+                let typeClass = 'neutral';
+                if(category.includes('愉悅')) typeClass = 'positive';
+                else if(category.includes('憤怒') || category.includes('悲傷') || category.includes('恐懼')) typeClass = 'negative';
+                
+                emotionHtml += `
+                    <div class="emotion-group">
+                        <div class="emotion-group-title">${category}</div>
+                        <div class="flex flex-wrap gap-1">
+                            ${emotions.map(e => `<span class="emotion-chip ${typeClass}" onclick="toggleEmotion(this)">${e}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+
             const html = `
                 <div class="text-center mb-8">
                     <h2 class="text-2xl font-serif text-[#3E3B39]">校牧室</h2>
@@ -75,20 +101,51 @@
                         <h3 class="text-xl font-bold text-[#6B8E23] mb-2">${randomPrayer.title || randomPrayer.Title}</h3>
                     </div>
                     <p class="text-[#585858] leading-relaxed whitespace-pre-wrap mb-6 font-light text-center">${randomPrayer.fullText || randomPrayer.content}</p>
-                    <div class="text-center"><button onclick="renderChaplainOffice()" class="text-xs text-[#8D7B68]">換一則</button></div>
+                    <div class="text-center"><button onclick="renderChaplainOffice()" class="text-xs text-[#8D7B68] hover:text-[#6B8E23] transition-colors">換一則禱告</button></div>
                 </div>
 
                 <!-- 工具 Tabs -->
                 <div class="flex justify-center border-b border-gray-200 mb-8 overflow-x-auto">
                     <div class="flex whitespace-nowrap px-2 pb-1 gap-2">
-                        <button class="chaplain-tab-btn active" onclick="switchTab('tab-prayer', this)">禱告日記</button>
+                        <button class="chaplain-tab-btn active" onclick="switchTab('tab-devotion', this)">靈修筆記</button>
+                        <button class="chaplain-tab-btn" onclick="switchTab('tab-prayer', this)">禱告日記</button>
                         <button class="chaplain-tab-btn" onclick="switchTab('tab-gratitude', this)">感恩日記</button>
+                        <button class="chaplain-tab-btn" onclick="switchTab('tab-emotion', this)">情緒日記</button>
                         <button class="chaplain-tab-btn" onclick="switchTab('tab-letter', this)">時空膠囊</button>
                     </div>
                 </div>
 
-                <!-- 禱告日記內容 -->
-                <div id="tab-prayer" class="chaplain-tab-content fade-in">
+                <!-- 1. 靈修筆記 (Devotion) -->
+                <div id="tab-devotion" class="chaplain-tab-content fade-in">
+                    <div class="bg-white/60 p-6 rounded-xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
+                        <p class="text-center text-sm text-[#8D7B68] mb-6">聆聽神聲音，回應祂的愛。</p>
+                        
+                        <label class="form-label">今日經文 / 進度</label>
+                        <input type="text" class="form-input bg-gray-100/50" placeholder="例如：詩篇 23" id="dev-ref">
+
+                        <label class="form-label">經文大意 (Summary)</label>
+                        <textarea id="dev-summary" class="form-input" rows="3" placeholder="試著用自己的話寫下這段經文在說什麼..."></textarea>
+
+                        <label class="form-label">最有感動的一句經文 (Rhema)</label>
+                        <input id="dev-verse" type="text" class="form-input" placeholder="哪一句話抓住了你的心？">
+
+                        <label class="form-label">生活應用 (Application)</label>
+                        <textarea id="dev-app" class="form-input" rows="2" placeholder="這段經文如何應用在我今天的生活中？"></textarea>
+
+                        <label class="form-label">天父的心意 (Father's Heart)</label>
+                        <textarea id="dev-heart" class="form-input" rows="2" placeholder="透過這段經文，天父想對你說什麼？"></textarea>
+
+                        <label class="form-label">回應禱告 (Response)</label>
+                        <textarea id="dev-prayer" class="form-input" rows="3" placeholder="親愛的天父..."></textarea>
+                        
+                        <div class="text-center mt-4">
+                            <button onclick="saveDevotion()" class="nature-btn">儲存筆記</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. 禱告日記 (Prayer) -->
+                <div id="tab-prayer" class="chaplain-tab-content hidden fade-in">
                     <div class="bg-white/60 p-6 rounded-xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
                         <div class="mb-6 space-y-3">
                             <input id="pray-topic" type="text" class="form-input" placeholder="禱告主題...">
@@ -109,7 +166,7 @@
                     </div>
                 </div>
 
-                <!-- 感恩日記內容 -->
+                <!-- 3. 感恩日記 (Gratitude) -->
                 <div id="tab-gratitude" class="chaplain-tab-content hidden fade-in">
                     <div class="bg-white/60 p-6 rounded-xl border border-gray-100 shadow-sm max-w-2xl mx-auto text-center">
                         <p class="text-sm text-[#8D7B68] mb-4">數算恩典，看見神的手。</p>
@@ -119,7 +176,35 @@
                     </div>
                 </div>
 
-                <!-- 時空膠囊內容 -->
+                <!-- 4. 情緒日記 (Emotion) -->
+                <div id="tab-emotion" class="chaplain-tab-content hidden fade-in">
+                    <div class="bg-white/60 p-6 rounded-xl border border-gray-100 shadow-sm max-w-2xl mx-auto">
+                        <p class="text-center text-sm text-[#8D7B68] mb-6">誠實面對情緒，帶到神面前。</p>
+                        
+                        <label class="form-label">事件 (Event)</label>
+                        <input id="emo-event" type="text" class="form-input" placeholder="發生了什麼引發情緒的事？">
+
+                        <label class="form-label">情緒標註 (Emotion)</label>
+                        <div class="mb-4 bg-white/50 p-4 rounded-lg border border-gray-200" id="emotion-tags">
+                            ${emotionHtml}
+                        </div>
+
+                        <label class="form-label">我以為 / 我相信 (Belief)</label>
+                        <textarea id="emo-belief" class="form-input" rows="2" placeholder="當下我心裡是怎麼想的？"></textarea>
+
+                        <label class="form-label">神如何看 (God's View)</label>
+                        <textarea id="emo-god" class="form-input" rows="2" placeholder="神的話語或真理是怎麼說的？"></textarea>
+
+                        <label class="form-label">回應禱告 (Prayer)</label>
+                        <textarea id="emo-prayer" class="form-input" rows="3" placeholder="根據新的看見，向神禱告..."></textarea>
+
+                        <div class="text-center mt-4">
+                            <button onclick="saveEmotion()" class="nature-btn">完成日記</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. 時空膠囊 (Letter) -->
                 <div id="tab-letter" class="chaplain-tab-content hidden fade-in">
                     <div class="bg-white/60 p-6 rounded-xl border border-gray-100 shadow-sm max-w-2xl mx-auto text-center">
                         <p class="text-sm text-[#8D7B68] mb-4">寫給未來的自己，信心的宣告。</p>
@@ -140,6 +225,34 @@
             document.getElementById(id).classList.remove('hidden');
             document.querySelectorAll('.chaplain-tab-btn').forEach(el => el.classList.remove('active'));
             btn.classList.add('active');
+        }
+
+        // --- 靈修功能 ---
+        function saveDevotion() {
+            const ref = document.getElementById('dev-ref').value;
+            const summary = document.getElementById('dev-summary').value;
+            const verse = document.getElementById('dev-verse').value;
+            const app = document.getElementById('dev-app').value;
+            const heart = document.getElementById('dev-heart').value;
+            const prayer = document.getElementById('dev-prayer').value;
+
+            if(!ref && !verse) return alert('請至少填寫經文或感動經句');
+
+            const list = JSON.parse(localStorage.getItem('witty_devotions') || '[]');
+            list.unshift({
+                id: Date.now(), date: new Date().toLocaleDateString(),
+                ref, summary, verse, app, heart, prayer
+            });
+            localStorage.setItem('witty_devotions', JSON.stringify(list));
+            
+            // Clear fields
+            document.getElementById('dev-summary').value = '';
+            document.getElementById('dev-verse').value = '';
+            document.getElementById('dev-app').value = '';
+            document.getElementById('dev-heart').value = '';
+            document.getElementById('dev-prayer').value = '';
+            
+            alert('靈修筆記已儲存！');
         }
 
         // --- 禱告功能 ---
@@ -214,6 +327,38 @@
             });
             const el = document.getElementById('gratitude-list');
             if(el) el.innerHTML = html;
+        }
+
+        // --- 情緒日記 ---
+        function toggleEmotion(el) {
+            el.classList.toggle('selected');
+        }
+
+        function saveEmotion() {
+            const event = document.getElementById('emo-event').value;
+            if(!event) return alert('請填寫事件');
+            
+            // 收集選中的情緒
+            const emotions = Array.from(document.querySelectorAll('.emotion-chip.selected')).map(el => el.innerText);
+            const belief = document.getElementById('emo-belief').value;
+            const god = document.getElementById('emo-god').value;
+            const prayer = document.getElementById('emo-prayer').value;
+
+            const list = JSON.parse(localStorage.getItem('witty_emotions') || '[]');
+            list.unshift({
+                id: Date.now(), date: new Date().toLocaleDateString(),
+                event, emotions, belief, god, prayer
+            });
+            localStorage.setItem('witty_emotions', JSON.stringify(list));
+
+            // Clear
+            document.getElementById('emo-event').value = '';
+            document.getElementById('emo-belief').value = '';
+            document.getElementById('emo-god').value = '';
+            document.getElementById('emo-prayer').value = '';
+            document.querySelectorAll('.emotion-chip').forEach(c => c.classList.remove('selected'));
+            
+            alert('情緒日記已完成！');
         }
 
         // --- 時空膠囊 ---
