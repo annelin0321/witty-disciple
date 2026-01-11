@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機智的門徒生活 | 課外活動</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+</head>
+<body class="pb-20">
+    <nav class="nature-nav sticky top-0 z-50">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="flex flex-col md:flex-row justify-between items-center py-3">
+                 <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
+                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-sm">Logo</div>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-serif font-bold text-[#3E3B39]">機智的門徒生活</span>
+                    </div>
+                </div>
+                <div class="flex flex-wrap justify-center gap-1">
+                    <a href="../index.html" class="nav-item">通識中心</a>
+                    <a href="../library/index.html" class="nav-item">圖書館</a>
+                    <a href="../chaplain/index.html" class="nav-item">校牧室</a>
+                    <a href="../school/index.html" class="nav-item">學霸養成班</a>
+                    <a href="index.html" class="nav-item active">課外活動</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+        <section id="section-games" class="page-section fade-in">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-serif text-[#3E3B39]">課外活動</h2>
+                <p class="eng-script text-[#8D7B68]">Fellowship</p>
+            </div>
+            <div id="grid-games" class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- 遊戲內容由 JS 生成 -->
+                <div class="col-span-full text-center py-10 opacity-50">暫無活動</div>
+            </div>
+        </section>
+    </div>
+    
+    <script>
+        if(window.lucide) lucide.createIcons();
+    </script>
+</body>
+</html>

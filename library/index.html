@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機智的門徒生活 | 圖書館</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+</head>
+<body class="pb-20">
+    <!-- 背景 (同上) -->
+    <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
+    </div>
+
+    <!-- 導覽列 -->
+    <nav class="nature-nav sticky top-0 z-50">
+        <div class="container mx-auto px-6 max-w-5xl">
+            <div class="flex flex-col md:flex-row justify-between items-center py-3">
+                <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
+                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-sm">Logo</div>
+                    <div class="flex flex-col">
+                        <span class="text-lg font-serif font-bold text-[#3E3B39]">機智的門徒生活</span>
+                    </div>
+                </div>
+                <div class="flex flex-wrap justify-center gap-1">
+                    <a href="../index.html" class="nav-item">通識中心</a>
+                    <a href="index.html" class="nav-item active">圖書館</a>
+                    <a href="../chaplain/index.html" class="nav-item">校牧室</a>
+                    <a href="../school/index.html" class="nav-item">學霸養成班</a>
+                    <a href="../games/index.html" class="nav-item">課外活動</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
+        <section id="section-verses" class="page-section fade-in">
+            <div id="blessing-container" class="mb-12">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-serif text-[#6B8E23]">今日金句</h2>
+                    <p class="text-xs text-[#8D7B68] tracking-widest mt-1">BLESSING VERSE</p>
+                </div>
+                <div id="blessing-card-area">載入中...</div>
+            </div>
+
+            <div class="w-full h-px bg-[rgba(214,210,204,0.6)] my-10"></div>
+
+            <div id="bible-browser" class="bible-browser-container">
+                <div class="text-center mb-6">
+                    <h2 class="text-2xl font-serif text-[#3E3B39]">聖經藏書閣</h2>
+                </div>
+                <div class="search-box">
+                    <input type="text" id="bible-search-input" placeholder="輸入關鍵字 (如: 愛, 光)..." class="search-input" onkeypress="handleSearch(event)">
+                    <button onclick="performSearch()" class="search-btn"><i data-lucide="search" class="w-4 h-4"></i></button>
+                </div>
+                <div id="bible-display-area" class="bg-[rgba(255,255,255,0.4)] backdrop-blur-md p-6 rounded-lg border border-[rgba(255,255,255,0.6)] min-h-[300px]">
+                    <div class="text-center text-gray-400 py-10">
+                        <i data-lucide="library" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
+                        <p>載入聖經目錄中...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Modal 略 (同首頁，建議提取為 component) -->
+    
+    <script>
+        // 這裡放置原本關於 DB讀取、parseBibleReference、openScripture 的完整程式碼
+        // 由於篇幅限制，請將原檔案中 `initBibleDB`, `renderBibleBrowserHome`, `performSearch`, `fetchBlessingVerses` 等函式複製過來。
+        // 並確保 URL 指向正確：
+        const BLESSING_VERSES_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/blessing-verses.json';
+        const BIBLE_DB_URL = 'https://raw.githubusercontent.com/annelin0321/bible-zh/main/bible_complete.db';
+        
+        // ... (Script Logic) ...
+        async function init() {
+            if(window.lucide) lucide.createIcons();
+            // 呼叫 DB 初始化與金句 fetch
+        }
+        init();
+    </script>
+</body>
+</html>

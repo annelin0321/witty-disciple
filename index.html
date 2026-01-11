@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>機智的門徒生活 | 校園地圖</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* 地圖專屬樣式 */
+        .map-container {
+            background-color: #E8ECE9;
+            background-image: 
+                radial-gradient(#D6D2CC 1px, transparent 1px),
+                radial-gradient(#D6D2CC 1px, transparent 1px);
+            background-position: 0 0, 25px 25px;
+            background-size: 50px 50px;
+            position: relative;
+            overflow: hidden;
+            border-radius: 40px;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.05), 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        /* 路徑動畫 */
+        .path-line {
+            stroke-dasharray: 10;
+            animation: dash 60s linear infinite;
+        }
+        @keyframes dash {
+            to { stroke-dashoffset: -1000; }
+        }
+
+        /* 地標節點 */
+        .map-node {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        /* 建築物圖示圓圈 */
+        .node-icon {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px solid #8D7B68;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 0 rgba(141, 123, 104, 0.2);
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .map-node:hover .node-icon {
+            transform: translateY(-8px) scale(1.1);
+            background: #fff;
+            border-color: #6B8E23;
+            box-shadow: 0 15px 30px rgba(107, 142, 35, 0.3);
+            color: #6B8E23;
+        }
+
+        /* 標籤 */
+        .node-label {
+            background: #3E3B39;
+            color: #fff;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-top: 10px;
+            font-family: 'Noto Serif TC', serif;
+            opacity: 0.8;
+            transition: all 0.3s;
+            white-space: nowrap;
+        }
+        .map-node:hover .node-label {
+            background: #6B8E23;
+            opacity: 1;
+            transform: scale(1.05);
+        }
+
+        /* 漂浮動畫 */
+        .float-slow { animation: float 6s ease-in-out infinite; }
+        .float-mid { animation: float 5s ease-in-out infinite 1s; }
+        .float-fast { animation: float 4s ease-in-out infinite 2s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        /* 樹木裝飾 */
+        .tree-deco {
+            position: absolute;
+            opacity: 0.3;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+        .map-container:hover .tree-deco { opacity: 0.5; }
+
+        /* RWD 調整：手機版強制垂直排列，SVG路徑需隱藏或更換 */
+        @media (max-width: 768px) {
+            .map-container {
+                height: auto;
+                min-height: 800px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: space-around;
+                padding: 4rem 1rem;
+            }
+            .map-node {
+                position: relative;
+                transform: none;
+                margin-bottom: 2rem;
+                top: auto !important;
+                left: auto !important;
+                right: auto !important;
+                bottom: auto !important;
+            }
+            /* 手機版隱藏複雜路徑，改用簡單虛線連接 */
+            .desktop-svg { display: none; }
+            .mobile-dashed-line {
+                position: absolute;
+                left: 50%;
+                top: 2rem;
+                bottom: 2rem;
+                width: 2px;
+                background-image: linear-gradient(to bottom, #8D7B68 50%, transparent 50%);
+                background-size: 2px 20px;
+                opacity: 0.3;
+                z-index: 0;
+            }
+        }
+        @media (min-width: 769px) {
+            .mobile-dashed-line { display: none; }
+            .desktop-svg { display: block; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col bg-[#FDFBF7]">
+
+    <!-- 標題區 -->
+    <header class="pt-8 pb-4 text-center z-20">
+        <div class="inline-flex items-center gap-3 mb-2">
+            <div class="w-10 h-10 text-[#6B8E23]">
+                <svg viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M50 10 L 15 65 L 35 65 L 20 85 L 80 85 L 65 65 L 85 65 Z" fill="currentColor" fill-opacity="0.1"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl md:text-3xl font-serif font-bold text-[#3E3B39]">機智的門徒生活</h1>
+        </div>
+        <p class="eng-script text-[#8D7B68] text-sm">Forest School Map</p>
+    </header>
+
+    <!-- 地圖主體 -->
+    <main class="flex-grow container mx-auto px-4 py-4 flex flex-col justify-center">
+        
+        <!-- 地圖容器 (固定高度 600px，手機版 auto) -->
+        <div class="map-container w-full max-w-5xl mx-auto h-[600px]">
+
+            <!-- SVG 路徑 (電腦版) -->
+            <svg class="desktop-svg absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg">
+                <!-- 定義小徑：從入口(底中) -> 通識(中) -> 分岔到其他 -->
+                <path d="M500 550 Q 500 450 500 350" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
+                <!-- 往左上 (圖書館) -->
+                <path d="M500 350 Q 300 350 200 200" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
+                <!-- 往右上 (學霸) -->
+                <path d="M500 350 Q 700 350 800 200" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
+                <!-- 往正上 (校牧) -->
+                <path d="M500 350 Q 500 250 500 150" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
+                <!-- 往右下 (遊戲) -->
+                <path d="M500 450 Q 650 480 800 500" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
+            </svg>
+
+            <!-- 手機版連接線 -->
+            <div class="mobile-dashed-line"></div>
+
+            <!-- 裝飾樹木 (隨機散落) -->
+            <div class="tree-deco top-10 left-10 text-[#6B8E23]"><i data-lucide="trees" class="w-16 h-16"></i></div>
+            <div class="tree-deco bottom-20 left-20 text-[#8D7B68]"><i data-lucide="trees" class="w-12 h-12"></i></div>
+            <div class="tree-deco top-1/2 right-10 text-[#6B8E23]"><i data-lucide="trees" class="w-20 h-20"></i></div>
+            <div class="tree-deco bottom-10 right-32 text-[#A3C1AD]"><i data-lucide="shrub" class="w-10 h-10"></i></div>
+            
+            <!-- 1. 通識中心 (中央樞紐) -->
+            <a href="daily/index.html" class="map-node top-1/2 left-1/2 group">
+                <div class="node-icon w-24 h-24 bg-white z-10 float-slow">
+                    <i data-lucide="book-open-check" class="w-10 h-10 text-[#3E3B39] group-hover:text-[#6B8E23]"></i>
+                </div>
+                <div class="node-label text-lg font-bold">通識中心</div>
+                <div class="text-xs text-[#8D7B68] mt-1 bg-white/80 px-2 rounded backdrop-blur-sm">每日靈糧</div>
+            </a>
+
+            <!-- 2. 圖書館 (左上) -->
+            <a href="library/index.html" class="map-node top-[30%] left-[20%] group">
+                <div class="node-icon float-mid">
+                    <i data-lucide="library" class="w-8 h-8 text-[#3E3B39] group-hover:text-[#6B8E23]"></i>
+                </div>
+                <div class="node-label">圖書館</div>
+                <div class="absolute -top-8 -left-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i data-lucide="search" class="w-6 h-6 text-[#6B8E23] animate-bounce"></i>
+                </div>
+            </a>
+
+            <!-- 3. 學霸養成班 (右上) -->
+            <a href="school/index.html" class="map-node top-[30%] right-[20%] group">
+                <div class="node-icon float-fast">
+                    <i data-lucide="graduation-cap" class="w-8 h-8 text-[#3E3B39] group-hover:text-[#6B8E23]"></i>
+                </div>
+                <div class="node-label">學霸養成班</div>
+                <div class="absolute -top-6 -right-6 opacity-0 group-hover:opacity-100 transition-opacity bg-[#D85C42] text-white text-[10px] px-2 py-1 rounded-full">
+                    Quiz!
+                </div>
+            </a>
+
+            <!-- 4. 校牧室 (正上方，隱密處) -->
+            <a href="chaplain/index.html" class="map-node top-[12%] left-1/2 group">
+                <div class="node-icon w-16 h-16 float-mid bg-[#FDFBF7]">
+                    <i data-lucide="church" class="w-6 h-6 text-[#3E3B39] group-hover:text-[#6B8E23]"></i>
+                </div>
+                <div class="node-label bg-[#8D7B68]">校牧室</div>
+            </a>
+
+            <!-- 5. 課外活動 (右下) -->
+            <a href="games/index.html" class="map-node bottom-[15%] right-[15%] group">
+                <div class="node-icon float-mid">
+                    <i data-lucide="tent" class="w-8 h-8 text-[#3E3B39] group-hover:text-[#6B8E23]"></i>
+                </div>
+                <div class="node-label">課外活動</div>
+                <div class="absolute bottom-0 right-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <i data-lucide="gamepad-2" class="w-5 h-5 text-[#8FA4AE]"></i>
+                </div>
+            </a>
+
+            <!-- 入口指示 (底部) -->
+            <div class="absolute bottom-4 left-1/2 -translate-x-1/2 text-center pointer-events-none md:block hidden">
+                <div class="text-[#8D7B68] text-sm mb-1 tracking-widest uppercase">Entrance</div>
+                <div class="w-8 h-8 bg-[#8D7B68] rounded-full mx-auto flex items-center justify-center text-white animate-bounce">
+                    <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                </div>
+            </div>
+
+            <!-- 設定 (角落) -->
+            <div class="absolute bottom-6 left-6 cursor-pointer opacity-50 hover:opacity-100 transition-opacity" onclick="alert('設定')">
+                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center border border-gray-200">
+                    <i data-lucide="settings-2" class="w-5 h-5 text-gray-500"></i>
+                </div>
+            </div>
+
+        </div>
+        
+        <p class="text-center text-xs text-gray-400 mt-4 md:hidden">↓ 往下滑動探索校園 ↓</p>
+    </main>
+
+    <footer class="py-4 text-center text-xs text-[#8D7B68] opacity-60">
+        © 機智的門徒生活 | Map View
+    </footer>
+
+    <script>
+        if(window.lucide) lucide.createIcons();
+        
+        // 簡單的 RWD SVG 路徑調整 (選用)
+        function resizePath() {
+            // 如果需要動態計算路徑，可以在這裡寫 JS
+            // 目前使用 CSS absolute % 定位配合固定的 SVG 路徑，在 1024px 左右寬度下效果最佳
+            // 手機版則直接隱藏 SVG 改用 flex layout
+        }
+        window.addEventListener('resize', resizePath);
+    </script>
+</body>
+</html>
