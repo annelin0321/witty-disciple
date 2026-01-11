@@ -237,10 +237,19 @@
                     const item = data[Math.floor(Math.random() * data.length)];
                     const text = item['完整經文'] || item['scripture'];
                     const ref = item['ref'] || item['出處'] || '';
+                    
+                    // 修改處：金句置中，按鈕分開
                     document.getElementById('blessing-card-area').innerHTML = `
                         <div class="verse-card-highlight">
-                            <p class="text-xl font-serif text-[#3E3B39] leading-relaxed mb-6">${text}</p>
-                            ${ref ? `<button onclick="openScripture('${ref}')" class="nature-btn"><i data-lucide="book-open" class="w-4 h-4"></i> ${ref}</button>` : ''}
+                            <p class="text-xl font-serif text-[#3E3B39] leading-relaxed mb-6 text-center">${text}</p>
+                            ${ref ? `
+                                <div class="flex flex-col items-center gap-3">
+                                    <span class="text-[#8D7B68] font-bold text-sm tracking-wide">— ${ref} —</span>
+                                    <button onclick="openScripture('${ref}')" class="nature-btn mt-2">
+                                        <i data-lucide="book-open" class="w-4 h-4"></i> 閱讀整章
+                                    </button>
+                                </div>
+                            ` : ''}
                         </div>
                     `;
                     if(window.lucide) lucide.createIcons();
