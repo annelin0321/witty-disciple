@@ -1,204 +1,58 @@
 :root {
-    /* 預設：溫暖拿鐵 (Warm Latte) */
-    --bg-paper: #FDFBF7;
-    --text-primary: #4A3B32;
-    --text-secondary: #8C7B70;
-    --accent-green: #B08D74;
-    --accent-soft-green: #DBC1AC;
-    --accent-blue: #8F9FA6;
-    --accent-brown: #6F4E37;
+    /* 拿鐵色票 */
+    --bg-paper: #FDFBF7;          /* 米白信紙 */
+    --text-primary: #4A3B32;      /* 深咖啡 */
+    --text-secondary: #8C7B70;    /* 淺咖啡 */
+    --accent-green: #B08D74;      /* 卡其色 (取代原本的綠) */
+    --accent-soft-green: #DBC1AC; /* 奶茶色 */
+    --accent-blue: #8F9FA6;       /* 莫蘭迪藍 */
+    --accent-brown: #6F4E37;      /* 咖啡豆色 */
     --accent-flower: #C9A690;
     --accent-alert: #BF6B63;
     --border-color: rgba(140, 123, 112, 0.2);
-    --btn-text: #ffffff; /* 按鈕文字色 */
 }
-
-/* 風格 A：賽博龐克 (Cyberpunk) */
-body[data-theme="cyberpunk"] {
-    --bg-paper: #1a1a2e;
-    --text-primary: #e0e0e0;
-    --text-secondary: #a0a0a0;
-    --accent-green: #00ff9d;
-    --accent-soft-green: #0f3460;
-    --accent-blue: #00d4ff;
-    --accent-brown: #ff2a6d;
-    --accent-flower: #ff00ff;
-    --accent-alert: #ff2a6d;
-    --border-color: rgba(255, 255, 255, 0.15);
-    --btn-text: #000000;
-}
-
-/* 風格 B：極簡無印 (Minimalist) */
-body[data-theme="minimal"] {
-    --bg-paper: #ffffff;
-    --text-primary: #333333;
-    --text-secondary: #666666;
-    --accent-green: #525252;
-    --accent-soft-green: #e5e5e5;
-    --accent-blue: #999999;
-    --accent-brown: #000000;
-    --accent-flower: #d4d4d4;
-    --accent-alert: #cc0000;
-    --border-color: #e0e0e0;
-    --btn-text: #ffffff;
-}
-
-html { scroll-behavior: smooth; }
 
 body {
-    font-family: 'Noto Sans TC', sans-serif;
-    /* 預設背景 (拿鐵) */
-    background: #F2EFE9; 
-    color: var(--text-primary);
-    line-height: 1.8;
-    letter-spacing: 0.05em;
-    position: relative;
-    min-height: 100vh;
-    transition: background 0.5s ease, color 0.5s ease; /* 讓換膚有平滑過渡 */
-}
-
-/* 針對不同風格改變 Body 背景色 */
-body[data-theme="cyberpunk"] { background: #16213e; }
-body[data-theme="minimal"] { background: #f9f9f9; }
-
-/* --- 以下保持原有樣式，僅針對顏色變數做微調 --- */
-
-h1, h2, h3, .serif-font { font-family: 'Noto Serif TC', serif; }
-.eng-script { font-family: 'Playfair Display', serif; font-style: italic; }
-
-.nature-nav {
-    border-bottom: 1px solid var(--border-color);
-    background-color: var(--bg-paper); /* 改用變數 */
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    box-shadow: 0 4px 30px rgba(0,0,0,0.01);
-}
-
-.nav-item {
-    color: var(--text-secondary);
-    font-size: 0.95rem;
-    padding: 0.5rem 0.8rem;
-    border-radius: 20px;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    white-space: nowrap;
-    cursor: pointer;
-    border: 1px solid transparent;
-    text-decoration: none;
-}
-
-.nav-item:hover {
-    background-color: rgba(255, 255, 255, 0.1); /* 微調透明度 */
-    color: var(--accent-green);
-    border-color: var(--accent-green);
-}
-
-.nav-item.active {
-    color: var(--accent-green);
-    background-color: rgba(255, 255, 255, 0.2);
-    font-weight: 600;
-    border-color: var(--accent-green);
-}
-
-.stationery-card {
-    background-color: var(--bg-paper); /* 改用變數 */
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-    border: 1px solid var(--border-color);
-    padding: 3rem 2rem;
-    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
-    position: relative;
-    max-width: 800px;
-    margin: 0 auto;
-    border-radius: 16px;
-}
-
-/* 讓原本的裝飾圓圈跟著主題色變 */
-.stationery-card::before {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 250px; height: 250px;
-    /* 這裡使用一個 trick：將 SVG 轉為 mask 或者簡單一點，直接讓它保持淡化 */
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='50' cy='50' r='40' stroke='%23888888' stroke-width='1' opacity='0.1' stroke-dasharray='5 5'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    pointer-events: none;
-}
-
-.verse-card-highlight {
-    background-color: var(--bg-paper);
-    border: 1px solid var(--accent-green);
-    padding: 2.5rem;
-    border-radius: 12px;
-    text-align: center;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.02);
-    margin-bottom: 3rem;
-    position: relative;
-    overflow: hidden;
-}
-
-/* 按鈕樣式調整 */
-.nature-btn {
-    background-color: var(--bg-paper);
-    border: 1px solid var(--accent-green);
-    color: var(--accent-green);
-    padding: 0.5rem 1.5rem;
-    font-size: 0.9rem;
-    letter-spacing: 0.1em;
-    transition: all 0.3s ease;
-    border-radius: 50px;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
-}
-.nature-btn:hover {
-    background-color: var(--accent-green);
-    color: var(--btn-text);
-    transform: translateY(-2px);
-}
-
-/* 其他共用類別 (略微調整以適應變數) */
-.clean-card {
-    background: var(--bg-paper);
-    border: 1px solid var(--border-color);
-    padding: 2rem;
-    border-radius: 16px;
-    transition: all 0.4s ease;
-}
-.clean-card:hover {
-    border-color: var(--accent-blue);
-    transform: translateY(-4px);
-    box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-}
-
-/* Bible Browser 相關 */
-.search-input {
-    background: var(--bg-paper);
-    border: 1px solid var(--border-color);
+    background: #F2EFE9;
     color: var(--text-primary);
 }
-.bible-book-item {
-    background: var(--bg-paper);
-    border: 1px solid var(--border-color);
-    color: var(--text-secondary);
-}
-.bible-book-item:hover {
-    border-color: var(--accent-green);
-    color: var(--accent-green);
-}
+```
 
-/* 隱藏不適合賽博龐克/極簡風的 SVG 背景 (選用) */
-body[data-theme="cyberpunk"] .fixed svg,
-body[data-theme="minimal"] .fixed svg {
-    opacity: 0.05; /* 讓原本的樹木變得很淡，或者設為 display: none 完全隱藏 */
-}
+---
 
-/* 確保 Modal 背景色正確 */
-.modal-content {
-    background: var(--bg-paper);
-    border: 1px solid var(--border-color);
-    color: var(--text-primary);
+### 方法二：更換背景裝飾 (HTML)
+
+目前的 HTML 檔案 (如 `index.html`, `daily/index.html`) 裡面包含了一段 **SVG 背景代碼**（那些山、樹木的圖案）。如果換了風格（例如換成賽博龐克），原本的樹木就會顯得很突兀。
+
+**如何更換：**
+
+1.  打開 HTML 檔案。
+2.  找到 `<body class="pb-20">` 下方緊接著的 `<div class="fixed inset-0 ...">` 區塊。
+3.  **刪除** 裡面的 `<svg>` 標籤。
+4.  **替換** 成新的背景，例如一張圖片：
+
+```html
+<div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+    <!-- 範例：換成一張背景圖 -->
+    <img src="https://images.unsplash.com/photo-1534274988752-599105f23103?q=80&w=1920" 
+         class="absolute inset-0 w-full h-full object-cover opacity-20" alt="background">
+    
+    <!-- 或者是漸層色塊 -->
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-50 to-purple-50 opacity-50"></div>
+</div>
+```
+
+### 方法三：更換字體
+
+在 `index.html` 的 `<head>` 中，我們目前引入的是 Google Fonts 的 Noto Sans TC (黑體) 和 Noto Serif TC (明體)。
+
+如果您想要更可愛一點的風格（例如手寫風），可以：
+
+1.  去 [Google Fonts](https://fonts.google.com/) 找喜歡的字體（例如 "Zen Maru Gothic" 圓體）。
+2.  更新 HTML `<head>` 中的連結。
+3.  更新 `assets/css/style.css` 中的 `font-family`：
+
+```css
+body {
+    font-family: 'Zen Maru Gothic', sans-serif; /* 改成圓體 */
 }
