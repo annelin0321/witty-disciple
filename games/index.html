@@ -17,6 +17,46 @@
             padding-bottom: 0.5rem;
             border-bottom: 2px solid rgba(107, 142, 35, 0.2);
         }
+        /* 分類按鈕樣式 */
+        .category-btn {
+            background: rgba(255, 255, 255, 0.6);
+            border: 1px solid rgba(107, 142, 35, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .category-btn:hover {
+            transform: translateY(-4px);
+            background: #fff;
+            border-color: #6B8E23;
+            box-shadow: 0 10px 15px -3px rgba(107, 142, 35, 0.15);
+        }
+        .category-icon {
+            width: 32px;
+            height: 32px;
+            color: #6B8E23;
+            margin-bottom: 0.5rem;
+        }
+        .category-name {
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #3E3B39;
+        }
+        .category-count {
+            font-size: 0.8rem;
+            color: #8D7B68;
+            background: rgba(141, 123, 104, 0.1);
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body class="pb-20">
@@ -53,16 +93,13 @@
                 <p class="eng-script text-[#8D7B68]">Fellowship Activities</p>
             </div>
 
-            <!-- 新增區塊：線上小遊戲 (Local Games) -->
+            <!-- 線上小遊戲區塊 -->
             <div class="mb-12">
                 <div class="section-header">
                     <i data-lucide="joystick" class="w-6 h-6 text-[#D85C42]"></i>
                     <h3 class="text-xl font-bold text-[#3E3B39]">線上小遊戲</h3>
                 </div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    
-                    <!-- 遊戲卡片 1：請修改 href 指向您的遊戲資料夾 -->
-                    <!-- 建議將資料夾命名為 'monopoly' -->
                     <a href="./monopoly/index.html" class="clean-card group hover:bg-white/80 transition-colors block cursor-pointer" target="_blank">
                         <div class="flex items-center gap-3 mb-3">
                             <div class="p-2 bg-[#F1F3F2] rounded-full text-[#D85C42] group-hover:bg-[#D85C42] group-hover:text-white transition-colors">
@@ -72,31 +109,33 @@
                         </div>
                         <p class="text-gray-600 text-sm leading-relaxed">點擊這裡開始遊玩！</p>
                     </a>
-
-                    <!-- 如果有第二個遊戲，可以複製上面的 <a> 標籤繼續新增 -->
-
                 </div>
             </div>
 
-            <!-- 原有區塊：破冰熱身 -->
+            <!-- 破冰熱身區塊 (動態分類) -->
             <div class="mb-12">
-                <div class="section-header">
-                    <i data-lucide="snowflake" class="w-6 h-6 text-[#8FA4AE]"></i>
-                    <h3 class="text-xl font-bold text-[#3E3B39]">破冰熱身</h3>
+                <div class="section-header justify-between">
+                    <div class="flex items-center gap-2">
+                        <i data-lucide="snowflake" class="w-6 h-6 text-[#8FA4AE]"></i>
+                        <h3 class="text-xl font-bold text-[#3E3B39]">破冰熱身</h3>
+                    </div>
+                    <!-- 返回按鈕 (預設隱藏) -->
+                    <button id="btn-back-categories" onclick="showCategories()" class="hidden text-sm text-[#6B8E23] flex items-center gap-1 hover:underline">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> 返回分類
+                    </button>
                 </div>
-                <div id="grid-icebreakers" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="col-span-full text-center py-4 opacity-50 text-sm">載入中...</div>
-                </div>
-            </div>
 
-            <!-- 原有區塊：團契遊戲 -->
-            <div>
-                <div class="section-header">
-                    <i data-lucide="gamepad-2" class="w-6 h-6 text-[#6B8E23]"></i>
-                    <h3 class="text-xl font-bold text-[#3E3B39]">團契遊戲</h3>
+                <!-- 1. 分類選單 (預設顯示) -->
+                <div id="icebreaker-categories" class="grid grid-cols-2 md:grid-cols-3 gap-4 animate-fadeIn">
+                    <div class="col-span-full text-center py-4 opacity-50 text-sm">
+                        <i data-lucide="loader-2" class="w-6 h-6 animate-spin mx-auto mb-2"></i>
+                        正在整理遊戲箱...
+                    </div>
                 </div>
-                <div id="grid-games" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="col-span-full text-center py-4 opacity-50 text-sm">載入中...</div>
+
+                <!-- 2. 遊戲列表 (預設隱藏) -->
+                <div id="icebreaker-games-list" class="grid grid-cols-1 md:grid-cols-2 gap-6 hidden animate-fadeIn">
+                    <!-- 遊戲卡片由 JS 生成 -->
                 </div>
             </div>
 
@@ -104,66 +143,112 @@
     </div>
     
     <script>
-        const DEVOTION_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/devotionals.json';
+        const ICEBREAKER_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-disciple/main/games/icebreakerGames.json';
+        
+        let allIcebreakerGames = [];
 
         async function init() {
             try {
-                const response = await fetch(DEVOTION_DATA_URL);
-                const data = await response.json();
-                
-                const icebreakers = [];
-                const games = [];
-
-                data.forEach(i => {
-                    let t = ''; 
-                    for(let k in i) if(/title|name/i.test(k)) t = i[k].toLowerCase();
-                    
-                    if (t.includes('破冰')) {
-                        icebreakers.push(i);
-                    } else if (t.includes('遊戲')) {
-                        games.push(i);
-                    }
-                });
-                
-                renderList(icebreakers, 'grid-icebreakers', 'snowflake');
-                renderList(games, 'grid-games', 'gamepad-2');
-
-            } catch(e) { 
-                console.error(e);
-                renderList([
-                    { title: "超級比一比", content: "分組進行，題目包含聖經人物、地名..." }
-                ], 'grid-icebreakers', 'snowflake');
-                renderList([], 'grid-games', 'gamepad-2');
+                const res = await fetch(ICEBREAKER_DATA_URL);
+                if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+                allIcebreakerGames = await res.json();
+                renderCategories();
+            } catch(e) {
+                console.error("Icebreaker fetch failed", e);
+                document.getElementById('icebreaker-categories').innerHTML = 
+                    `<div class="col-span-full text-center py-6 bg-white/30 rounded-lg text-gray-500 text-sm">
+                        無法讀取遊戲資料 (網路錯誤或檔案不存在)<br>
+                        <span class="text-xs text-gray-400 mt-2 block">${e.message}</span>
+                    </div>`;
             }
         }
 
-        function renderList(items, containerId, iconName) {
-            const container = document.getElementById(containerId);
-            let html = '';
+        // 渲染分類按鈕
+        function renderCategories() {
+            const container = document.getElementById('icebreaker-categories');
             
-            if(items.length === 0) {
-                container.innerHTML = '<div class="col-span-full text-center py-6 bg-white/30 rounded-lg text-gray-500 text-sm">目前沒有此類活動</div>';
+            // 提取所有 Category 並去重
+            const categories = {};
+            allIcebreakerGames.forEach(game => {
+                // 自動尋找類別欄位 (Category, category, 類別...)
+                const catKey = Object.keys(game).find(k => /category|類別/i.test(k));
+                const cat = game[catKey] || "未分類";
+                
+                if (!categories[cat]) categories[cat] = 0;
+                categories[cat]++;
+            });
+
+            if (Object.keys(categories).length === 0) {
+                container.innerHTML = '<div class="col-span-full text-center py-4">暫無遊戲資料</div>';
                 return;
             }
 
-            items.forEach(i => {
-                let titleKey = Object.keys(i).find(k => /title|name/.test(k)) || Object.keys(i)[0];
-                let contentKey = Object.keys(i).find(k => !/title|name|date|id/.test(k)) || Object.keys(i)[1];
-                
+            let html = '';
+            for (const [catName, count] of Object.entries(categories)) {
                 html += `
-                    <div class="clean-card group hover:bg-white/80 transition-colors h-full">
-                        <div class="flex items-center gap-3 mb-3">
-                            <div class="p-2 bg-[#F1F3F2] rounded-full text-[#6B8E23] group-hover:bg-[#6B8E23] group-hover:text-white transition-colors">
-                                <i data-lucide="${iconName}" class="w-5 h-5"></i>
-                            </div>
-                            <h3 class="font-bold text-[#3E3B39] text-lg leading-tight">${i[titleKey]}</h3>
-                        </div>
-                        <div class="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">${i[contentKey]}</div>
+                    <div onclick="selectCategory('${catName}')" class="category-btn">
+                        <i data-lucide="folder-open" class="category-icon"></i>
+                        <span class="category-name">${catName}</span>
+                        <span class="category-count">${count} 個遊戲</span>
+                    </div>
+                `;
+            }
+            container.innerHTML = html;
+            if(window.lucide) lucide.createIcons();
+        }
+
+        // 選擇分類後，顯示該分類下的遊戲
+        function selectCategory(categoryName) {
+            const listContainer = document.getElementById('icebreaker-games-list');
+            const catContainer = document.getElementById('icebreaker-categories');
+            const backBtn = document.getElementById('btn-back-categories');
+
+            // 過濾遊戲 (需使用與 renderCategories 相同的欄位判斷邏輯)
+            const games = allIcebreakerGames.filter(g => {
+                const catKey = Object.keys(g).find(k => /category|類別/i.test(k));
+                return (g[catKey] || "未分類") === categoryName;
+            });
+
+            // 生成遊戲卡片 HTML
+            let html = '';
+            games.forEach(game => {
+                // 智慧欄位偵測 (Smart Field Detection)
+                const keys = Object.keys(game);
+                
+                // 1. 找標題: 優先找含有 Name, Title, Game 的欄位
+                const titleKey = keys.find(k => /game\s*name|name|title|遊戲名稱|標題/i.test(k)) || keys[0];
+                const title = game[titleKey] || '無標題';
+
+                // 2. 找說明: 優先找 Description, Content, Desc 的欄位，且不能是標題或類別
+                const descKey = keys.find(k => 
+                    /description|desc|content|instruction|說明|內容/i.test(k) && 
+                    k !== titleKey && 
+                    !/category|id/i.test(k)
+                ) || keys.find(k => k !== titleKey && !/category|id/i.test(k)); // Fallback
+                
+                const desc = game[descKey] || '暫無說明';
+
+                html += `
+                    <div class="clean-card group hover:bg-white/80 transition-colors h-full flex flex-col justify-start">
+                        <h3 class="font-bold text-[#3E3B39] text-lg mb-2 border-b border-gray-100 pb-2">${title}</h3>
+                        <div class="text-gray-600 text-sm leading-relaxed whitespace-pre-wrap">${desc}</div>
                     </div>
                 `;
             });
-            container.innerHTML = html;
-            if(window.lucide) lucide.createIcons();
+
+            listContainer.innerHTML = html;
+
+            catContainer.classList.add('hidden');
+            listContainer.classList.remove('hidden');
+            backBtn.classList.remove('hidden');
+            
+            document.querySelector('.section-header').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showCategories() {
+            document.getElementById('icebreaker-games-list').classList.add('hidden');
+            document.getElementById('icebreaker-categories').classList.remove('hidden');
+            document.getElementById('btn-back-categories').classList.add('hidden');
         }
 
         init();
