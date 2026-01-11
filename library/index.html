@@ -8,25 +8,33 @@
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
+    <!-- 在預覽模式下，我們將共用 JS 直接內嵌以避免路徑錯誤 -->
+    <!-- <script src="../assets/js/common.js"></script> -->
+    <!-- <script src="../assets/js/bible-db.js"></script> -->
 </head>
 <body class="pb-20">
-    <!-- 背景 (同上) -->
     <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
     </div>
 
-    <!-- 導覽列 -->
+    <!-- 導覽列 (已新增首頁按鈕) -->
     <nav class="nature-nav sticky top-0 z-50">
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
-                <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
-                    <div class="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center text-sm">Logo</div>
+                 <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
+                    <div class="w-10 h-10 bg-[#6B8E23] rounded-full flex items-center justify-center text-white shadow-md">
+                        <i data-lucide="map" class="w-5 h-5"></i>
+                    </div>
                     <div class="flex flex-col">
                         <span class="text-lg font-serif font-bold text-[#3E3B39]">機智的門徒生活</span>
                     </div>
                 </div>
                 <div class="flex flex-wrap justify-center gap-1">
-                    <a href="../index.html" class="nav-item">通識中心</a>
+                    <a href="../index.html" class="nav-item font-bold text-[#6B8E23]">
+                        <i data-lucide="home" class="w-4 h-4"></i> 回首頁
+                    </a>
+                    <div class="w-px h-6 bg-gray-300 mx-2 self-center"></div>
+                    <a href="../daily/index.html" class="nav-item">通識中心</a>
                     <a href="index.html" class="nav-item active">圖書館</a>
                     <a href="../chaplain/index.html" class="nav-item">校牧室</a>
                     <a href="../school/index.html" class="nav-item">學霸養成班</a>
@@ -58,28 +66,269 @@
                 </div>
                 <div id="bible-display-area" class="bg-[rgba(255,255,255,0.4)] backdrop-blur-md p-6 rounded-lg border border-[rgba(255,255,255,0.6)] min-h-[300px]">
                     <div class="text-center text-gray-400 py-10">
-                        <i data-lucide="library" class="w-12 h-12 mx-auto mb-2 opacity-50"></i>
-                        <p>載入聖經目錄中...</p>
+                        <i data-lucide="loader-2" class="w-12 h-12 mx-auto mb-2 animate-spin text-[#6B8E23]"></i>
+                        <p>正在搬運聖經書卷...</p>
                     </div>
                 </div>
             </div>
         </section>
     </div>
 
-    <!-- Modal 略 (同首頁，建議提取為 component) -->
-    
+    <!-- Modal -->
+    <div id="bible-modal" onclick="closeBibleModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <button onclick="closeBibleModal()" class="absolute top-6 right-6 flex items-center justify-center gap-1 text-xs text-[#6B8E23] hover:text-[#556B2F] bg-[#F1F3F2] px-4 py-1.5 rounded-full z-50">
+                <i data-lucide="x" class="w-3 h-3"></i> 關閉
+            </button>
+            <div class="text-center mb-6">
+                <h3 id="modal-title" class="text-2xl font-serif text-[#3E3B39] font-bold">經文閱讀</h3>
+            </div>
+            <div id="modal-body" class="text-lg text-[#4e342e]"></div>
+        </div>
+    </div>
+
     <script>
-        // 這裡放置原本關於 DB讀取、parseBibleReference、openScripture 的完整程式碼
-        // 由於篇幅限制，請將原檔案中 `initBibleDB`, `renderBibleBrowserHome`, `performSearch`, `fetchBlessingVerses` 等函式複製過來。
-        // 並確保 URL 指向正確：
-        const BLESSING_VERSES_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/blessing-verses.json';
-        const BIBLE_DB_URL = 'https://raw.githubusercontent.com/annelin0321/bible-zh/main/bible_complete.db';
+        // --- 內嵌 common.js 與 bible-db.js 邏輯以修正 ReferenceError ---
         
-        // ... (Script Logic) ...
+        // common.js 邏輯
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) { lucide.createIcons(); }
+        });
+
+        // bible-db.js 邏輯
+        const BIBLE_DB_URL = 'https://raw.githubusercontent.com/annelin0321/bible-zh/main/bible_complete.db';
+        let db = null;
+        let isDbLoading = false;
+        let dbCols = {};
+
+        async function initBibleDB() {
+            if (db) return db;
+            if (isDbLoading) return new Promise(resolve => {
+                const check = setInterval(() => { if(db || !isDbLoading) { clearInterval(check); resolve(db); } }, 100);
+            });
+
+            isDbLoading = true;
+            try {
+                const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm` });
+                const response = await fetch(BIBLE_DB_URL);
+                if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const buffer = await response.arrayBuffer();
+                db = new SQL.Database(new Uint8Array(buffer));
+                console.log("Bible DB Loaded Successfully");
+                
+                const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0].values;
+                let validTable = tables.find(t => /bible|verse|scripture/i.test(t[0]));
+                if (!validTable) validTable = tables.find(t => t[0] !== 'sqlite_sequence');
+                const tableName = validTable ? validTable[0] : tables[0][0];
+                
+                const cols = db.exec(`PRAGMA table_info(${tableName})`)[0].values.map(r=>r[1]);
+                
+                dbCols = {
+                    tableName: tableName,
+                    book: cols.find(c => /book|b|書|vol/i.test(c)) || cols[0],
+                    chap: cols.find(c => /chapter|chap|c|章/i.test(c)) || cols[1],
+                    ver: cols.find(c => /verse|v|節/i.test(c)) || cols[2],
+                    text: cols.find(c => /lection|content|text|scripture|經文|經文/i.test(c)) || cols[cols.length - 1]
+                };
+
+                return db;
+            } catch (err) {
+                console.error("DB Error", err);
+                return null;
+            } finally {
+                isDbLoading = false;
+            }
+        }
+
+        function parseBibleReference(text) {
+            if (!text) return null;
+            text = text.replace(/[\(\)\uff08\uff09]/g, ' ').replace(/：/g, ':').trim();
+            const bookPat = "([1-3]?\\s?[\\u4e00-\\u9fa5]{1,15}|[1-3]?\\s?[a-zA-Z]+)";
+            const chapVersePat = "(\\d+)\\s*:\\s*(\\d+)(?:\\s*[-–~]\\s*(\\d+))?";
+            
+            const cvRegex = new RegExp(`${bookPat}\\s*${chapVersePat}`, 'g');
+            let match = null;
+            let lastMatch = null;
+            while ((match = cvRegex.exec(text)) !== null) { lastMatch = match; }
+
+            if (lastMatch) {
+                return {
+                    book: lastMatch[1].trim(),
+                    chapter: parseInt(lastMatch[2]),
+                    verse: parseInt(lastMatch[3]),
+                    endVerse: lastMatch[4] ? parseInt(lastMatch[4]) : parseInt(lastMatch[3])
+                };
+            }
+            
+            const chapRegex = new RegExp(`${bookPat}\\s*(\\d+)\\s*$`, 'g'); 
+            while ((match = chapRegex.exec(text)) !== null) { lastMatch = match; }
+            if (lastMatch) {
+                return { book: lastMatch[1].trim(), chapter: parseInt(lastMatch[2]), verse: 1, endVerse: null };
+            }
+            return null;
+        }
+
+        async function openScripture(reference, highlightVerse = null) {
+            const modal = document.getElementById('bible-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            
+            if(!modal) return;
+
+            modal.classList.add('show');
+            modalBody.innerHTML = `<div class="flex justify-center py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin text-[#8D7B68]"></i></div>`;
+            if(window.lucide) lucide.createIcons();
+
+            const database = await initBibleDB();
+            if (!database) { 
+                modalBody.innerHTML = `<p class="text-center text-red-500">資料庫讀取中，請稍後再試...</p>`; 
+                return; 
+            }
+
+            try {
+                const parsed = parseBibleReference(reference);
+                if (parsed) {
+                    let query;
+                    if (parsed.endVerse && parsed.endVerse > parsed.verse) {
+                        query = `SELECT ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} >= ${parsed.verse} AND ${dbCols.ver} <= ${parsed.endVerse} ORDER BY ${dbCols.ver}`;
+                    } else {
+                        query = `SELECT ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY ${dbCols.ver}`;
+                    }
+
+                    const res = database.exec(query);
+                    if (res.length > 0) {
+                        let html = '';
+                        res[0].values.forEach(row => {
+                            const v = row[0], t = row[1];
+                            const highlightClass = (parsed.endVerse && v >= parsed.verse && v <= parsed.endVerse) || (v === highlightVerse) ? 'bg-yellow-100/80 p-1 rounded' : '';
+                            html += `<p class="verse-text ${highlightClass}"><span class="verse-num">${v}</span>${t}</p>`;
+                        });
+                        modalTitle.innerText = `${parsed.book} 第 ${parsed.chapter} 章`;
+                        modalBody.innerHTML = html;
+                    } else {
+                        modalBody.innerHTML = `<p class="text-center">找不到經文資料</p>`;
+                    }
+                } else {
+                    modalTitle.innerText = "經文引用";
+                    modalBody.innerHTML = `<p class="text-center text-lg mb-4">${reference}</p><p class="text-center text-gray-400 text-sm">請前往圖書館搜尋完整章節。</p>`;
+                }
+            } catch (e) {
+                console.error(e);
+                modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤</p>`;
+            }
+        }
+
+        // --- 本頁邏輯 ---
+
+        // 金句與搜尋邏輯
+        const BLESSING_VERSES_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/blessing-verses.json';
+        
         async function init() {
             if(window.lucide) lucide.createIcons();
-            // 呼叫 DB 初始化與金句 fetch
+            fetchBlessingVerses();
+            renderBibleBrowserHome();
         }
+
+        async function fetchBlessingVerses() {
+            try {
+                const res = await fetch(BLESSING_VERSES_URL);
+                const data = await res.json();
+                if(data.length > 0) {
+                    const item = data[Math.floor(Math.random() * data.length)];
+                    const text = item['完整經文'] || item['scripture'];
+                    const ref = item['ref'] || item['出處'] || '';
+                    document.getElementById('blessing-card-area').innerHTML = `
+                        <div class="verse-card-highlight">
+                            <p class="text-xl font-serif text-[#3E3B39] leading-relaxed mb-6">${text}</p>
+                            ${ref ? `<button onclick="openScripture('${ref}')" class="nature-btn"><i data-lucide="book-open" class="w-4 h-4"></i> ${ref}</button>` : ''}
+                        </div>
+                    `;
+                    if(window.lucide) lucide.createIcons();
+                }
+            } catch (e) {
+                document.getElementById('blessing-card-area').innerHTML = '<p class="text-center text-gray-400">今日金句運送中...</p>';
+            }
+        }
+
+        async function renderBibleBrowserHome() {
+            const container = document.getElementById('bible-display-area');
+            const database = await initBibleDB();
+            if (!database) {
+                container.innerHTML = '<p class="text-center text-red-500">資料庫讀取失敗</p>';
+                return;
+            }
+
+            try {
+                // 讀取所有書卷
+                const res = database.exec(`SELECT DISTINCT ${dbCols.book} FROM ${dbCols.tableName}`);
+                const books = res[0].values.flat();
+
+                let html = '<div class="bible-book-grid">';
+                books.forEach(book => {
+                    html += `<div class="bible-book-item" onclick="renderChapters('${book}')">${book}</div>`;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+            } catch (e) { console.error(e); }
+        }
+
+        async function renderChapters(book) {
+            const container = document.getElementById('bible-display-area');
+            const database = await initBibleDB();
+            const res = database.exec(`SELECT DISTINCT ${dbCols.chap} FROM ${dbCols.tableName} WHERE ${dbCols.book} = '${book}'`);
+            const chapters = res[0].values.flat();
+
+            let html = `
+                <div class="mb-4 flex items-center gap-2">
+                    <button onclick="renderBibleBrowserHome()" class="text-sm text-[#6B8E23] hover:underline">< 返回書卷</button>
+                    <span class="font-bold text-[#3E3B39]">> ${book}</span>
+                </div>
+                <div class="chapter-grid">
+            `;
+            chapters.forEach(c => {
+                html += `<div class="chapter-item" onclick="openScripture('${book} ${c}')">${c}</div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        async function performSearch() {
+            const keyword = document.getElementById('bible-search-input').value.trim();
+            if(!keyword) { renderBibleBrowserHome(); return; }
+            
+            const container = document.getElementById('bible-display-area');
+            container.innerHTML = '<div class="text-center py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto text-[#6B8E23]"></i></div>';
+            if(window.lucide) lucide.createIcons();
+
+            const database = await initBibleDB();
+            const query = `SELECT ${dbCols.book}, ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.text} LIKE '%${keyword}%' LIMIT 30`;
+            const res = database.exec(query);
+
+            if (res.length === 0) {
+                container.innerHTML = `<p class="text-center py-10">找不到「${keyword}」相關經文</p><button onclick="renderBibleBrowserHome()" class="block mx-auto text-[#6B8E23]">返回目錄</button>`;
+                return;
+            }
+
+            let html = `<div class="mb-4 flex justify-between"><span class="text-sm text-gray-500">搜尋結果</span><button onclick="renderBibleBrowserHome()" class="text-sm text-[#6B8E23]">返回目錄</button></div><div class="space-y-2">`;
+            res[0].values.forEach(row => {
+                const b=row[0], c=row[1], v=row[2], t=row[3];
+                html += `<div class="search-result-item" onclick="openScripture('${b} ${c}:${v}', ${v})">
+                            <div class="text-xs text-[#6B8E23] font-bold mb-1">${b} ${c}:${v}</div>
+                            <div class="text-[#3E3B39] text-sm">${t}</div>
+                         </div>`;
+            });
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function handleSearch(e) { if(e.key === 'Enter') performSearch(); }
+        
+        function closeBibleModal(event) {
+            if (event && event.target.closest('.modal-content') && event.target.id !== 'bible-modal') return;
+            const modal = document.getElementById('bible-modal');
+            if(modal) modal.classList.remove('show');
+        }
+
         init();
     </script>
 </body>
