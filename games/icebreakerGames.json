@@ -1,0 +1,362 @@
+[
+  {
+    "id": 1,
+    "category": "Physical (動態肢體)",
+    "gameName": "大風吹",
+    "instructions": "鬼當關主喊特徵（如：戴眼鏡的人），符合者需換位子。"
+  },
+  {
+    "id": 2,
+    "category": "Physical (動態肢體)",
+    "gameName": "支援前線",
+    "instructions": "各組需在限時內蒐集關主指定的物品（如：3隻襪子、5支手機）。"
+  },
+  {
+    "id": 3,
+    "category": "Physical (動態肢體)",
+    "gameName": "解手結",
+    "instructions": "全員圍圈手牽手亂牽，不放手的情況下解開成一個大圓圈。"
+  },
+  {
+    "id": 4,
+    "category": "Physical (動態肢體)",
+    "gameName": "進化論",
+    "instructions": "全員皆是蛋，找人猜拳，贏了進化（蛋→雞→人→神），輸了退化。"
+  },
+  {
+    "id": 5,
+    "category": "Physical (動態肢體)",
+    "gameName": "兩人三腳",
+    "instructions": "兩人一組將相鄰的腳綁住，競速折返跑。"
+  },
+  {
+    "id": 6,
+    "category": "Physical (動態肢體)",
+    "gameName": "傳遞呼拉圈",
+    "instructions": "全員手牽手排成一列，不放手將呼拉圈從頭傳到尾。"
+  },
+  {
+    "id": 7,
+    "category": "Physical (動態肢體)",
+    "gameName": "踩氣球",
+    "instructions": "每人腳上綁氣球，保護自己氣球同時踩破別人的。"
+  },
+  {
+    "id": 8,
+    "category": "Physical (動態肢體)",
+    "gameName": "瞎子摸象",
+    "instructions": "一人蒙眼，其他人引導他穿越障礙或觸摸指定物品。"
+  },
+  {
+    "id": 9,
+    "category": "Physical (動態肢體)",
+    "gameName": "報紙拔河",
+    "instructions": "報紙挖兩個洞，兩人套頭上，互相拉扯看誰的報紙先破。"
+  },
+  {
+    "id": 10,
+    "category": "Physical (動態肢體)",
+    "gameName": "身體扭扭樂",
+    "instructions": "聽指令將手腳放在指定顏色的墊子上，堅持不倒者勝。"
+  },
+  {
+    "id": 11,
+    "category": "Physical (動態肢體)",
+    "gameName": "蜈蚣走路",
+    "instructions": "全組蹲下抓前面人的腳踝，集體前進。"
+  },
+  {
+    "id": 12,
+    "category": "Physical (動態肢體)",
+    "gameName": "背對背夾球",
+    "instructions": "兩人背對背夾住氣球或排球，運送至終點。"
+  },
+  {
+    "id": 13,
+    "category": "Physical (動態肢體)",
+    "gameName": "老鷹抓小雞",
+    "instructions": "經典遊戲，母雞保護小雞不被老鷹抓到。"
+  },
+  {
+    "id": 14,
+    "category": "Physical (動態肢體)",
+    "gameName": "攻佔城堡",
+    "instructions": "分兩隊，利用報紙做成履帶（風火輪），全員在圈內滾動前進。"
+  },
+  {
+    "id": 15,
+    "category": "Physical (動態肢體)",
+    "gameName": "比手畫腳",
+    "instructions": "一人用肢體動作表演題目，隊友猜答案。"
+  },
+  {
+    "id": 16,
+    "category": "Physical (動態肢體)",
+    "gameName": "極速傳遞",
+    "instructions": "用身體部位（如下巴、腋下）傳遞物品，不能用手。"
+  },
+  {
+    "id": 17,
+    "category": "Physical (動態肢體)",
+    "gameName": "愛的抱抱",
+    "instructions": "主持人喊數字（如：3），就要3個人抱在一起，落單者淘汰。"
+  },
+  {
+    "id": 18,
+    "category": "Physical (動態肢體)",
+    "gameName": "坐地起身",
+    "instructions": "兩人背對背勾手坐在地上，喊口號同時站起來，人數可遞增。"
+  },
+  {
+    "id": 19,
+    "category": "Physical (動態肢體)",
+    "gameName": "信任倒",
+    "instructions": "一人向後倒，其他隊員在後方組成網狀手勢接住（需注意安全）。"
+  },
+  {
+    "id": 20,
+    "category": "Physical (動態肢體)",
+    "gameName": "抓尾巴",
+    "instructions": "每人背後塞一條毛巾當尾巴，互搶尾巴積分。"
+  },
+  {
+    "id": 21,
+    "category": "Interaction (靜態交流)",
+    "gameName": "兩真一假",
+    "instructions": "每人說關於自己的三件事（兩真一假），大家猜哪個是假的。"
+  },
+  {
+    "id": 22,
+    "category": "Interaction (靜態交流)",
+    "gameName": "從未做過的事",
+    "instructions": "輪流說一件自己「沒做過」的事，做過的人要折手指，先折完者輸。"
+  },
+  {
+    "id": 23,
+    "category": "Interaction (靜態交流)",
+    "gameName": "名字串燒",
+    "instructions": "下一位要重複前面所有人的名字＋特徵，再介紹自己。"
+  },
+  {
+    "id": 24,
+    "category": "Interaction (靜態交流)",
+    "gameName": "誰是臥底",
+    "instructions": "平民與臥底拿到不同詞彙（如湯圓/水餃），描述後投票抓出臥底。"
+  },
+  {
+    "id": 25,
+    "category": "Interaction (靜態交流)",
+    "gameName": "海龜湯",
+    "instructions": "主持人給一個離奇結局，玩家只能問是非題來還原故事真相。"
+  },
+  {
+    "id": 26,
+    "category": "Interaction (靜態交流)",
+    "gameName": "畫畫接龍",
+    "instructions": "第一人看題目畫圖，傳給下一人看圖畫圖，最後一人猜題目。"
+  },
+  {
+    "id": 27,
+    "category": "Interaction (靜態交流)",
+    "gameName": "彩色糖果",
+    "instructions": "抽糖果，不同顏色代表不同問題（如紅：最糗的事、黃：夢想）。"
+  },
+  {
+    "id": 28,
+    "category": "Interaction (靜態交流)",
+    "gameName": "賓果九宮格",
+    "instructions": "格子內填特徵（如：有養貓），找符合的人簽名連成線。"
+  },
+  {
+    "id": 29,
+    "category": "Interaction (靜態交流)",
+    "gameName": "猜猜我是誰",
+    "instructions": "每人額頭貼一張名人名稱（自己看不到），問是非題猜自己是誰。"
+  },
+  {
+    "id": 30,
+    "category": "Interaction (靜態交流)",
+    "gameName": "時光機",
+    "instructions": "輪流分享：「如果能回到過去，你想回到哪個時刻？為什麼？」"
+  },
+  {
+    "id": 31,
+    "category": "Interaction (靜態交流)",
+    "gameName": "荒島求生",
+    "instructions": "討論「如果去荒島只能帶三樣東西，你會帶什麼？」"
+  },
+  {
+    "id": 32,
+    "category": "Interaction (靜態交流)",
+    "gameName": "你的第一份工作",
+    "instructions": "分享人生第一份打工或工作的趣事與慘事。"
+  },
+  {
+    "id": 33,
+    "category": "Interaction (靜態交流)",
+    "gameName": "故事接龍",
+    "instructions": "一人一句話，共同編造一個完整（或荒謬）的故事。"
+  },
+  {
+    "id": 34,
+    "category": "Interaction (靜態交流)",
+    "gameName": "拋繡球",
+    "instructions": "丟球給某人並問一個問題，接到球的人回答後再丟給下一人。"
+  },
+  {
+    "id": 35,
+    "category": "Interaction (靜態交流)",
+    "gameName": "共同點清單",
+    "instructions": "分組找出組員間最多的「共同點」（如都戴眼鏡、都單身）。"
+  },
+  {
+    "id": 36,
+    "category": "Interaction (靜態交流)",
+    "gameName": "關鍵字介紹",
+    "instructions": "用三個「關鍵字」來自我介紹，讓大家猜為什麼。"
+  },
+  {
+    "id": 37,
+    "category": "Interaction (靜態交流)",
+    "gameName": "終極密碼",
+    "instructions": "猜數字（1-100），猜中炸彈數字的人接受懲罰或真心話。"
+  },
+  {
+    "id": 38,
+    "category": "Interaction (靜態交流)",
+    "gameName": "手機相簿大冒險",
+    "instructions": "隨機秀出手機裡第 N 張照片，並說明照片背後的故事。"
+  },
+  {
+    "id": 39,
+    "category": "Interaction (靜態交流)",
+    "gameName": "我的優點轟炸",
+    "instructions": "輪流坐中間，其他人每人說出該人的一個優點（適合熟識團體）。"
+  },
+  {
+    "id": 40,
+    "category": "Interaction (靜態交流)",
+    "gameName": "夢想清單",
+    "instructions": "寫下人生必做清單的一件事，混合後抽出唸出，猜是誰的夢想。"
+  },
+  {
+    "id": 41,
+    "category": "Reaction (反應競賽)",
+    "gameName": "007",
+    "instructions": "指人喊0、0、7，喊7的人舉手，左右兩邊的人喊「啊！」並舉手。"
+  },
+  {
+    "id": 42,
+    "category": "Reaction (反應競賽)",
+    "gameName": "蘿蔔蹲",
+    "instructions": "指定顏色/名字蹲，口號要快且清楚，跟不上或做錯淘汰。"
+  },
+  {
+    "id": 43,
+    "category": "Reaction (反應競賽)",
+    "gameName": "心臟病",
+    "instructions": "輪流翻牌並喊數字1-13，牌與數字吻合需拍牌，最慢者收牌。"
+  },
+  {
+    "id": 44,
+    "category": "Reaction (反應競賽)",
+    "gameName": "虎克船長",
+    "instructions": "指人喊虎克船長，該人敬禮，左右兩人划船喊「嘿咻嘿咻」。"
+  },
+  {
+    "id": 45,
+    "category": "Reaction (反應競賽)",
+    "gameName": "烏鴉與烏龜",
+    "instructions": "兩人對坐，聽到特定字（如烏龜）要抓對方手指，另一方要縮手。"
+  },
+  {
+    "id": 46,
+    "category": "Reaction (反應競賽)",
+    "gameName": "拍七",
+    "instructions": "輪流報數，逢7、7的倍數或含7的數字，不能唸出要拍手。"
+  },
+  {
+    "id": 47,
+    "category": "Reaction (反應競賽)",
+    "gameName": "說顏色 (Stroop)",
+    "instructions": "看字說顏色（如紅色的「綠」字，要唸紅），考驗大腦抗干擾。"
+  },
+  {
+    "id": 48,
+    "category": "Reaction (反應競賽)",
+    "gameName": "棒打老虎雞吃蟲",
+    "instructions": "節奏口令猜拳遊戲，也是進化論的變體之一。"
+  },
+  {
+    "id": 49,
+    "category": "Reaction (反應競賽)",
+    "gameName": "抓手指",
+    "instructions": "大家右手掌心向下，左手食指頂住左邊人掌心，聽口令抓與逃。"
+  },
+  {
+    "id": 50,
+    "category": "Reaction (反應競賽)",
+    "gameName": "手口不一",
+    "instructions": "口中喊的數字（1-5）必須與伸出的手指數量「不同」才算過關。"
+  },
+  {
+    "id": 51,
+    "category": "Reaction (反應競賽)",
+    "gameName": "聽口令抓杯子",
+    "instructions": "兩人中間放杯子，聽口令做動作（摸頭、摸膝蓋），喊「杯子」時搶杯。"
+  },
+  {
+    "id": 52,
+    "category": "Reaction (反應競賽)",
+    "gameName": "節奏遊戲",
+    "instructions": "拍腿拍手節奏，喊「你家爆炸我家爆炸」，指定下家接龍。"
+  },
+  {
+    "id": 53,
+    "category": "Reaction (反應競賽)",
+    "gameName": "反向動作",
+    "instructions": "主持人喊「向左跳」，所有人要「向右跳」，做錯淘汰。"
+  },
+  {
+    "id": 54,
+    "category": "Reaction (反應競賽)",
+    "gameName": "數支數支",
+    "instructions": "傳統決定遊戲，累加手指數量來決定誰中獎。"
+  },
+  {
+    "id": 55,
+    "category": "Reaction (反應競賽)",
+    "gameName": "眨眼殺手",
+    "instructions": "殺手對平民眨眼即死亡，偵探要在大家死光前抓出殺手。"
+  },
+  {
+    "id": 56,
+    "category": "Reaction (反應競賽)",
+    "gameName": "餅乾盒",
+    "instructions": "節奏唸謠：「Who took the cookie from the cookie jar?」接龍遊戲。"
+  },
+  {
+    "id": 57,
+    "category": "Reaction (反應競賽)",
+    "gameName": "誰是大嗓門",
+    "instructions": "同時大喊指定詞語，猜拳輸的人要聽出對方喊什麼。"
+  },
+  {
+    "id": 58,
+    "category": "Reaction (反應競賽)",
+    "gameName": "鏡子遊戲",
+    "instructions": "兩人一組，一人做動作，另一人當鏡子即時模仿，看默契與反應。"
+  },
+  {
+    "id": 59,
+    "category": "Reaction (反應競賽)",
+    "gameName": "上下樓梯",
+    "instructions": "類似蘿蔔蹲，「X樓下X樓上」，樓層亂跳考驗記憶與反應。"
+  },
+  {
+    "id": 60,
+    "category": "Reaction (反應競賽)",
+    "gameName": "請你跟我這樣做",
+    "instructions": "類似「老師說」，有說口令才做動作，沒說口令做動作則淘汰。"
+  }
+]
