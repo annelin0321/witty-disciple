@@ -26,11 +26,14 @@
             font-size: 0.9rem;
             transition: all 0.2s ease;
             white-space: nowrap;
+            border-bottom: 1px solid rgba(107, 142, 35, 0.2); 
         }
+        
         .chaplain-tab-btn:hover {
             background-color: rgba(255, 255, 255, 0.8);
             color: #6B8E23;
         }
+
         .chaplain-tab-btn.active {
             background-color: #6B8E23;
             color: white;
@@ -50,7 +53,6 @@
             margin: 0 auto;
         }
         
-        /* 確保輸入框樣式一致 */
         .form-group {
             display: flex;
             flex-direction: column;
@@ -103,6 +105,7 @@
     <script>
         const PRAYERS_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/prayers.json';
         let prayersData = [];
+        let editingPrayerId = null;
         let currentPrayerFilter = 'all';
 
         // 情緒分類資料
@@ -123,11 +126,37 @@
             if(window.lucide) lucide.createIcons();
         }
 
+        // --- 備份功能 UI 生成器 ---
+        function getBackupUI(storageKey, title) {
+            return `
+                <div class="mt-8 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
+                    <div class="flex items-start gap-3">
+                        <div class="p-2 bg-yellow-100 rounded-full text-yellow-600 mt-1">
+                            <i data-lucide="save" class="w-4 h-4"></i>
+                        </div>
+                        <div class="flex-1">
+                            <h5 class="text-sm font-bold text-yellow-800 mb-1">記得備份您的${title}</h5>
+                            <p class="text-xs text-yellow-700 mb-3 leading-relaxed">
+                                資料僅儲存在此裝置的瀏覽器中。若清除快取或更換手機，資料將會消失。
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                <button onclick="exportNotebook('${storageKey}', '${title}')" class="px-3 py-1.5 bg-white border border-yellow-300 rounded-lg hover:bg-yellow-100 text-yellow-900 text-xs transition-colors flex items-center gap-1 shadow-sm">
+                                    <i data-lucide="download" class="w-3 h-3"></i> 匯出備份
+                                </button>
+                                <button onclick="document.getElementById('import-${storageKey}').click()" class="px-3 py-1.5 bg-white border border-yellow-300 rounded-lg hover:bg-yellow-100 text-yellow-900 text-xs transition-colors flex items-center gap-1 shadow-sm">
+                                    <i data-lucide="upload" class="w-3 h-3"></i> 匯入還原
+                                </button>
+                                <input type="file" id="import-${storageKey}" class="hidden" accept=".json" onchange="importNotebook(this, '${storageKey}')">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         function renderChaplainOffice() {
-            // 隨機禱告
             const randomPrayer = prayersData.length > 0 ? prayersData[Math.floor(Math.random() * prayersData.length)] : { title: "寧靜禱文", content: "神啊，請賜給我寧靜，去接受我無法改變的事..." };
             
-            // 產生情緒標籤 HTML
             let emotionHtml = '';
             for (const [category, emotions] of Object.entries(emotionCategories)) {
                 let typeClass = 'neutral';
@@ -150,7 +179,6 @@
                     <p class="eng-script text-[#8D7B68]">Chaplain's Office</p>
                 </div>
                 
-                <!-- 今日禱告卡 -->
                 <div class="stationery-card mb-12">
                     <div class="flex flex-col items-center text-center mb-6">
                         <h3 class="text-xl font-bold text-[#6B8E23] mb-2">${randomPrayer.title || randomPrayer.Title}</h3>
@@ -159,7 +187,6 @@
                     <div class="text-center"><button onclick="renderChaplainOffice()" class="text-xs text-[#8D7B68] hover:text-[#6B8E23] transition-colors flex items-center justify-center gap-1 mx-auto"><i data-lucide="refresh-cw" class="w-3 h-3"></i> 換一則禱告</button></div>
                 </div>
 
-                <!-- 工具 Tabs -->
                 <div class="flex justify-center mb-8">
                     <div class="flex flex-wrap justify-center gap-2 w-full max-w-3xl">
                         <button class="chaplain-tab-btn active" onclick="switchTab('tab-devotion', this)">靈修筆記</button>
@@ -176,34 +203,15 @@
                     <div class="notebook-card text-left">
                         <p class="text-center text-sm text-[#8D7B68] mb-6">聆聽神聲音，回應祂的愛。</p>
                         <div class="space-y-4">
-                            <div class="form-group">
-                                <label class="form-label">今日經文 / 進度</label>
-                                <input type="text" class="form-input bg-white/50" placeholder="例如：詩篇 23" id="dev-ref">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">經文大意 (Summary)</label>
-                                <textarea id="dev-summary" class="form-input" rows="3" placeholder="這段經文在說什麼..."></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">最有感動的一句 (Rhema)</label>
-                                <input id="dev-verse" type="text" class="form-input" placeholder="哪一句話抓住了你的心？">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">生活應用 (Application)</label>
-                                <textarea id="dev-app" class="form-input" rows="2" placeholder="如何應用在生活中？"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">天父的心意 (Father's Heart)</label>
-                                <textarea id="dev-heart" class="form-input" rows="2" placeholder="天父想對你說什麼？"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">回應禱告 (Response)</label>
-                                <textarea id="dev-prayer" class="form-input" rows="3" placeholder="親愛的天父..."></textarea>
-                            </div>
-                            <div class="text-center pt-2">
-                                <button onclick="saveDevotion()" class="nature-btn">儲存筆記</button>
-                            </div>
+                            <div class="form-group"><label class="form-label">今日經文 / 進度</label><input type="text" class="form-input bg-white/50" placeholder="例如：詩篇 23" id="dev-ref"></div>
+                            <div class="form-group"><label class="form-label">經文大意 (Summary)</label><textarea id="dev-summary" class="form-input" rows="3" placeholder="這段經文在說什麼..."></textarea></div>
+                            <div class="form-group"><label class="form-label">最有感動的一句 (Rhema)</label><input id="dev-verse" type="text" class="form-input" placeholder="哪一句話抓住了你的心？"></div>
+                            <div class="form-group"><label class="form-label">生活應用 (Application)</label><textarea id="dev-app" class="form-input" rows="2" placeholder="如何應用在生活中？"></textarea></div>
+                            <div class="form-group"><label class="form-label">天父的心意 (Father's Heart)</label><textarea id="dev-heart" class="form-input" rows="2" placeholder="天父想對你說什麼？"></textarea></div>
+                            <div class="form-group"><label class="form-label">回應禱告 (Response)</label><textarea id="dev-prayer" class="form-input" rows="3" placeholder="親愛的天父..."></textarea></div>
+                            <div class="text-center pt-2"><button onclick="saveDevotion()" class="nature-btn">儲存筆記</button></div>
                         </div>
+                        ${getBackupUI('witty_devotions', '靈修筆記')}
                     </div>
                 </div>
 
@@ -211,14 +219,8 @@
                 <div id="tab-prayer" class="chaplain-tab-content hidden fade-in">
                     <div class="notebook-card text-left">
                         <div class="mb-6 space-y-4">
-                            <div class="form-group">
-                                <label class="form-label">禱告主題</label>
-                                <input id="pray-topic" type="text" class="form-input" placeholder="例如：家人健康...">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">具體內容</label>
-                                <textarea id="pray-content" class="form-input" rows="3" placeholder="向神訴說..."></textarea>
-                            </div>
+                            <div class="form-group"><label class="form-label">禱告主題</label><input id="pray-topic" type="text" class="form-input" placeholder="例如：家人健康..."></div>
+                            <div class="form-group"><label class="form-label">具體內容</label><textarea id="pray-content" class="form-input" rows="3" placeholder="向神訴說..."></textarea></div>
                             <div class="flex gap-2">
                                 <select id="pray-status" class="form-input w-auto"><option value="praying">禱告中</option><option value="answered">已成就</option></select>
                                 <button onclick="savePrayer()" class="nature-btn flex-1 justify-center">紀錄</button>
@@ -232,6 +234,7 @@
                             </div>
                         </div>
                         <div id="prayer-list-display" class="space-y-2"></div>
+                        ${getBackupUI('witty_prayers', '禱告日記')}
                     </div>
                 </div>
 
@@ -240,15 +243,11 @@
                     <div class="notebook-card text-left">
                         <p class="text-center text-sm text-[#8D7B68] mb-4">數算恩典，看見神的手。</p>
                         <div class="space-y-4">
-                            <div class="form-group">
-                                <label class="form-label">感恩事項</label>
-                                <textarea id="grat-content" class="form-input" rows="4" placeholder="今天發生了什麼值得感謝的事？"></textarea>
-                            </div>
-                            <div class="text-center">
-                                <button onclick="saveGratitude()" class="nature-btn">存入恩典罐</button>
-                            </div>
+                            <div class="form-group"><label class="form-label">感恩事項</label><textarea id="grat-content" class="form-input" rows="4" placeholder="今天發生了什麼值得感謝的事？"></textarea></div>
+                            <div class="text-center"><button onclick="saveGratitude()" class="nature-btn">存入恩典罐</button></div>
                             <div id="gratitude-list" class="mt-4 pt-4 border-t border-gray-200/50 text-left space-y-2 max-h-60 overflow-y-auto"></div>
                         </div>
+                        ${getBackupUI('witty_gratitude', '感恩日記')}
                     </div>
                 </div>
 
@@ -257,93 +256,57 @@
                     <div class="notebook-card text-left">
                         <p class="text-center text-sm text-[#8D7B68] mb-6">誠實面對情緒，帶到神面前。</p>
                         <div class="space-y-4">
-                            <div class="form-group">
-                                <label class="form-label">事件 (Event)</label>
-                                <input id="emo-event" type="text" class="form-input" placeholder="發生了什麼引發情緒的事？">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">情緒標註</label>
-                                <div class="bg-white/50 p-4 rounded-lg border border-gray-200" id="emotion-tags">
-                                    ${emotionHtml}
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">我以為 / 我相信 (Belief)</label>
-                                <textarea id="emo-belief" class="form-input" rows="2" placeholder="當下我心裡是怎麼想的？"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">神如何看 (God's View)</label>
-                                <textarea id="emo-god" class="form-input" rows="2" placeholder="神的話語或真理是怎麼說的？"></textarea>
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">回應禱告 (Prayer)</label>
-                                <textarea id="emo-prayer" class="form-input" rows="3" placeholder="根據新的看見，向神禱告..."></textarea>
-                            </div>
-                            <div class="text-center">
-                                <button onclick="saveEmotion()" class="nature-btn">完成日記</button>
-                            </div>
+                            <div class="form-group"><label class="form-label">事件 (Event)</label><input id="emo-event" type="text" class="form-input" placeholder="發生了什麼引發情緒的事？"></div>
+                            <div class="form-group"><label class="form-label">情緒標註</label><div class="bg-white/50 p-4 rounded-lg border border-gray-200" id="emotion-tags">${emotionHtml}</div></div>
+                            <div class="form-group"><label class="form-label">我以為 / 我相信 (Belief)</label><textarea id="emo-belief" class="form-input" rows="2" placeholder="當下我心裡是怎麼想的？"></textarea></div>
+                            <div class="form-group"><label class="form-label">神如何看 (God's View)</label><textarea id="emo-god" class="form-input" rows="2" placeholder="神的話語或真理是怎麼說的？"></textarea></div>
+                            <div class="form-group"><label class="form-label">回應禱告 (Prayer)</label><textarea id="emo-prayer" class="form-input" rows="3" placeholder="根據新的看見，向神禱告..."></textarea></div>
+                            <div class="text-center"><button onclick="saveEmotion()" class="nature-btn">完成日記</button></div>
                         </div>
+                        ${getBackupUI('witty_emotions', '情緒日記')}
                     </div>
                 </div>
 
-                <!-- 5. 時空膠囊 (Letter) - 新增寶盒顯示 -->
+                <!-- 5. 時空膠囊 -->
                 <div id="tab-letter" class="chaplain-tab-content hidden fade-in">
                     <div class="notebook-card text-left">
                         <p class="text-center text-sm text-[#8D7B68] mb-4">寫給未來的自己，信心的宣告。</p>
-                        
-                        <!-- 寫信區 -->
                         <div class="space-y-4">
-                            <div class="form-group">
-                                <label class="form-label">開啟日期</label>
-                                <input type="date" id="letter-date" class="form-input">
-                            </div>
-                            <div class="form-group">
-                                <label class="form-label">給未來的信</label>
-                                <textarea id="letter-content" class="form-input" rows="6" placeholder="親愛的自己..."></textarea>
-                            </div>
+                            <div class="form-group"><label class="form-label">開啟日期</label><input type="date" id="letter-date" class="form-input"></div>
+                            <div class="form-group"><label class="form-label">給未來的信</label><textarea id="letter-content" class="form-input" rows="6" placeholder="親愛的自己..."></textarea></div>
                             <div class="text-center">
                                 <button onclick="saveLetter()" class="nature-btn">投遞信件</button>
                                 <p class="text-xs text-gray-400 mt-2">信件將在指定日期後開啟。</p>
                             </div>
                         </div>
-
-                        <!-- 寶盒區 -->
                         <div class="mt-8 pt-6 border-t border-gray-200/50">
                             <div class="bg-white/40 rounded-xl p-4 text-center border border-[#8D7B68]/20">
                                 <div onclick="toggleCapsuleList()" class="cursor-pointer inline-block relative group">
-                                    <div class="p-3 bg-[#FDFBF7] rounded-full border-2 border-[#8D7B68] shadow-sm group-hover:shadow-md transition-all">
-                                        <!-- 寶盒 Icon -->
-                                        <i data-lucide="package" class="w-8 h-8 text-[#8D7B68]"></i>
-                                    </div>
-                                    <!-- 紅點通知 -->
+                                    <div class="p-3 bg-[#FDFBF7] rounded-full border-2 border-[#8D7B68] shadow-sm group-hover:shadow-md transition-all"><i data-lucide="package" class="w-8 h-8 text-[#8D7B68]"></i></div>
                                     <span id="capsule-badge" class="hidden absolute -top-1 -right-1 bg-[#D85C42] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-bounce">!</span>
                                 </div>
                                 <h4 class="font-bold text-[#3E3B39] mt-2">時空寶盒</h4>
                                 <p id="capsule-status" class="text-xs text-gray-500 mt-1">目前沒有信件</p>
-                                
-                                <!-- 信件列表 (點擊後展開) -->
                                 <div id="capsule-list" class="hidden mt-4 text-left space-y-3 max-h-60 overflow-y-auto"></div>
                             </div>
                         </div>
+                        ${getBackupUI('witty_letters', '時空膠囊')}
                     </div>
                 </div>
 
-                <!-- 6. 靈感筆記 (Blank Note) -->
+                <!-- 6. 靈感筆記 -->
                 <div id="tab-blank" class="chaplain-tab-content hidden fade-in">
                     <div class="notebook-card text-left">
                         <p class="text-center text-sm text-[#8D7B68] mb-4">隨手記下聖靈的感動或生活的靈感。</p>
                         <div class="space-y-4">
-                            <div class="form-group">
-                                <textarea id="blank-content" class="form-input" rows="5" placeholder="在此輸入內容..."></textarea>
-                            </div>
-                            <div class="text-center">
-                                <button onclick="saveBlankNote()" class="nature-btn">儲存筆記</button>
-                            </div>
+                            <div class="form-group"><textarea id="blank-content" class="form-input" rows="5" placeholder="在此輸入內容..."></textarea></div>
+                            <div class="text-center"><button onclick="saveBlankNote()" class="nature-btn">儲存筆記</button></div>
                             <div class="mt-4 pt-4 border-t border-gray-200/50">
                                 <h4 class="font-bold text-[#6B8E23] mb-2 text-sm">筆記列表</h4>
                                 <div id="blank-note-list" class="space-y-2 max-h-60 overflow-y-auto"></div>
                             </div>
                         </div>
+                        ${getBackupUI('witty_blank_notes', '靈感筆記')}
                     </div>
                 </div>
             `;
@@ -351,7 +314,7 @@
             renderPrayerList();
             renderGratitudeList();
             renderBlankNoteList();
-            renderTimeCapsule(); // 初始化載入寶盒狀態
+            renderTimeCapsule();
         }
 
         function switchTab(id, btn) {
@@ -361,7 +324,69 @@
             btn.classList.add('active');
         }
 
-        // --- 靈修功能 ---
+        // --- 匯出功能 ---
+        function exportNotebook(key, title) {
+            const data = localStorage.getItem(key);
+            if (!data || data === '[]') return alert('目前沒有資料可匯出');
+            
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const date = new Date().toISOString().slice(0,10);
+            
+            a.href = url;
+            a.download = `witty_${title}_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- 匯入功能 ---
+        function importNotebook(input, key) {
+            const file = input.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData)) throw new Error("格式錯誤");
+                    
+                    // 合併資料 (簡單合併：將新資料加到舊資料前，並去重 ID)
+                    const oldData = JSON.parse(localStorage.getItem(key) || '[]');
+                    const combined = [...importedData, ...oldData];
+                    
+                    // 去重 (依賴 id，若無 id 則保留)
+                    const unique = [];
+                    const ids = new Set();
+                    combined.forEach(item => {
+                        if (item.id) {
+                            if (!ids.has(item.id)) {
+                                ids.add(item.id);
+                                unique.push(item);
+                            }
+                        } else {
+                            unique.push(item);
+                        }
+                    });
+
+                    localStorage.setItem(key, JSON.stringify(unique));
+                    alert('匯入成功！頁面將重新整理。');
+                    
+                    // 重新整理頁面以更新 UI (或呼叫對應 render 函式)
+                    renderChaplainOffice();
+                    
+                } catch (err) {
+                    alert('匯入失敗：檔案格式不正確');
+                    console.error(err);
+                }
+            };
+            reader.readAsText(file);
+            input.value = ''; // 重置 input 讓同一檔案可重複選取
+        }
+
+        // --- 既有儲存邏輯 ---
         function saveDevotion() {
             const ref = document.getElementById('dev-ref').value;
             const summary = document.getElementById('dev-summary').value;
@@ -373,15 +398,10 @@
             const list = JSON.parse(localStorage.getItem('witty_devotions') || '[]');
             list.unshift({ id: Date.now(), date: new Date().toLocaleDateString(), ref, summary, verse, app, heart, prayer });
             localStorage.setItem('witty_devotions', JSON.stringify(list));
-            document.getElementById('dev-summary').value = '';
-            document.getElementById('dev-verse').value = '';
-            document.getElementById('dev-app').value = '';
-            document.getElementById('dev-heart').value = '';
-            document.getElementById('dev-prayer').value = '';
+            renderChaplainOffice(); // 重繪以清空並更新
             alert('靈修筆記已儲存！');
         }
 
-        // --- 禱告功能 ---
         function savePrayer() {
             const topic = document.getElementById('pray-topic').value;
             const content = document.getElementById('pray-content').value;
@@ -421,7 +441,6 @@
             renderPrayerList();
         }
 
-        // --- 感恩日記 ---
         function saveGratitude() {
             const content = document.getElementById('grat-content').value;
             if(!content) return;
@@ -439,7 +458,6 @@
             document.getElementById('gratitude-list').innerHTML = html;
         }
 
-        // --- 情緒日記 ---
         function toggleEmotion(el) { el.classList.toggle('selected'); }
 
         function saveEmotion() {
@@ -452,35 +470,25 @@
             const list = JSON.parse(localStorage.getItem('witty_emotions') || '[]');
             list.unshift({ id: Date.now(), date: new Date().toLocaleDateString(), event, emotions, belief, god, prayer });
             localStorage.setItem('witty_emotions', JSON.stringify(list));
-            document.getElementById('emo-event').value = '';
-            document.getElementById('emo-belief').value = '';
-            document.getElementById('emo-god').value = '';
-            document.getElementById('emo-prayer').value = '';
-            document.querySelectorAll('.emotion-chip').forEach(c => c.classList.remove('selected'));
+            renderChaplainOffice(); // 重置表單
             alert('情緒日記已完成！');
         }
 
-        // --- 時空膠囊 (含寶盒邏輯) ---
         function saveLetter() {
             const date = document.getElementById('letter-date').value;
             const content = document.getElementById('letter-content').value;
             if(!date || !content) return alert('請填寫完整');
-            
             const list = JSON.parse(localStorage.getItem('witty_letters') || '[]');
-            // 加入 ID 以便刪除
             list.push({ id: Date.now(), date, content, read: false });
             localStorage.setItem('witty_letters', JSON.stringify(list));
-            
             alert('信件已投遞！');
             document.getElementById('letter-content').value = '';
-            renderTimeCapsule(); // 更新寶盒狀態
+            renderTimeCapsule();
         }
 
         function renderTimeCapsule() {
             const list = JSON.parse(localStorage.getItem('witty_letters') || '[]');
-            const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-            
-            // 區分可開啟與未開啟
+            const today = new Date().toISOString().split('T')[0];
             const unlocked = list.filter(l => l.date <= today);
             const lockedCount = list.length - unlocked.length;
             
@@ -500,54 +508,26 @@
                 badgeEl.classList.add('hidden');
             }
 
-            // 渲染已開啟的信件列表
             let html = '';
-            // 排序：新日期在前
             unlocked.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(l => {
-                // 相容舊資料沒有 ID 的情況
                 const id = l.id || l.date; 
-                html += `
-                    <div class="bg-white p-3 rounded-lg border border-[#8D7B68]/30 shadow-sm relative">
-                        <div class="text-xs text-[#8D7B68] font-bold mb-1 flex justify-between items-center">
-                            <span>📅 來自 ${l.date} 的信</span>
-                            <button onclick="deleteLetter(${id})" class="text-gray-300 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
-                        </div>
-                        <div class="text-sm text-[#3E3B39] whitespace-pre-wrap leading-relaxed">${l.content}</div>
-                    </div>
-                `;
+                html += `<div class="bg-white p-3 rounded-lg border border-[#8D7B68]/30 shadow-sm relative"><div class="text-xs text-[#8D7B68] font-bold mb-1 flex justify-between items-center"><span>📅 來自 ${l.date} 的信</span><button onclick="deleteLetter(${id})" class="text-gray-300 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div><div class="text-sm text-[#3E3B39] whitespace-pre-wrap leading-relaxed">${l.content}</div></div>`;
             });
-            
-            if (unlocked.length === 0 && lockedCount > 0) {
-                 html = '<p class="text-xs text-gray-400 py-2">還沒有信件到達開啟日期</p>';
-            }
-            
             listEl.innerHTML = html;
             if(window.lucide) lucide.createIcons();
         }
 
-        function toggleCapsuleList() {
-            const listEl = document.getElementById('capsule-list');
-            listEl.classList.toggle('hidden');
-        }
+        function toggleCapsuleList() { document.getElementById('capsule-list').classList.toggle('hidden'); }
 
         function deleteLetter(id) {
             if(!confirm('確定刪除這封信嗎？')) return;
             let list = JSON.parse(localStorage.getItem('witty_letters') || '[]');
-            
-            // 相容性處理：如果 id 是數字(timestamp)就用 id 刪，否則用 date 刪
-            if (typeof id === 'number') {
-                list = list.filter(l => l.id !== id);
-            } else {
-                // 舊資料刪除邏輯
-                // 注意：這可能會誤刪同一天日期的多封信，但為舊資料相容
-                list = list.filter(l => l.date !== String(id) && (!l.id || l.id !== id));
-            }
-            
+            if (typeof id === 'number') list = list.filter(l => l.id !== id);
+            else list = list.filter(l => l.date !== String(id) && (!l.id || l.id !== id));
             localStorage.setItem('witty_letters', JSON.stringify(list));
             renderTimeCapsule();
         }
 
-        // --- 靈感筆記 ---
         function saveBlankNote() {
             const content = document.getElementById('blank-content').value;
             if(!content) return;
