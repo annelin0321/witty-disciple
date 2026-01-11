@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>機智的門徒生活 | 課外活動</title>
     <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="../assets/images/favicon.svg">
+    <meta name="apple-mobile-web-app-title" content="機智門徒">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
@@ -65,8 +69,18 @@
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
                  <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
-                    <div class="w-10 h-10 bg-[#6B8E23] rounded-full flex items-center justify-center text-white shadow-md">
-                        <i data-lucide="map" class="w-5 h-5"></i>
+                    <!-- 修改 Logo 為新版 SVG -->
+                    <div class="w-10 h-10 hover:scale-110 transition-transform">
+                        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="50" cy="50" r="48" fill="#FDFBF7" stroke="#6B8E23" stroke-width="2"/>
+                            <circle cx="50" cy="35" r="18" fill="#6B8E23" opacity="0.9"/>
+                            <circle cx="35" cy="45" r="12" fill="#6B8E23" opacity="0.8"/>
+                            <circle cx="65" cy="45" r="12" fill="#6B8E23" opacity="0.8"/>
+                            <path d="M50 35 L 50 75" stroke="#8D7B68" stroke-width="4" stroke-linecap="round"/>
+                            <path d="M35 45 L 65 45" stroke="#8D7B68" stroke-width="3" stroke-linecap="round"/>
+                            <path d="M25 72 Q 50 82 75 72" stroke="#8D7B68" stroke-width="2.5" stroke-linecap="round" fill="none"/>
+                            <path d="M50 82 L 50 72" stroke="#8D7B68" stroke-width="1.5"/>
+                        </svg>
                     </div>
                     <div class="flex flex-col">
                         <span class="text-lg font-serif font-bold text-[#3E3B39]">機智的門徒生活</span>
@@ -135,7 +149,6 @@
                 </div>
 
                 <!-- 2. 遊戲列表 (預設隱藏) -->
-                <!-- 修改：移除 md:grid-cols-2，改為單欄顯示 (grid-cols-1) -->
                 <div id="icebreaker-games-list" class="grid grid-cols-1 gap-6 hidden animate-fadeIn">
                     <!-- 遊戲卡片由 JS 生成 -->
                 </div>
@@ -217,16 +230,14 @@
                 // 智慧欄位偵測 (Smart Field Detection)
                 const keys = Object.keys(game);
                 
-                // 1. 找標題: 優先找含有 Name, Title, Game 的欄位
                 const titleKey = keys.find(k => /game\s*name|name|title|遊戲名稱|標題/i.test(k)) || keys[0];
                 const title = game[titleKey] || '無標題';
 
-                // 2. 找說明: 優先找 Description, Content, Desc 的欄位，且不能是標題或類別
                 const descKey = keys.find(k => 
                     /description|desc|content|instruction|說明|內容/i.test(k) && 
                     k !== titleKey && 
                     !/category|id/i.test(k)
-                ) || keys.find(k => k !== titleKey && !/category|id/i.test(k)); // Fallback
+                ) || keys.find(k => k !== titleKey && !/category|id/i.test(k)); 
                 
                 const desc = game[descKey] || '暫無說明';
 
