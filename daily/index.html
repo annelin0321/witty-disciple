@@ -69,7 +69,7 @@
                 <i data-lucide="x" class="w-3 h-3"></i> 關閉
             </button>
             <div class="text-center mb-6">
-                <h3 id="modal-title" class="text-2xl font-serif text-[#3E3B39] font-bold">經文閱讀</h3>
+                <h3 id="modal-title" class="text-2xl font-serif text-[#3E3B39] font-bold"></h3>
                 <div class="w-12 h-px bg-[#8D7B68] mx-auto mt-2"></div>
             </div>
             <div id="modal-body" class="text-lg text-[#4e342e]"></div>
@@ -78,11 +78,11 @@
 
     <script>
         const DEVOTION_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/devotionals.json';
-        const READING_PLAN_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/reading-plan.json'; // 建議建立此檔案儲存全年進度
+        const READING_PLAN_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/reading-plan.json'; 
         const BIBLE_DB_URL = 'https://raw.githubusercontent.com/annelin0321/bible-zh/main/bible_complete.db';
         
         let devotionalsData = [];
-        let bibleReadingPlan = {}; // 這裡將儲存完整的讀經計畫
+        let bibleReadingPlan = {}; 
         
         // DB 變數
         let db = null;
@@ -150,13 +150,12 @@
                 };
             }
             
-            // 處理跨章 (例如: 創世記 1-2)
             const chapRangePat = "(\\d+)\\s*[-–~]\\s*(\\d+)";
             const rangeRegex = new RegExp(`${bookPat}\\s*${chapRangePat}`, 'g');
             let matchRange;
             while ((matchRange = rangeRegex.exec(text)) !== null) { lastMatch = matchRange; }
             
-            if (lastMatch && lastMatch.length === 4) { // book, startChap, endChap
+            if (lastMatch && lastMatch.length === 4) { 
                  return {
                     book: lastMatch[1].trim(),
                     chapter: parseInt(lastMatch[2]),
@@ -198,19 +197,15 @@
                 if (parsed) {
                     let query;
                     
-                    // 跨章查詢 (例如 創世記 1-2)
                     if (parsed.endChapter && parsed.endChapter > parsed.chapter) {
                          query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} >= ${parsed.chapter} AND ${dbCols.chap} <= ${parsed.endChapter} ORDER BY ${dbCols.chap}, ${dbCols.ver}`;
                     }
-                    // 單章範圍節數 (例如 創世記 1:1-5)
                     else if (parsed.endVerse && parsed.endVerse > parsed.verse) {
                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} >= ${parsed.verse} AND ${dbCols.ver} <= ${parsed.endVerse} ORDER BY ${dbCols.ver}`;
                     } 
-                    // 整章 (例如 創世記 1)
                     else if (parsed.endVerse === null) {
                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY ${dbCols.ver}`;
                     } 
-                    // 單節 (例如 創世記 1:1)
                     else {
                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} = ${parsed.verse}`;
                     }
@@ -221,8 +216,7 @@
                         let currentChap = -1;
                         
                         res[0].values.forEach(row => {
-                            // 跨章時顯示章節標題
-                            if (row.length === 3) { // has chapter col
+                            if (row.length === 3) { 
                                 const c = row[0], v = row[1], t = row[2];
                                 if (c !== currentChap && parsed.endChapter) {
                                     html += `<div class="text-center my-4"><span class="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-600">第 ${c} 章</span></div>`;
@@ -235,7 +229,6 @@
                             }
                         });
                         
-                        // 標題顯示
                         let titleSuffix = '';
                         if (parsed.endChapter) titleSuffix = `第 ${parsed.chapter}-${parsed.endChapter} 章`;
                         else titleSuffix = `第 ${parsed.chapter} 章`;
@@ -261,21 +254,18 @@
             document.getElementById('bible-modal').classList.remove('show');
         }
 
-        // --- 讀經計畫生成 (重要修正) ---
+        // --- 讀經計畫生成 ---
 
         async function generateReadingPlan() {
-            // 嘗試從遠端獲取完整 JSON
             try {
                 const res = await fetch(READING_PLAN_URL);
                 if (res.ok) {
                     const data = await res.json();
-                    // 假設格式為 [{date:"1-1", ot:"...", nt:"...", ps:"...", pr:"..."}, ...]
                     data.forEach(day => { bibleReadingPlan[day.date] = day; });
                     return;
                 }
             } catch (e) { console.log("Fetching plan failed, using default."); }
 
-            // 預設一月完整資料 (One Year Bible Plan - January)
             const janData = [
                 {d:1, ot:"創世記 1-2", nt:"馬太福音 1", ps:"詩篇 1", pr:"箴言 1:1-6"},
                 {d:2, ot:"創世記 3-5", nt:"馬太福音 2", ps:"詩篇 2", pr:"箴言 1:7-9"},
@@ -310,13 +300,12 @@
                 {d:31, ot:"出埃及記 22-24", nt:"馬太福音 19:16-30", ps:"詩篇 25:12-22", pr:"箴言 8:12-13"}
             ];
             
-            // 寫入變數 (這裡只寫入 1 月的，格式為 '1-1', '1-2'...)
             janData.forEach(day => { bibleReadingPlan[`1-${day.d}`] = day; });
         }
 
         async function init() {
             if(window.lucide) lucide.createIcons();
-            await generateReadingPlan(); // 等待計畫生成/下載
+            await generateReadingPlan(); 
             
             try {
                 const response = await fetch(DEVOTION_DATA_URL);
@@ -342,7 +331,6 @@
             const dObj = new Date();
             const todayStr = `${(dObj.getMonth()+1).toString().padStart(2,'0')}-${dObj.getDate().toString().padStart(2,'0')}`;
             
-            // 查詢計畫 (Key 格式為 'M-D', e.g. '1-1')
             const planKey = `${dObj.getMonth()+1}-${dObj.getDate()}`;
             const plan = bibleReadingPlan[planKey];
             
@@ -373,15 +361,16 @@
             }
 
             // 靈修文章區塊
-            let todayItems = items.filter(i => {
-                let k = Object.keys(i).find(key => /date|time|日期/i.test(key));
-                // 這裡暫時顯示所有文章的第一篇，實際應比對日期
-                return true; 
-            });
-            
-            if(todayItems.length > 0) {
-                html += generateSingleDevotionalHtml(todayItems[0]);
-                html += `<div class="mt-8"><button onclick="showFullSchedule()" class="nature-btn">查看更多靈修筆記</button></div>`;
+            if(items.length > 0) {
+                const start = new Date(dObj.getFullYear(), 0, 0);
+                const diff = dObj - start;
+                const oneDay = 1000 * 60 * 60 * 24;
+                const dayOfYear = Math.floor(diff / oneDay);
+                
+                const index = dayOfYear % items.length;
+                const todayItem = items[index];
+
+                html += generateSingleDevotionalHtml(todayItem);
             } else {
                  html += `<div class="py-10 text-[#8D7B68]">今日暫無額外靈修文章</div>`;
             }
@@ -414,6 +403,10 @@
              keys.forEach(k => {
                  if (k === titleKey || /date|time/.test(k)) return;
                  if (skipKeys.includes(k)) return;
+                 
+                 // 過濾掉經文出處相關的欄位，避免顯示在文章與按鈕中間
+                 if (/scripture|reading|bible|chapter|ref|經文|讀經|進度/i.test(k)) return;
+
                  const val = item[k];
                  if (typeof val === 'string' && val.startsWith('http')) {
                       buttonsArray.push({ type: 'link', url: val, text: k });
@@ -425,13 +418,14 @@
              contentHtml += `</div>`; 
              
              if (buttonsArray.length > 0) {
+                 // 恢復上方的分隔線與間距
                  contentHtml += `<div class="mt-10 pt-6 border-t border-[rgba(107,142,35,0.2)] w-full flex flex-col gap-4 items-center">`;
                  buttonsArray.forEach(btn => {
                       contentHtml += `
                         <a href="${btn.url}" target="_blank" class="w-full max-w-md block group">
                             <div class="bg-[#6B8E23] hover:bg-[#556B2F] text-white rounded-2xl py-3 px-4 text-center shadow-md flex items-center justify-center gap-2">
                                 <span class="text-sm font-light opacity-90">今日點播</span>
-                                <span class="text-lg font-medium truncate">${btn.text}</span>
+                                <span class="text-lg font-medium truncate max-w-[160px] sm:max-w-xs">${btn.text}</span>
                                 <i data-lucide="headphones" class="w-5 h-5"></i>
                             </div>
                         </a>`;
@@ -439,23 +433,6 @@
                  contentHtml += `</div>`;
              }
              return contentHtml;
-        }
-
-        function showFullSchedule() {
-             const c = document.getElementById('daily-content');
-             let h = '<div class="space-y-2 text-left w-full max-w-lg mx-auto">';
-             window.sortedDevotionals.forEach((i, idx) => {
-                 let tKey = Object.keys(i).find(key => /title|name/.test(key));
-                 h += `<div onclick="renderSpecificItem(${idx})" class="p-3 border rounded cursor-pointer hover:bg-white/50 bg-white/30 truncate">${i[tKey]}</div>`;
-             });
-             h += '</div><div class="text-center mt-4"><button onclick="renderDailyDevotional(window.sortedDevotionals)" class="nature-btn">返回今日</button></div>';
-             c.innerHTML = h;
-        }
-
-        function renderSpecificItem(idx) {
-             const item = window.sortedDevotionals[idx];
-             document.getElementById('daily-content').innerHTML = generateSingleDevotionalHtml(item) + '<div class="text-center mt-6"><button onclick="showFullSchedule()" class="nature-btn">返回列表</button></div>';
-             if(window.lucide) lucide.createIcons();
         }
 
         init();
