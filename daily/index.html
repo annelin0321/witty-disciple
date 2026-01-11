@@ -8,9 +8,7 @@
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    <!-- 引入共用 JS -->
-    <script src="../assets/js/common.js"></script>
-    <script src="../assets/js/bible-db.js"></script>
+    <!-- 為了確保預覽功能正常，我们将逻辑直接内嵌，避免依賴外部 JS -->
 </head>
 <body class="pb-20">
     
@@ -18,7 +16,7 @@
         <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
     </div>
 
-    <!-- 導覽列 (已新增首頁按鈕) -->
+    <!-- 導覽列 -->
     <nav class="nature-nav sticky top-0 z-50">
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
@@ -80,28 +78,246 @@
 
     <script>
         const DEVOTION_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/devotionals.json';
+        const READING_PLAN_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/reading-plan.json'; // 建議建立此檔案儲存全年進度
+        const BIBLE_DB_URL = 'https://raw.githubusercontent.com/annelin0321/bible-zh/main/bible_complete.db';
+        
         let devotionalsData = [];
-        const bibleReadingPlan = {};
+        let bibleReadingPlan = {}; // 這裡將儲存完整的讀經計畫
+        
+        // DB 變數
+        let db = null;
+        let isDbLoading = false;
+        let dbCols = {};
 
-        // 1. 生成讀經進度表 (完整版範例)
-        function generateReadingPlan() {
-            // 這裡為了示範，生成整年的假資料邏輯，實際可替換為完整 JSON
-            // 為了讓 demo 每天都有資料，我們用簡單的演算法生成
-            const books = ["創世記", "出埃及記", "利未記", "民數記", "申命記", "馬太福音", "馬可福音", "路加福音", "約翰福音"];
-            for(let m=1; m<=12; m++) {
-                for(let d=1; d<=31; d++) {
-                    bibleReadingPlan[`${m}-${d}`] = {
-                        ot: `${books[m%5]} ${d}`,
-                        nt: `${books[5 + (d%4)]} ${d}`,
-                        ps: `詩篇 ${d}`,
-                        pr: `箴言 ${d}`
-                    };
-                }
+        // 1. 初始化資料庫
+        async function initBibleDB() {
+            if (db) return db;
+            if (isDbLoading) return new Promise(resolve => {
+                const check = setInterval(() => { if(db || !isDbLoading) { clearInterval(check); resolve(db); } }, 100);
+            });
+
+            isDbLoading = true;
+            try {
+                const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm` });
+                const response = await fetch(BIBLE_DB_URL);
+                if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                const buffer = await response.arrayBuffer();
+                db = new SQL.Database(new Uint8Array(buffer));
+                console.log("Bible DB Loaded");
+                
+                const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0].values;
+                let validTable = tables.find(t => /bible|verse|scripture/i.test(t[0]));
+                if (!validTable) validTable = tables.find(t => t[0] !== 'sqlite_sequence');
+                const tableName = validTable ? validTable[0] : tables[0][0];
+                
+                const cols = db.exec(`PRAGMA table_info(${tableName})`)[0].values.map(r=>r[1]);
+                
+                dbCols = {
+                    tableName: tableName,
+                    book: cols.find(c => /book|b|書|vol/i.test(c)) || cols[0],
+                    chap: cols.find(c => /chapter|chap|c|章/i.test(c)) || cols[1],
+                    ver: cols.find(c => /verse|v|節/i.test(c)) || cols[2],
+                    text: cols.find(c => /lection|content|text|scripture|經文|經文/i.test(c)) || cols[cols.length - 1]
+                };
+
+                return db;
+            } catch (err) {
+                console.error("DB Error", err);
+                return null;
+            } finally {
+                isDbLoading = false;
             }
         }
 
+        // 2. 解析經文
+        function parseBibleReference(text) {
+            if (!text) return null;
+            text = text.replace(/[\(\)\uff08\uff09]/g, ' ').replace(/：/g, ':').trim();
+            const bookPat = "([1-3]?\\s?[\\u4e00-\\u9fa5]{1,15}|[1-3]?\\s?[a-zA-Z]+)";
+            const chapVersePat = "(\\d+)\\s*:\\s*(\\d+)(?:\\s*[-–~]\\s*(\\d+))?";
+            
+            const cvRegex = new RegExp(`${bookPat}\\s*${chapVersePat}`, 'g');
+            let match = null;
+            let lastMatch = null;
+            while ((match = cvRegex.exec(text)) !== null) { lastMatch = match; }
+
+            if (lastMatch) {
+                return {
+                    book: lastMatch[1].trim(),
+                    chapter: parseInt(lastMatch[2]),
+                    verse: parseInt(lastMatch[3]),
+                    endVerse: lastMatch[4] ? parseInt(lastMatch[4]) : parseInt(lastMatch[3])
+                };
+            }
+            
+            // 處理跨章 (例如: 創世記 1-2)
+            const chapRangePat = "(\\d+)\\s*[-–~]\\s*(\\d+)";
+            const rangeRegex = new RegExp(`${bookPat}\\s*${chapRangePat}`, 'g');
+            let matchRange;
+            while ((matchRange = rangeRegex.exec(text)) !== null) { lastMatch = matchRange; }
+            
+            if (lastMatch && lastMatch.length === 4) { // book, startChap, endChap
+                 return {
+                    book: lastMatch[1].trim(),
+                    chapter: parseInt(lastMatch[2]),
+                    verse: 1,
+                    endVerse: null,
+                    endChapter: parseInt(lastMatch[3])
+                };
+            }
+
+            const chapRegex = new RegExp(`${bookPat}\\s*(\\d+)\\s*$`, 'g'); 
+            while ((match = chapRegex.exec(text)) !== null) { lastMatch = match; }
+            
+            if (lastMatch) {
+                return { book: lastMatch[1].trim(), chapter: parseInt(lastMatch[2]), verse: 1, endVerse: null };
+            }
+            return null;
+        }
+
+        // 3. 開啟經文 Modal
+        async function openScripture(reference) {
+            const modal = document.getElementById('bible-modal');
+            const modalTitle = document.getElementById('modal-title');
+            const modalBody = document.getElementById('modal-body');
+            
+            if(!modal) return;
+
+            modal.classList.add('show');
+            modalBody.innerHTML = `<div class="flex justify-center py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin text-[#8D7B68]"></i></div>`;
+            if(window.lucide) lucide.createIcons();
+
+            const database = await initBibleDB();
+            if (!database) { 
+                modalBody.innerHTML = `<p class="text-center text-red-500">資料庫讀取中，請稍後再試...</p>`; 
+                return; 
+            }
+
+            try {
+                const parsed = parseBibleReference(reference);
+                if (parsed) {
+                    let query;
+                    
+                    // 跨章查詢 (例如 創世記 1-2)
+                    if (parsed.endChapter && parsed.endChapter > parsed.chapter) {
+                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} >= ${parsed.chapter} AND ${dbCols.chap} <= ${parsed.endChapter} ORDER BY ${dbCols.chap}, ${dbCols.ver}`;
+                    }
+                    // 單章範圍節數 (例如 創世記 1:1-5)
+                    else if (parsed.endVerse && parsed.endVerse > parsed.verse) {
+                        query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} >= ${parsed.verse} AND ${dbCols.ver} <= ${parsed.endVerse} ORDER BY ${dbCols.ver}`;
+                    } 
+                    // 整章 (例如 創世記 1)
+                    else if (parsed.endVerse === null) {
+                        query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY ${dbCols.ver}`;
+                    } 
+                    // 單節 (例如 創世記 1:1)
+                    else {
+                        query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} = ${parsed.verse}`;
+                    }
+
+                    const res = database.exec(query);
+                    if (res.length > 0) {
+                        let html = '';
+                        let currentChap = -1;
+                        
+                        res[0].values.forEach(row => {
+                            // 跨章時顯示章節標題
+                            if (row.length === 3) { // has chapter col
+                                const c = row[0], v = row[1], t = row[2];
+                                if (c !== currentChap && parsed.endChapter) {
+                                    html += `<div class="text-center my-4"><span class="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-600">第 ${c} 章</span></div>`;
+                                    currentChap = c;
+                                }
+                                html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
+                            } else {
+                                const v = row[0], t = row[1];
+                                html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
+                            }
+                        });
+                        
+                        // 標題顯示
+                        let titleSuffix = '';
+                        if (parsed.endChapter) titleSuffix = `第 ${parsed.chapter}-${parsed.endChapter} 章`;
+                        else titleSuffix = `第 ${parsed.chapter} 章`;
+                        
+                        modalTitle.innerText = `${parsed.book} ${titleSuffix}`;
+                        modalBody.innerHTML = html;
+                    } else {
+                        modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}<br><span class="text-sm text-gray-400">請確認書卷名稱是否正確</span></p>`;
+                    }
+                } else {
+                    modalTitle.innerText = reference;
+                    modalBody.innerHTML = `<p class="text-center py-6">無法解析經文格式，請嘗試前往圖書館查詢。</p>
+                    <div class="text-center"><a href="../library/index.html" class="nature-btn">前往圖書館</a></div>`;
+                }
+            } catch (e) {
+                console.error(e);
+                modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤: ${e.message}</p>`;
+            }
+        }
+
+        function closeBibleModal(event) {
+            if (event && event.target.closest('.modal-content') && event.target.id !== 'bible-modal') return;
+            document.getElementById('bible-modal').classList.remove('show');
+        }
+
+        // --- 讀經計畫生成 (重要修正) ---
+
+        async function generateReadingPlan() {
+            // 嘗試從遠端獲取完整 JSON
+            try {
+                const res = await fetch(READING_PLAN_URL);
+                if (res.ok) {
+                    const data = await res.json();
+                    // 假設格式為 [{date:"1-1", ot:"...", nt:"...", ps:"...", pr:"..."}, ...]
+                    data.forEach(day => { bibleReadingPlan[day.date] = day; });
+                    return;
+                }
+            } catch (e) { console.log("Fetching plan failed, using default."); }
+
+            // 預設一月完整資料 (One Year Bible Plan - January)
+            const janData = [
+                {d:1, ot:"創世記 1-2", nt:"馬太福音 1", ps:"詩篇 1", pr:"箴言 1:1-6"},
+                {d:2, ot:"創世記 3-5", nt:"馬太福音 2", ps:"詩篇 2", pr:"箴言 1:7-9"},
+                {d:3, ot:"創世記 6-8", nt:"馬太福音 3", ps:"詩篇 3", pr:"箴言 1:10-19"},
+                {d:4, ot:"創世記 9-11", nt:"馬太福音 4", ps:"詩篇 4", pr:"箴言 1:20-33"},
+                {d:5, ot:"創世記 12-14", nt:"馬太福音 5:1-26", ps:"詩篇 5", pr:"箴言 2:1-5"},
+                {d:6, ot:"創世記 15-17", nt:"馬太福音 5:27-48", ps:"詩篇 6", pr:"箴言 2:6-15"},
+                {d:7, ot:"創世記 18-19", nt:"馬太福音 6", ps:"詩篇 7", pr:"箴言 2:16-22"},
+                {d:8, ot:"創世記 20-22", nt:"馬太福音 7", ps:"詩篇 8", pr:"箴言 3:1-6"},
+                {d:9, ot:"創世記 23-24", nt:"馬太福音 8:1-17", ps:"詩篇 9:1-12", pr:"箴言 3:7-10"},
+                {d:10, ot:"創世記 25-26", nt:"馬太福音 8:18-34", ps:"詩篇 9:13-20", pr:"箴言 3:11-12"},
+                {d:11, ot:"創世記 27-28", nt:"馬太福音 9:1-17", ps:"詩篇 10:1-11", pr:"箴言 3:13-18"},
+                {d:12, ot:"創世記 29-30", nt:"馬太福音 9:18-38", ps:"詩篇 10:12-18", pr:"箴言 3:19-26"},
+                {d:13, ot:"創世記 31", nt:"馬太福音 10:1-23", ps:"詩篇 11", pr:"箴言 3:27-32"},
+                {d:14, ot:"創世記 32-33", nt:"馬太福音 10:24-42", ps:"詩篇 12", pr:"箴言 3:33-35"},
+                {d:15, ot:"創世記 34-35", nt:"馬太福音 11:1-19", ps:"詩篇 13", pr:"箴言 4:1-9"},
+                {d:16, ot:"創世記 36-37", nt:"馬太福音 11:20-30", ps:"詩篇 14", pr:"箴言 4:10-19"},
+                {d:17, ot:"創世記 38-40", nt:"馬太福音 12:1-21", ps:"詩篇 15", pr:"箴言 4:20-27"},
+                {d:18, ot:"創世記 41", nt:"馬太福音 12:22-50", ps:"詩篇 16", pr:"箴言 5:1-6"},
+                {d:19, ot:"創世記 42-43", nt:"馬太福音 13:1-23", ps:"詩篇 17", pr:"箴言 5:7-14"},
+                {d:20, ot:"創世記 44-45", nt:"馬太福音 13:24-43", ps:"詩篇 18:1-15", pr:"箴言 5:15-23"},
+                {d:21, ot:"創世記 46-48", nt:"馬太福音 13:44-58", ps:"詩篇 18:16-36", pr:"箴言 6:1-5"},
+                {d:22, ot:"創世記 49-50", nt:"馬太福音 14:1-21", ps:"詩篇 18:37-50", pr:"箴言 6:6-11"},
+                {d:23, ot:"出埃及記 1-3", nt:"馬太福音 14:22-36", ps:"詩篇 19", pr:"箴言 6:12-15"},
+                {d:24, ot:"出埃及記 4-6", nt:"馬太福音 15:1-20", ps:"詩篇 20", pr:"箴言 6:16-19"},
+                {d:25, ot:"出埃及記 7-8", nt:"馬太福音 15:21-39", ps:"詩篇 21", pr:"箴言 6:20-26"},
+                {d:26, ot:"出埃及記 9-10", nt:"馬太福音 16", ps:"詩篇 22:1-11", pr:"箴言 6:27-35"},
+                {d:27, ot:"出埃及記 11-12", nt:"馬太福音 17", ps:"詩篇 22:12-31", pr:"箴言 7:1-5"},
+                {d:28, ot:"出埃及記 13-15", nt:"馬太福音 18:1-20", ps:"詩篇 23", pr:"箴言 7:6-23"},
+                {d:29, ot:"出埃及記 16-18", nt:"馬太福音 18:21-35", ps:"詩篇 24", pr:"箴言 7:24-27"},
+                {d:30, ot:"出埃及記 19-21", nt:"馬太福音 19:1-15", ps:"詩篇 25:1-11", pr:"箴言 8:1-11"},
+                {d:31, ot:"出埃及記 22-24", nt:"馬太福音 19:16-30", ps:"詩篇 25:12-22", pr:"箴言 8:12-13"}
+            ];
+            
+            // 寫入變數 (這裡只寫入 1 月的，格式為 '1-1', '1-2'...)
+            janData.forEach(day => { bibleReadingPlan[`1-${day.d}`] = day; });
+        }
+
         async function init() {
-            generateReadingPlan();
+            if(window.lucide) lucide.createIcons();
+            await generateReadingPlan(); // 等待計畫生成/下載
+            
             try {
                 const response = await fetch(DEVOTION_DATA_URL);
                 const data = await response.json();
@@ -124,8 +340,12 @@
         function renderDailyDevotional(items) {
             const container = document.getElementById('daily-content');
             const dObj = new Date();
-            const today = `${(dObj.getMonth()+1).toString().padStart(2,'0')}-${dObj.getDate().toString().padStart(2,'0')}`;
-            const plan = bibleReadingPlan[`${dObj.getMonth()+1}-${dObj.getDate()}`];
+            const todayStr = `${(dObj.getMonth()+1).toString().padStart(2,'0')}-${dObj.getDate().toString().padStart(2,'0')}`;
+            
+            // 查詢計畫 (Key 格式為 'M-D', e.g. '1-1')
+            const planKey = `${dObj.getMonth()+1}-${dObj.getDate()}`;
+            const plan = bibleReadingPlan[planKey];
+            
             let html = '';
 
             // 讀經進度區塊
@@ -134,12 +354,12 @@
                     <div class="mb-10 text-center w-full">
                         <div class="inline-block px-6 py-2 border-b-2 border-[#6B8E23] mb-6">
                             <h2 class="text-2xl font-serif text-[#3E3B39] tracking-widest">今日課表</h2>
-                            <p class="text-xs text-[#8D7B68] uppercase mt-1">Today's Schedule (${today})</p>
+                            <p class="text-xs text-[#8D7B68] uppercase mt-1">Today's Schedule (${todayStr})</p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto px-2">
                             ${['ot','nt','ps','pr'].map(k => `
                                 <button onclick="openScripture('${plan[k]}')" class="reading-plan-btn">
-                                    <span class="label">${k.toUpperCase()} TESTAMENT</span>
+                                    <span class="label">${getLabel(k)}</span>
                                     <span class="content">${plan[k]}</span>
                                     <i data-lucide="book-open"></i>
                                 </button>
@@ -148,19 +368,18 @@
                     </div>
                     <div class="divider-water opacity-50 mb-10 w-full"></div>
                 `;
+            } else {
+                html += `<div class="mb-10 text-center"><p class="text-gray-400">今日 (${todayStr}) 尚無內建進度</p><p class="text-xs text-gray-400 mt-1">請擴充 reading-plan.json 或使用一月日期測試</p></div>`;
             }
 
             // 靈修文章區塊
-            // 簡單過濾：顯示第一筆資料作為示範，或者根據日期過濾
-            // 這裡為了確保有內容顯示，若無當天資料則顯示第一筆
             let todayItems = items.filter(i => {
                 let k = Object.keys(i).find(key => /date|time|日期/i.test(key));
-                // 這裡簡化日期比對邏輯
+                // 這裡暫時顯示所有文章的第一篇，實際應比對日期
                 return true; 
             });
             
             if(todayItems.length > 0) {
-                // 只顯示第一篇，避免太長
                 html += generateSingleDevotionalHtml(todayItems[0]);
                 html += `<div class="mt-8"><button onclick="showFullSchedule()" class="nature-btn">查看更多靈修筆記</button></div>`;
             } else {
@@ -169,8 +388,12 @@
             container.innerHTML = html;
             if(window.lucide) lucide.createIcons();
         }
+        
+        function getLabel(key) {
+            const map = { ot: 'OLD TESTAMENT', nt: 'NEW TESTAMENT', ps: 'PSALMS', pr: 'PROVERBS' };
+            return map[key] || key;
+        }
 
-        // 靈修內容生成邏輯 (處理詩歌與連結)
         function generateSingleDevotionalHtml(item) {
              let contentHtml = `<div class="text-left w-full space-y-6 text-[#585858] font-light text-lg">`;
              let buttonsArray = []; 
@@ -180,7 +403,6 @@
              let titleKey = keys.find(k => /title|name|標題|名稱/i.test(k)) || 'No Title';
              contentHtml += `<h2 class="text-3xl font-serif text-[#3E3B39] mb-4 text-center">${item[titleKey]}</h2>`;
              
-             // 處理連結與詩歌
              const songNameKey = keys.find(k => /^(song|hymn|worship|praise|詩歌|敬拜|讚美)$/i.test(k));
              const linkKey = keys.find(k => /^(link|url|video|youtube|連結)$/i.test(k));
 
