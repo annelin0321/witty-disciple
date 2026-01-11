@@ -1,584 +1,593 @@
-import React, { useState, useEffect } from 'react';
-import { RefreshCw, HelpCircle, Trophy, X } from 'lucide-react';
-
-// --- 圖示組件 ---
-
-// 改為：梅花/花朵 (Flower) - 對應紅心 (Red) - 修正為端正可愛的五瓣花
-const LilyIcon = ({ className }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-    {/* 中央花蕊 */}
-    <circle cx="12" cy="12" r="2.5" opacity="0.3" />
-    {/* 花瓣 - 使用對稱路徑 */}
-    <path d="M12,2 C13.5,2 14.5,3.5 14.5,5 C15.5,4 18,4 19,5.5 C20,7 19,9 17.5,9.5 C19,10.5 20,13 19,14.5 C18,16 15.5,16 14.5,15 C14.5,16.5 13.5,19 12,19 C10.5,19 9.5,16.5 9.5,15 C8.5,16 6,16 5,14.5 C4,13 5,10.5 6.5,9.5 C5,9 4,7 5,5.5 C6,4 8.5,4 9.5,5 C9.5,3.5 10.5,2 12,2 Z" />
-  </svg>
-);
-
-// 改為：胖魚 (Fat Fish) - 對應方塊 (Red) - 身體更圓潤 (維持上一版)
-const FishIcon = ({ className }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M20,12 C20,8 16,5 11,5 C6,5 2,8 2,12 C2,16 6,19 11,19 C16,19 20,16 20,12 Z M20,12 L24,8 L24,16 L20,12 Z M15,10 C16,10 16.5,10.5 16.5,11.5 C16.5,12.5 16,13 15,13 C14,13 13.5,12.5 13.5,11.5 C13.5,10.5 14,10 15,10 Z" />
-  </svg>
-);
-
-// 改為：大樹 (Tree) - 對應梅花 (Black) - 更典型的樹冠形狀 (維持上一版)
-const TreeIcon = ({ className }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M12,3 C15,3 17,4.5 17.5,7 C19.5,7.5 21,9.5 21,12 C21,15 19,17.5 16,18 L15,18 L15,22 L9,22 L9,18 L8,18 C5,17.5 3,15 3,12 C3,9.5 4.5,7.5 6.5,7 C7,4.5 9,3 12,3 Z" />
-  </svg>
-);
-
-// 改為：可愛小鳥 (Cute Bird) - 對應黑桃 (Black) - 加上腳與黑眼睛
-const EagleIcon = ({ className }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-    {/* 腳 (新增) */}
-    <path d="M12,19 L11,23 L9,23 M15,19 L16,23 L18,23" stroke="currentColor" strokeWidth="1.5" fill="none" />
-    {/* 尖嘴 */}
-    <path d="M20,9 L24,10.5 L20,12 V9 Z" />
-    {/* 身體主體: 頭(圓)+身(橢圓)+尾巴(翹起) */}
-    <path d="M16.5,5 C13.5,5 11.5,6.5 10.5,8.5 C9,8.5 4,9 2,11.5 C1.5,12.5 3.5,14 5,15.5 C6,17.5 9,20 13.5,20 C17.5,20 20.5,17 20.5,12 C20.5,8 19.5,5 16.5,5 Z" />
-    {/* 眼睛: 改為白底黑珠 */}
-    <circle cx="16.5" cy="8.5" r="2.2" fill="white" />
-    <circle cx="17" cy="8.5" r="1" fill="black" />
-    {/* 翅膀 (使用反白/半透明效果) */}
-    <path d="M11,11 C12,10.5 15,11.5 16,14 C16.5,15.5 15.5,17 14,17 C12,17 10.5,15.5 10,14 C9.5,13 10,11.5 11,11 Z" fill="white" fillOpacity="0.4" />
-  </svg>
-);
-
-// 十字架 (Cross) - 用於復活牌 (維持原樣)
-const CrossIcon = ({ className }) => (
-  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M10,2 L14,2 L14,8 L20,8 L20,12 L14,12 L14,22 L10,22 L10,12 L4,12 L4,8 L10,8 L10,2 Z" />
-  </svg>
-);
-
-// --- 遊戲資料設定 ---
-
-const SUITS = {
-  LILY: { name: '梅花', color: 'red', icon: LilyIcon, type: 'lily' },
-  FISH: { name: '大魚', color: 'red', icon: FishIcon, type: 'fish' },
-  TREE: { name: '大樹', color: 'black', icon: TreeIcon, type: 'tree' },
-  EAGLE: { name: '小鳥', color: 'black', icon: EagleIcon, type: 'eagle' },
-};
-
-// 1-12 神蹟 + 13 復活
-const RANKS = [
-  { val: 1, label: '1', name: '變水為酒' },
-  { val: 2, label: '2', name: '醫治大臣子' },
-  { val: 3, label: '3', name: '趕出污鬼' },
-  { val: 4, label: '4', name: '彼得岳母' },
-  { val: 5, label: '5', name: '潔淨痲瘋' },
-  { val: 6, label: '6', name: '醫治癱子' },
-  { val: 7, label: '7', name: '平靜風浪' },
-  { val: 8, label: '8', name: '格拉森趕鬼' },
-  { val: 9, label: '9', name: '血漏婦人' },
-  { val: 10, label: '10', name: '睚魯女兒' },
-  { val: 11, label: '11', name: '五餅二魚' },
-  { val: 12, label: '12', name: '耶穌履海' },
-  { val: 13, label: '復活', name: '耶穌復活', isKing: true },
-];
-
-const shuffleDeck = () => {
-  const deck = [];
-  Object.keys(SUITS).forEach((suitKey) => {
-    RANKS.forEach((rank) => {
-      deck.push({
-        id: `${suitKey}-${rank.val}`,
-        suit: SUITS[suitKey],
-        rank: rank,
-        isFaceUp: false,
-      });
-    });
-  });
-
-  // Fisher-Yates Shuffle
-  for (let i = deck.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [deck[i], deck[j]] = [deck[j], deck[i]];
-  }
-  return deck;
-};
-
-// --- 主程式 ---
-
-export default function BibleSolitaire() {
-  const [columns, setColumns] = useState([]);
-  const [stock, setStock] = useState([]);
-  const [waste, setWaste] = useState([]);
-  const [foundations, setFoundations] = useState({ LILY: [], FISH: [], TREE: [], EAGLE: [] });
-  const [selected, setSelected] = useState(null); // { type: 'col'|'waste'|'foundation', index: number, card: object }
-  const [gameWon, setGameWon] = useState(false);
-  const [showRules, setShowRules] = useState(false);
-
-  // 初始化遊戲
-  const initializeGame = () => {
-    const deck = shuffleDeck();
-    const newColumns = [];
-    let deckIndex = 0;
-
-    // 發牌給7個牌堆 (Solitaire 規則)
-    for (let i = 0; i < 7; i++) {
-      const col = [];
-      for (let j = 0; j <= i; j++) {
-        const card = deck[deckIndex++];
-        if (j === i) card.isFaceUp = true; // 最上面的牌翻開
-        col.push(card);
-      }
-      newColumns.push(col);
-    }
-
-    setColumns(newColumns);
-    setStock(deck.slice(deckIndex));
-    setWaste([]);
-    setFoundations({ LILY: [], FISH: [], TREE: [], EAGLE: [] });
-    setSelected(null);
-    setGameWon(false);
-  };
-
-  useEffect(() => {
-    initializeGame();
-  }, []);
-
-  useEffect(() => {
-    // 檢查勝利條件
-    const totalFoundation = Object.values(foundations).reduce((acc, curr) => acc + curr.length, 0);
-    if (totalFoundation === 52) {
-      setGameWon(true);
-    }
-  }, [foundations]);
-
-  // --- 遊戲邏輯 ---
-
-  // 從發牌堆翻牌
-  const dealFromStock = () => {
-    setSelected(null);
-    if (stock.length === 0) {
-      // 重置：將廢牌堆反轉回發牌堆
-      setStock([...waste].reverse().map(c => ({ ...c, isFaceUp: false })));
-      setWaste([]);
-    } else {
-      const card = { ...stock[0], isFaceUp: true };
-      setStock(stock.slice(1));
-      setWaste([card, ...waste]);
-    }
-  };
-
-  // 點擊卡牌處理
-  const handleCardClick = (card, source, sourceIndex = null) => {
-    // 如果點擊的是蓋著的牌，無效 (除非在牌堆邏輯中已處理)
-    if (!card.isFaceUp && source !== 'stock') return;
-
-    // 1. 如果已經選了一張牌，現在點擊的是目標
-    if (selected) {
-      // 如果點擊的是自己，取消選取
-      if (selected.card.id === card.id) {
-        setSelected(null);
-        return;
-      }
-      // 嘗試移動
-      attemptMove(selected, { type: source, index: sourceIndex, card });
-    } else {
-      // 2. 還沒選牌，現在選取這張
-      // 只能選：廢牌堆頂、牌柱中翻開的牌、基石堆頂
-      if (source === 'waste') {
-        setSelected({ type: 'waste', card });
-      } else if (source === 'column') {
-        setSelected({ type: 'column', index: sourceIndex, card });
-      } else if (source === 'foundation') {
-         setSelected({ type: 'foundation', suit: sourceIndex, card });
-      }
-    }
-  };
-
-  // 點擊空位處理 (移動國王到空牌柱)
-  const handleEmptyColumnClick = (colIndex) => {
-    if (selected) {
-      attemptMove(selected, { type: 'column', index: colIndex, card: null });
-    }
-  };
-
-  // 嘗試移動卡牌
-  const attemptMove = (from, to) => {
-    let isValid = false;
-
-    // 邏輯：移動到牌柱 (Tableau)
-    if (to.type === 'column') {
-      const targetCard = to.card; // 如果是空柱，這裡是 null
-      
-      // 規則 1: 只有國王(13)能放空位
-      if (!targetCard) {
-        if (from.card.rank.val === 13) isValid = true;
-      } else {
-        // 規則 2: 異色且點數小 1 (例如：把紅色2放在黑色3上)
-        if (from.card.suit.color !== targetCard.suit.color && 
-            from.card.rank.val === targetCard.rank.val - 1) {
-          isValid = true;
-        }
-      }
-    } 
-    // 邏輯：移動到基石 (Foundation)
-    else if (to.type === 'foundation') {
-       // 只能一張一張移
-       // 檢查是否是多張移動 (如果是從 column 來，且該牌上方還有牌，則不能移到 foundation)
-       if (from.type === 'column') {
-           const col = columns[from.index];
-           const cardIdx = col.findIndex(c => c.id === from.card.id);
-           if (cardIdx !== col.length - 1) return; // 不是最上面的牌
-       }
-
-       const targetSuit = to.suit; // 'LILY', etc.
-       const pile = foundations[targetSuit];
-       
-       // 必須同花色
-       if (from.card.suit.type.toUpperCase() === targetSuit) {
-           if (pile.length === 0) {
-               // 必須是 1 (變水為酒)
-               if (from.card.rank.val === 1) isValid = true;
-           } else {
-               // 必須大 1
-               const topCard = pile[pile.length - 1];
-               if (from.card.rank.val === topCard.rank.val + 1) isValid = true;
-           }
-       }
-    }
-
-    if (isValid) {
-      executeMove(from, to);
-    } else {
-      // 移動無效，震動或提示 (這邊簡單取消選取)
-      setSelected(null);
-    }
-  };
-
-  const executeMove = (from, to) => {
-    // 1. 建立所有相關狀態的副本 (Deep copy where necessary for arrays)
-    let newColumns = [...columns];
-    let newFoundations = { ...foundations };
-    let newWaste = [...waste];
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>聖經神蹟接龍</title>
     
-    let movingCards = [];
+    <!-- 引入 React 和 React DOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- 引入 Babel 用來解析 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 引入 Tailwind CSS 用於樣式 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2d5a27;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
 
-    // --- STEP 1: 從來源移除 (REMOVE) ---
-    if (from.type === 'waste') {
-        movingCards = [newWaste[0]];
-        newWaste = newWaste.slice(1);
-    } else if (from.type === 'foundation') {
-        const suit = from.suit;
-        const pile = newFoundations[suit];
-        movingCards = [pile[pile.length - 1]];
-        newFoundations[suit] = pile.slice(0, -1);
-    } else if (from.type === 'column') {
-        const colIndex = from.index;
-        const col = newColumns[colIndex];
-        const splitIndex = col.findIndex(c => c.id === from.card.id);
-        
-        // 抓取要移動的牌 (包含下面疊著的)
-        movingCards = col.slice(splitIndex);
-        
-        // 更新來源牌柱：移除牌並翻開最上面那張
-        const remaining = col.slice(0, splitIndex);
-        if (remaining.length > 0) {
-            const lastCard = remaining[remaining.length - 1];
-            if (!lastCard.isFaceUp) {
-                // 必須產生新物件以觸發 React 更新
-                remaining[remaining.length - 1] = { ...lastCard, isFaceUp: true };
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // --- 取代原本的 lucide-react 套件引入，改為直接定義 Icon ---
+        const RefreshCw = ({ size = 24, className }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+                <path d="M8 16H3v5" />
+            </svg>
+        );
+
+        const HelpCircle = ({ size = 24, className }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <circle cx="12" cy="12" r="10" />
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+                <path d="M12 17h.01" />
+            </svg>
+        );
+
+        const Trophy = ({ size = 24, className }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
+                <path d="M18 9h1.5a2.5 2.5 0 0 1 0 5H18" />
+                <path d="M4 22h16" />
+                <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22" />
+                <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22" />
+                <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z" />
+            </svg>
+        );
+
+        const X = ({ size = 24, className }) => (
+            <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+                <path d="M18 6 6 18" />
+                <path d="M6 6 18 18" />
+            </svg>
+        );
+
+        // --- 遊戲專用圖示 (更新至最新版：可愛花、胖魚、大樹、黑眼小鳥) ---
+
+        // 梅花/花朵 (Flower) - 對應紅心 (Red) - 端正可愛的五瓣花
+        const LilyIcon = ({ className }) => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+            <circle cx="12" cy="12" r="2.5" opacity="0.3" />
+            <path d="M12,2 C13.5,2 14.5,3.5 14.5,5 C15.5,4 18,4 19,5.5 C20,7 19,9 17.5,9.5 C19,10.5 20,13 19,14.5 C18,16 15.5,16 14.5,15 C14.5,16.5 13.5,19 12,19 C10.5,19 9.5,16.5 9.5,15 C8.5,16 6,16 5,14.5 C4,13 5,10.5 6.5,9.5 C5,9 4,7 5,5.5 C6,4 8.5,4 9.5,5 C9.5,3.5 10.5,2 12,2 Z" />
+        </svg>
+        );
+
+        // 胖魚 (Fat Fish) - 對應方塊 (Red)
+        const FishIcon = ({ className }) => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+            <path d="M20,12 C20,8 16,5 11,5 C6,5 2,8 2,12 C2,16 6,19 11,19 C16,19 20,16 20,12 Z M20,12 L24,8 L24,16 L20,12 Z M15,10 C16,10 16.5,10.5 16.5,11.5 C16.5,12.5 16,13 15,13 C14,13 13.5,12.5 13.5,11.5 C13.5,10.5 14,10 15,10 Z" />
+        </svg>
+        );
+
+        // 大樹 (Tree) - 對應梅花 (Black)
+        const TreeIcon = ({ className }) => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+            <path d="M12,3 C15,3 17,4.5 17.5,7 C19.5,7.5 21,9.5 21,12 C21,15 19,17.5 16,18 L15,18 L15,22 L9,22 L9,18 L8,18 C5,17.5 3,15 3,12 C3,9.5 4.5,7.5 6.5,7 C7,4.5 9,3 12,3 Z" />
+        </svg>
+        );
+
+        // 可愛小鳥 (Cute Bird) - 對應黑桃 (Black) - 加上腳與黑眼睛
+        const EagleIcon = ({ className }) => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+            {/* 腳 */}
+            <path d="M12,19 L11,23 L9,23 M15,19 L16,23 L18,23" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            {/* 尖嘴 */}
+            <path d="M20,9 L24,10.5 L20,12 V9 Z" />
+            {/* 身體 */}
+            <path d="M16.5,5 C13.5,5 11.5,6.5 10.5,8.5 C9,8.5 4,9 2,11.5 C1.5,12.5 3.5,14 5,15.5 C6,17.5 9,20 13.5,20 C17.5,20 20.5,17 20.5,12 C20.5,8 19.5,5 16.5,5 Z" />
+            {/* 眼睛: 白底黑珠 */}
+            <circle cx="16.5" cy="8.5" r="2.2" fill="white" />
+            <circle cx="17" cy="8.5" r="1" fill="black" />
+            {/* 翅膀 */}
+            <path d="M11,11 C12,10.5 15,11.5 16,14 C16.5,15.5 15.5,17 14,17 C12,17 10.5,15.5 10,14 C9.5,13 10,11.5 11,11 Z" fill="white" fillOpacity="0.4" />
+        </svg>
+        );
+
+        // 十字架 (Cross)
+        const CrossIcon = ({ className }) => (
+        <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+            <path d="M10,2 L14,2 L14,8 L20,8 L20,12 L14,12 L14,22 L10,22 L10,12 L4,12 L4,8 L10,8 L10,2 Z" />
+        </svg>
+        );
+
+        // --- 遊戲資料設定 ---
+
+        const SUITS = {
+        LILY: { name: '梅花', color: 'red', icon: LilyIcon, type: 'lily' },
+        FISH: { name: '大魚', color: 'red', icon: FishIcon, type: 'fish' },
+        TREE: { name: '大樹', color: 'black', icon: TreeIcon, type: 'tree' },
+        EAGLE: { name: '小鳥', color: 'black', icon: EagleIcon, type: 'eagle' },
+        };
+
+        const RANKS = [
+        { val: 1, label: '1', name: '變水為酒' },
+        { val: 2, label: '2', name: '醫治大臣子' },
+        { val: 3, label: '3', name: '趕出污鬼' },
+        { val: 4, label: '4', name: '彼得岳母' },
+        { val: 5, label: '5', name: '潔淨痲瘋' },
+        { val: 6, label: '6', name: '醫治癱子' },
+        { val: 7, label: '7', name: '平靜風浪' },
+        { val: 8, label: '8', name: '格拉森趕鬼' },
+        { val: 9, label: '9', name: '血漏婦人' },
+        { val: 10, label: '10', name: '睚魯女兒' },
+        { val: 11, label: '11', name: '五餅二魚' },
+        { val: 12, label: '12', name: '耶穌履海' },
+        { val: 13, label: '復活', name: '耶穌復活', isKing: true },
+        ];
+
+        const shuffleDeck = () => {
+        const deck = [];
+        Object.keys(SUITS).forEach((suitKey) => {
+            RANKS.forEach((rank) => {
+            deck.push({
+                id: `${suitKey}-${rank.val}`,
+                suit: SUITS[suitKey],
+                rank: rank,
+                isFaceUp: false,
+            });
+            });
+        });
+
+        // Fisher-Yates Shuffle
+        for (let i = deck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+        return deck;
+        };
+
+        // --- 主程式 ---
+
+        function BibleSolitaire() {
+        const [columns, setColumns] = useState([]);
+        const [stock, setStock] = useState([]);
+        const [waste, setWaste] = useState([]);
+        const [foundations, setFoundations] = useState({ LILY: [], FISH: [], TREE: [], EAGLE: [] });
+        const [selected, setSelected] = useState(null);
+        const [gameWon, setGameWon] = useState(false);
+        const [showRules, setShowRules] = useState(false);
+
+        const initializeGame = () => {
+            const deck = shuffleDeck();
+            const newColumns = [];
+            let deckIndex = 0;
+
+            for (let i = 0; i < 7; i++) {
+            const col = [];
+            for (let j = 0; j <= i; j++) {
+                const card = deck[deckIndex++];
+                if (j === i) card.isFaceUp = true;
+                col.push(card);
             }
-        }
-        newColumns[colIndex] = remaining;
-    }
+            newColumns.push(col);
+            }
 
-    // --- STEP 2: 加入到目標 (ADD) ---
-    if (to.type === 'column') {
-        const colIndex = to.index;
-        newColumns[colIndex] = [...newColumns[colIndex], ...movingCards];
-    } else if (to.type === 'foundation') {
-        const suit = to.suit;
-        // Foundation 只能一次放一張 (AttemptMove 已檢查過)
-        newFoundations[suit] = [...newFoundations[suit], movingCards[0]];
-    }
+            setColumns(newColumns);
+            setStock(deck.slice(deckIndex));
+            setWaste([]);
+            setFoundations({ LILY: [], FISH: [], TREE: [], EAGLE: [] });
+            setSelected(null);
+            setGameWon(false);
+        };
 
-    // --- STEP 3: 一次性更新狀態 ---
-    setColumns(newColumns);
-    setFoundations(newFoundations);
-    setWaste(newWaste);
-    setSelected(null);
-  };
+        useEffect(() => {
+            initializeGame();
+        }, []);
 
+        useEffect(() => {
+            const totalFoundation = Object.values(foundations).reduce((acc, curr) => acc + curr.length, 0);
+            if (totalFoundation === 52) {
+            setGameWon(true);
+            }
+        }, [foundations]);
 
-  // --- 渲染組件 ---
+        const dealFromStock = () => {
+            setSelected(null);
+            if (stock.length === 0) {
+            setStock([...waste].reverse().map(c => ({ ...c, isFaceUp: false })));
+            setWaste([]);
+            } else {
+            const card = { ...stock[0], isFaceUp: true };
+            setStock(stock.slice(1));
+            setWaste([card, ...waste]);
+            }
+        };
 
-  const Card = ({ card, source, sourceIndex, onClick, isSelected }) => {
-    if (!card) return <div className="w-full h-full border-2 border-dashed border-white/20 rounded-lg" />;
-    
-    if (!card.isFaceUp) {
-      return (
-        <div className="w-full h-full bg-blue-900 border-2 border-white rounded-lg shadow-sm relative overflow-hidden">
-            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-12 border border-blue-400 rounded-sm opacity-50"></div>
-            </div>
-        </div>
-      );
-    }
+        const handleCardClick = (card, source, sourceIndex = null) => {
+            if (!card.isFaceUp && source !== 'stock') return;
 
-    const SuitIcon = card.suit.icon;
-    const isRed = card.suit.color === 'red';
-    
-    return (
-      <div 
-        onClick={(e) => {
-          e.stopPropagation();
-          onClick && onClick(card, source, sourceIndex);
-        }}
-        className={`
-          w-full h-full bg-white rounded-lg shadow-md cursor-pointer select-none relative
-          transition-transform duration-100
-          ${isSelected ? 'ring-4 ring-yellow-400 -translate-y-2 z-10' : 'hover:-translate-y-1'}
-          ${isRed ? 'text-red-600' : 'text-slate-800'}
-        `}
-      >
-        {/* 角落點數與花色 */}
-        <div className="absolute top-1 left-1 flex flex-col items-center leading-none">
-          <span className="font-bold text-sm md:text-lg">{card.rank.isKing ? 'K' : card.rank.val}</span>
-          <SuitIcon className="w-3 h-3 md:w-4 md:h-4" />
-        </div>
+            if (selected) {
+            if (selected.card.id === card.id) {
+                setSelected(null);
+                return;
+            }
+            attemptMove(selected, { type: source, index: sourceIndex, card });
+            } else {
+            if (source === 'waste') {
+                setSelected({ type: 'waste', card });
+            } else if (source === 'column') {
+                setSelected({ type: 'column', index: sourceIndex, card });
+            } else if (source === 'foundation') {
+                setSelected({ type: 'foundation', suit: sourceIndex, card });
+            }
+            }
+        };
 
-        {/* 中央內容 */}
-        <div className="absolute inset-0 flex flex-col items-center justify-center p-1 text-center">
-            {card.rank.isKing ? (
-                <CrossIcon className="w-8 h-8 md:w-12 md:h-12 text-yellow-600 mb-1" />
-            ) : (
-                <SuitIcon className="w-8 h-8 md:w-10 md:h-10 opacity-20 mb-1" />
-            )}
-            <span className="text-[10px] md:text-xs font-bold break-words leading-tight w-full px-1">
-                {card.rank.name}
-            </span>
-        </div>
-        
-        {/* 右下角反轉 (裝飾) */}
-        <div className="absolute bottom-1 right-1 transform rotate-180 flex flex-col items-center leading-none">
-          <span className="font-bold text-sm md:text-lg">{card.rank.isKing ? 'K' : card.rank.val}</span>
-          <SuitIcon className="w-3 h-3 md:w-4 md:h-4" />
-        </div>
-      </div>
-    );
-  };
+        const handleEmptyColumnClick = (colIndex) => {
+            if (selected) {
+            attemptMove(selected, { type: 'column', index: colIndex, card: null });
+            }
+        };
 
-  return (
-    <div className="min-h-screen bg-[#2d5a27] text-white font-sans overflow-x-hidden p-2 md:p-4 select-none">
-      
-      {/* 頂部導航 */}
-      <div className="max-w-4xl mx-auto flex justify-between items-center mb-4">
-        <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
-          <CrossIcon className="text-yellow-400" />
-          聖經神蹟接龍
-        </h1>
-        <div className="flex gap-2">
-          <button onClick={() => setShowRules(true)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
-            <HelpCircle size={20} />
-          </button>
-          <button onClick={initializeGame} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
-            <RefreshCw size={20} />
-          </button>
-        </div>
-      </div>
+        const attemptMove = (from, to) => {
+            let isValid = false;
 
-      {/* 遊戲區域 */}
-      <div className="max-w-4xl mx-auto grid grid-cols-7 gap-2 md:gap-4">
-        
-        {/* 上方區域：發牌堆 & 廢牌堆 (佔前3格) */}
-        <div className="col-span-3 grid grid-cols-3 gap-2 md:gap-4">
-            {/* 發牌堆 Stock */}
-            <div 
-              className="aspect-[3/4] cursor-pointer relative"
-              onClick={dealFromStock}
-            >
-              {stock.length > 0 ? (
-                <div className="w-full h-full bg-blue-900 border-2 border-white rounded-lg shadow-sm flex items-center justify-center">
-                   <div className="w-6 h-6 rounded-full bg-yellow-500 border-2 border-white flex items-center justify-center text-xs font-bold text-blue-900">
-                     {stock.length}
-                   </div>
-                </div>
-              ) : (
-                 <div className="w-full h-full border-2 border-white/20 rounded-lg flex items-center justify-center">
-                    <RefreshCw className="text-white/30 w-6 h-6" />
-                 </div>
-              )}
-            </div>
-
-            {/* 廢牌堆 Waste */}
-            <div className="aspect-[3/4] relative">
-              {waste.length > 0 && (
-                <Card 
-                  card={waste[0]} 
-                  source="waste" 
-                  onClick={handleCardClick}
-                  isSelected={selected?.card?.id === waste[0].id}
-                />
-              )}
-            </div>
+            if (to.type === 'column') {
+            const targetCard = to.card;
             
-            {/* 空白佔位 */}
-            <div></div>
-        </div>
+            if (!targetCard) {
+                if (from.card.rank.val === 13) isValid = true;
+            } else {
+                if (from.card.suit.color !== targetCard.suit.color && 
+                    from.card.rank.val === targetCard.rank.val - 1) {
+                isValid = true;
+                }
+            }
+            } 
+            else if (to.type === 'foundation') {
+            if (from.type === 'column') {
+                const col = columns[from.index];
+                const cardIdx = col.findIndex(c => c.id === from.card.id);
+                if (cardIdx !== col.length - 1) return;
+            }
 
-        {/* 上方區域：基石 Foundations (佔後4格) */}
-        <div className="col-span-4 grid grid-cols-4 gap-2 md:gap-4">
-          {Object.keys(SUITS).map((suitKey) => {
-             const pile = foundations[suitKey];
-             const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
-             const SuitIcon = SUITS[suitKey].icon;
-             
-             return (
-               <div 
-                  key={suitKey} 
-                  className="aspect-[3/4] relative border-2 border-white/30 rounded-lg bg-black/10"
-                  onClick={() => topCard ? handleCardClick(topCard, 'foundation', suitKey) : (selected && attemptMove(selected, {type: 'foundation', suit: suitKey}))}
-               >
-                 {/* 背景圖示 (浮水印) */}
-                 {!topCard && (
-                    <div className="absolute inset-0 flex items-center justify-center opacity-30 text-white">
-                        <SuitIcon className="w-8 h-8" />
-                    </div>
-                 )}
-                 
-                 {topCard && (
-                   <Card 
-                     card={topCard} 
-                     source="foundation" 
-                     sourceIndex={suitKey} // 傳遞 suit key
-                     onClick={handleCardClick} // 雖然通常不從 foundation 移出，但規則允許
-                     isSelected={selected?.card?.id === topCard.id}
-                   />
-                 )}
-               </div>
-             );
-          })}
-        </div>
+            const targetSuit = to.suit;
+            const pile = foundations[targetSuit];
+            
+            if (from.card.suit.type.toUpperCase() === targetSuit) {
+                if (pile.length === 0) {
+                    if (from.card.rank.val === 1) isValid = true;
+                } else {
+                    const topCard = pile[pile.length - 1];
+                    if (from.card.rank.val === topCard.rank.val + 1) isValid = true;
+                }
+            }
+            }
 
-        {/* 分隔線 */}
-        <div className="col-span-7 h-4"></div>
+            if (isValid) {
+            executeMove(from, to);
+            } else {
+            setSelected(null);
+            }
+        };
 
-        {/* 下方區域：牌柱 Tableau (7列) */}
-        {columns.map((col, colIndex) => (
-          <div 
-            key={colIndex} 
-            className="relative min-h-[200px]"
-            onClick={() => handleEmptyColumnClick(colIndex)}
-          >
-            {/* 空牌柱點擊區 */}
-            {col.length === 0 && (
-                <div className="w-full aspect-[3/4] border border-white/10 rounded-lg hover:bg-white/5 transition" />
-            )}
+        const executeMove = (from, to) => {
+            let newColumns = [...columns];
+            let newFoundations = { ...foundations };
+            let newWaste = [...waste];
+            
+            let movingCards = [];
 
-            {/* 牌柱卡牌 (重疊) */}
-            {col.map((card, cardIndex) => {
-                const isTop = cardIndex === col.length - 1;
-                // 計算偏移量
-                const offsetStyle = {
-                    top: `${cardIndex * (card.isFaceUp ? 25 : 8)}px`, // 翻開的牌間距大一點
-                    zIndex: cardIndex
-                };
-
-                return (
-                    <div 
-                        key={card.id} 
-                        className="absolute w-full aspect-[3/4]"
-                        style={offsetStyle}
-                    >
-                        <Card 
-                            card={card}
-                            source="column"
-                            sourceIndex={colIndex}
-                            onClick={handleCardClick}
-                            isSelected={selected?.card?.id === card.id}
-                        />
-                    </div>
-                );
-            })}
-          </div>
-        ))}
-      </div>
-
-      {/* 勝利畫面 */}
-      {gameWon && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className="bg-white text-slate-900 p-8 rounded-2xl max-w-md w-full text-center shadow-2xl transform animate-bounce">
-            <Trophy className="w-20 h-20 text-yellow-500 mx-auto mb-4" />
-            <h2 className="text-3xl font-bold mb-2">哈利路亞！</h2>
-            <p className="text-lg text-slate-600 mb-6">您已完成神蹟接龍，所有神蹟已歸位，耶穌已復活！</p>
-            <button 
-              onClick={initializeGame}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-bold transition shadow-lg"
-            >
-              再玩一次
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 規則說明 Modal */}
-      {showRules && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white text-slate-800 p-6 rounded-xl max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
-                <button onClick={() => setShowRules(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
-                    <X size={24} />
-                </button>
-                <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-                    <HelpCircle className="text-blue-600" /> 遊戲規則
-                </h2>
+            if (from.type === 'waste') {
+                movingCards = [newWaste[0]];
+                newWaste = newWaste.slice(1);
+            } else if (from.type === 'foundation') {
+                const suit = from.suit;
+                const pile = newFoundations[suit];
+                movingCards = [pile[pile.length - 1]];
+                newFoundations[suit] = pile.slice(0, -1);
+            } else if (from.type === 'column') {
+                const colIndex = from.index;
+                const col = newColumns[colIndex];
+                const splitIndex = col.findIndex(c => c.id === from.card.id);
                 
-                <div className="space-y-4 text-sm md:text-base">
-                    <section>
-                        <h3 className="font-bold text-lg text-green-700 mb-2">花色對應</h3>
-                        <div className="grid grid-cols-2 gap-2 bg-slate-100 p-3 rounded-lg">
-                            <div className="flex items-center gap-2 text-red-600"><LilyIcon className="w-4 h-4" /> 梅花 (紅)</div>
-                            <div className="flex items-center gap-2 text-red-600"><FishIcon className="w-4 h-4" /> 胖魚 (紅)</div>
-                            <div className="flex items-center gap-2 text-slate-800"><TreeIcon className="w-4 h-4" /> 大樹 (黑)</div>
-                            <div className="flex items-center gap-2 text-slate-800"><EagleIcon className="w-4 h-4" /> 小鳥 (黑)</div>
-                        </div>
-                    </section>
+                movingCards = col.slice(splitIndex);
+                
+                const remaining = col.slice(0, splitIndex);
+                if (remaining.length > 0) {
+                    const lastCard = remaining[remaining.length - 1];
+                    if (!lastCard.isFaceUp) {
+                        remaining[remaining.length - 1] = { ...lastCard, isFaceUp: true };
+                    }
+                }
+                newColumns[colIndex] = remaining;
+            }
 
-                    <section>
-                        <h3 className="font-bold text-lg text-blue-700 mb-2">數字與神蹟 (1-13)</h3>
-                        <p className="mb-2 text-gray-600">按照神蹟發生順序排列：</p>
-                        <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs md:text-sm border-l-4 border-blue-200 pl-3">
-                            <span>1. 變水為酒</span>
-                            <span>2. 醫治大臣之子</span>
-                            <span>3. 趕出污鬼</span>
-                            <span>4. 醫治彼得岳母</span>
-                            <span>5. 潔淨大痲瘋</span>
-                            <span>6. 醫治癱子</span>
-                            <span>7. 平靜風浪</span>
-                            <span>8. 格拉森趕鬼</span>
-                            <span>9. 醫治血漏婦人</span>
-                            <span>10. 睚魯女兒復活</span>
-                            <span>11. 五餅二魚</span>
-                            <span>12. 耶穌履海</span>
-                            <span className="col-span-2 font-bold text-yellow-600 mt-1">13 (King). 耶穌復活 (十字架)</span>
-                        </div>
-                    </section>
+            if (to.type === 'column') {
+                const colIndex = to.index;
+                newColumns[colIndex] = [...newColumns[colIndex], ...movingCards];
+            } else if (to.type === 'foundation') {
+                const suit = to.suit;
+                newFoundations[suit] = [...newFoundations[suit], movingCards[0]];
+            }
 
-                    <section>
-                        <h3 className="font-bold text-lg text-purple-700 mb-2">操作方式</h3>
-                        <ul className="list-disc list-inside space-y-1 text-gray-700">
-                            <li><strong>點擊選取</strong>一張牌，再<strong>點擊目標位置</strong>來移動。</li>
-                            <li><strong>牌柱 (下方區域)：</strong> 需「紅黑交錯」且「數字遞減」排列 (例如：黑色3 接 紅色2)。</li>
-                            <li><strong>基石 (右上區域)：</strong> 需「同花色」且「數字遞增」堆疊 (從 1 到 復活)。</li>
-                            <li>只有 <strong>K (復活牌)</strong> 可以放在空出的牌柱位置。</li>
-                        </ul>
-                    </section>
+            setColumns(newColumns);
+            setFoundations(newFoundations);
+            setWaste(newWaste);
+            setSelected(null);
+        };
+
+        const Card = ({ card, source, sourceIndex, onClick, isSelected }) => {
+            if (!card) return <div className="w-full h-full border-2 border-dashed border-white/20 rounded-lg" />;
+            
+            if (!card.isFaceUp) {
+            return (
+                <div className="w-full h-full bg-blue-900 border-2 border-white rounded-lg shadow-sm relative overflow-hidden">
+                    <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-8 h-12 border border-blue-400 rounded-sm opacity-50"></div>
+                    </div>
+                </div>
+            );
+            }
+
+            const SuitIcon = card.suit.icon;
+            const isRed = card.suit.color === 'red';
+            
+            return (
+            <div 
+                onClick={(e) => {
+                e.stopPropagation();
+                onClick && onClick(card, source, sourceIndex);
+                }}
+                className={`
+                w-full h-full bg-white rounded-lg shadow-md cursor-pointer select-none relative
+                transition-transform duration-100
+                ${isSelected ? 'ring-4 ring-yellow-400 -translate-y-2 z-10' : 'hover:-translate-y-1'}
+                ${isRed ? 'text-red-600' : 'text-slate-800'}
+                `}
+            >
+                <div className="absolute top-1 left-1 flex flex-col items-center leading-none">
+                <span className="font-bold text-sm md:text-lg">{card.rank.isKing ? 'K' : card.rank.val}</span>
+                <SuitIcon className="w-3 h-3 md:w-4 md:h-4" />
+                </div>
+
+                <div className="absolute inset-0 flex flex-col items-center justify-center p-1 text-center">
+                    {card.rank.isKing ? (
+                        <CrossIcon className="w-8 h-8 md:w-12 md:h-12 text-yellow-600 mb-1" />
+                    ) : (
+                        <SuitIcon className="w-8 h-8 md:w-10 md:h-10 opacity-20 mb-1" />
+                    )}
+                    <span className="text-[10px] md:text-xs font-bold break-words leading-tight w-full px-1">
+                        {card.rank.name}
+                    </span>
                 </div>
                 
-                <button 
-                  onClick={() => setShowRules(false)}
-                  className="w-full mt-6 bg-slate-800 text-white py-3 rounded-lg hover:bg-slate-700 transition"
-                >
-                    開始遊戲
-                </button>
+                <div className="absolute bottom-1 right-1 transform rotate-180 flex flex-col items-center leading-none">
+                <span className="font-bold text-sm md:text-lg">{card.rank.isKing ? 'K' : card.rank.val}</span>
+                <SuitIcon className="w-3 h-3 md:w-4 md:h-4" />
+                </div>
             </div>
-        </div>
-      )}
+            );
+        };
 
-    </div>
-  );
-}
+        return (
+            <div className="min-h-screen bg-[#2d5a27] text-white font-sans overflow-x-hidden p-2 md:p-4 select-none">
+            <div className="max-w-4xl mx-auto flex justify-between items-center mb-4">
+                <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+                <CrossIcon className="text-yellow-400" />
+                聖經神蹟接龍
+                </h1>
+                <div className="flex gap-2">
+                <button onClick={() => setShowRules(true)} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
+                    <HelpCircle size={20} />
+                </button>
+                <button onClick={initializeGame} className="bg-white/10 hover:bg-white/20 p-2 rounded-full transition">
+                    <RefreshCw size={20} />
+                </button>
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto grid grid-cols-7 gap-2 md:gap-4">
+                <div className="col-span-3 grid grid-cols-3 gap-2 md:gap-4">
+                    <div 
+                    className="aspect-[3/4] cursor-pointer relative"
+                    onClick={dealFromStock}
+                    >
+                    {stock.length > 0 ? (
+                        <div className="w-full h-full bg-blue-900 border-2 border-white rounded-lg shadow-sm flex items-center justify-center">
+                        <div className="w-6 h-6 rounded-full bg-yellow-500 border-2 border-white flex items-center justify-center text-xs font-bold text-blue-900">
+                            {stock.length}
+                        </div>
+                        </div>
+                    ) : (
+                        <div className="w-full h-full border-2 border-white/20 rounded-lg flex items-center justify-center">
+                            <RefreshCw className="text-white/30 w-6 h-6" />
+                        </div>
+                    )}
+                    </div>
+
+                    <div className="aspect-[3/4] relative">
+                    {waste.length > 0 && (
+                        <Card 
+                        card={waste[0]} 
+                        source="waste" 
+                        onClick={handleCardClick}
+                        isSelected={selected?.card?.id === waste[0].id}
+                        />
+                    )}
+                    </div>
+                    
+                    <div></div>
+                </div>
+
+                <div className="col-span-4 grid grid-cols-4 gap-2 md:gap-4">
+                {Object.keys(SUITS).map((suitKey) => {
+                    const pile = foundations[suitKey];
+                    const topCard = pile.length > 0 ? pile[pile.length - 1] : null;
+                    const SuitIcon = SUITS[suitKey].icon;
+                    
+                    return (
+                    <div 
+                        key={suitKey} 
+                        className="aspect-[3/4] relative border-2 border-white/30 rounded-lg bg-black/10"
+                        onClick={() => topCard ? handleCardClick(topCard, 'foundation', suitKey) : (selected && attemptMove(selected, {type: 'foundation', suit: suitKey}))}
+                    >
+                        {!topCard && (
+                            <div className="absolute inset-0 flex items-center justify-center opacity-30 text-white">
+                                <SuitIcon className="w-8 h-8" />
+                            </div>
+                        )}
+                        
+                        {topCard && (
+                        <Card 
+                            card={topCard} 
+                            source="foundation" 
+                            sourceIndex={suitKey} 
+                            onClick={handleCardClick} 
+                            isSelected={selected?.card?.id === topCard.id}
+                        />
+                        )}
+                    </div>
+                    );
+                })}
+                </div>
+
+                <div className="col-span-7 h-4"></div>
+
+                {columns.map((col, colIndex) => (
+                <div 
+                    key={colIndex} 
+                    className="relative min-h-[200px]"
+                    onClick={() => handleEmptyColumnClick(colIndex)}
+                >
+                    {col.length === 0 && (
+                        <div className="w-full aspect-[3/4] border border-white/10 rounded-lg hover:bg-white/5 transition" />
+                    )}
+
+                    {col.map((card, cardIndex) => {
+                        const offsetStyle = {
+                            top: `${cardIndex * (card.isFaceUp ? 25 : 8)}px`, 
+                            zIndex: cardIndex
+                        };
+
+                        return (
+                            <div 
+                                key={card.id} 
+                                className="absolute w-full aspect-[3/4]"
+                                style={offsetStyle}
+                            >
+                                <Card 
+                                    card={card}
+                                    source="column"
+                                    sourceIndex={colIndex}
+                                    onClick={handleCardClick}
+                                    isSelected={selected?.card?.id === card.id}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+                ))}
+            </div>
+
+            {gameWon && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+                <div className="bg-white text-slate-900 p-8 rounded-2xl max-w-md w-full text-center shadow-2xl transform animate-bounce">
+                    <Trophy className="w-20 h-20 text-yellow-500 mx-auto mb-4" />
+                    <h2 className="text-3xl font-bold mb-2">哈利路亞！</h2>
+                    <p className="text-lg text-slate-600 mb-6">您已完成神蹟接龍，所有神蹟已歸位，耶穌已復活！</p>
+                    <button 
+                    onClick={initializeGame}
+                    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-full font-bold transition shadow-lg"
+                    >
+                    再玩一次
+                    </button>
+                </div>
+                </div>
+            )}
+
+            {showRules && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-white text-slate-800 p-6 rounded-xl max-w-lg w-full relative max-h-[90vh] overflow-y-auto">
+                        <button onClick={() => setShowRules(false)} className="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                            <X size={24} />
+                        </button>
+                        <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                            <HelpCircle className="text-blue-600" /> 遊戲規則
+                        </h2>
+                        
+                        <div className="space-y-4 text-sm md:text-base">
+                            <section>
+                                <h3 className="font-bold text-lg text-green-700 mb-2">花色對應</h3>
+                                <div className="grid grid-cols-2 gap-2 bg-slate-100 p-3 rounded-lg">
+                                    <div className="flex items-center gap-2 text-red-600"><LilyIcon className="w-4 h-4" /> 梅花 (紅)</div>
+                                    <div className="flex items-center gap-2 text-red-600"><FishIcon className="w-4 h-4" /> 胖魚 (紅)</div>
+                                    <div className="flex items-center gap-2 text-slate-800"><TreeIcon className="w-4 h-4" /> 大樹 (黑)</div>
+                                    <div className="flex items-center gap-2 text-slate-800"><EagleIcon className="w-4 h-4" /> 小鳥 (黑)</div>
+                                </div>
+                            </section>
+
+                            <section>
+                                <h3 className="font-bold text-lg text-blue-700 mb-2">數字與神蹟 (1-13)</h3>
+                                <p className="mb-2 text-gray-600">按照神蹟發生順序排列：</p>
+                                <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs md:text-sm border-l-4 border-blue-200 pl-3">
+                                    <span>1. 變水為酒</span>
+                                    <span>2. 醫治大臣之子</span>
+                                    <span>3. 趕出污鬼</span>
+                                    <span>4. 醫治彼得岳母</span>
+                                    <span>5. 潔淨大痲瘋</span>
+                                    <span>6. 醫治癱子</span>
+                                    <span>7. 平靜風浪</span>
+                                    <span>8. 格拉森趕鬼</span>
+                                    <span>9. 醫治血漏婦人</span>
+                                    <span>10. 睚魯女兒復活</span>
+                                    <span>11. 五餅二魚</span>
+                                    <span>12. 耶穌履海</span>
+                                    <span className="col-span-2 font-bold text-yellow-600 mt-1">13 (King). 耶穌復活 (十字架)</span>
+                                </div>
+                            </section>
+
+                            <section>
+                                <h3 className="font-bold text-lg text-purple-700 mb-2">操作方式</h3>
+                                <ul className="list-disc list-inside space-y-1 text-gray-700">
+                                    <li><strong>點擊選取</strong>一張牌，再<strong>點擊目標位置</strong>來移動。</li>
+                                    <li><strong>牌柱 (下方區域)：</strong> 需「紅黑交錯」且「數字遞減」排列 (例如：黑色3 接 紅色2)。</li>
+                                    <li><strong>基石 (右上區域)：</strong> 需「同花色」且「數字遞增」堆疊 (從 1 到 復活)。</li>
+                                    <li>只有 <strong>K (復活牌)</strong> 可以放在空出的牌柱位置。</li>
+                                </ul>
+                            </section>
+                        </div>
+                        
+                        <button 
+                        onClick={() => setShowRules(false)}
+                        className="w-full mt-6 bg-slate-800 text-white py-3 rounded-lg hover:bg-slate-700 transition"
+                        >
+                            開始遊戲
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            </div>
+        );
+        }
+
+        // 渲染到網頁上
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<BibleSolitaire />);
+    </script>
+</body>
+</html>
