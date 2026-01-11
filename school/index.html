@@ -18,7 +18,8 @@
     <nav class="nature-nav sticky top-0 z-50">
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
-                 <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
+                 <!-- 修改：將 div 改為 a 標籤，避免 JavaScript 跳轉錯誤 -->
+                 <a href="../index.html" class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer no-underline">
                     <!-- 修改 Logo 為新版 SVG -->
                     <div class="w-10 h-10 hover:scale-110 transition-transform">
                         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -35,7 +36,7 @@
                     <div class="flex flex-col">
                         <span class="text-lg font-serif font-bold text-[#3E3B39]">機智的門徒生活</span>
                     </div>
-                </div>
+                </a>
                 <div class="flex flex-wrap justify-center gap-1">
                     <a href="../index.html" class="nav-item font-bold text-[#6B8E23]">
                         <i data-lucide="home" class="w-4 h-4"></i> 回首頁
