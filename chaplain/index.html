@@ -6,16 +6,13 @@
     <title>機智的門徒生活 | 校牧室</title>
     <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="../assets/images/favicon.svg">
-    <meta name="apple-mobile-web-app-title" content="機智門徒">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="../assets/js/common.js"></script>
     
     <style>
-        /* 膠囊按鈕樣式 */
         .chaplain-tab-btn {
             padding: 0.5rem 1.25rem;
             border-radius: 9999px;
@@ -89,15 +86,20 @@
 
     <div class="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
         <!-- 雲端同步狀態列 -->
-        <div class="flex justify-end mb-4">
+        <div class="flex flex-col items-end mb-4 gap-2">
             <div id="auth-container" class="inline-flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full border border-gray-200 shadow-sm text-sm">
                 <span id="user-status" class="text-gray-500">未登入 (僅存本機)</span>
-                <button id="btn-login" class="text-[#6B8E23] font-bold hover:underline" onclick="login()">Google 登入同步</button>
+                <button id="btn-login" class="text-[#6B8E23] font-bold hover:underline" onclick="login()">Google 登入</button>
                 <button id="btn-logout" class="text-red-400 hover:underline hidden" onclick="logout()">登出</button>
             </div>
+            
+            <!-- 診斷訊息區 (Debug Console) -->
+            <div class="text-xs text-right space-y-1">
+                <div id="sync-status" class="text-gray-500 h-4"></div>
+                <div id="error-log" class="text-red-500 font-bold hidden bg-red-50 p-2 rounded border border-red-200"></div>
+                <button id="btn-force-sync" class="hidden text-blue-500 hover:underline text-xs" onclick="forceSync()">[強制重新下載雲端資料]</button>
+            </div>
         </div>
-        <!-- 狀態提示 -->
-        <div id="sync-status" class="text-right text-xs text-gray-400 mb-2 h-4"></div>
 
         <section id="section-prayers" class="page-section fade-in">
             <div id="chaplain-content"></div>
@@ -106,12 +108,11 @@
 
     <!-- Firebase SDK -->
     <script type="module">
-        // 增加 onSnapshot 匯入
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-        // Firebase 設定
+        // 您的 Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCHn_OgHIg553J-h6EOByNYKwwWfRX2i2k",
             authDomain: "witty-disciple.firebaseapp.com",
@@ -123,7 +124,17 @@
         };
 
         let app, auth, db, user = null;
-        let unsubscribeListeners = []; // 用來存放監聽器，登出時取消
+        let unsubscribeListeners = [];
+
+        // Log helper
+        function logError(msg, detail = "") {
+            const el = document.getElementById('error-log');
+            if (el) {
+                el.innerHTML = `⚠️ ${msg}<br><span class="font-normal opacity-75">${detail}</span>`;
+                el.classList.remove('hidden');
+            }
+            console.error(msg, detail);
+        }
 
         try {
             app = initializeApp(firebaseConfig);
@@ -134,15 +145,15 @@
                 user = currentUser;
                 updateAuthUI();
                 if (user) {
-                    setupRealtimeListeners(); // 登入後啟動即時監聽
+                    document.getElementById('btn-force-sync').classList.remove('hidden');
+                    setupRealtimeListeners();
                 } else {
-                    // 登出時取消監聽
+                    document.getElementById('btn-force-sync').classList.add('hidden');
                     unsubscribeListeners.forEach(unsub => unsub());
-                    unsubscribeListeners = [];
                 }
             });
         } catch (e) {
-            console.error("Firebase 初始化失敗:", e);
+            logError("Firebase 初始化失敗", e.message);
         }
 
         window.login = async () => {
@@ -151,11 +162,10 @@
             try {
                 await signInWithPopup(auth, provider);
             } catch (error) {
-                console.error(error);
                 if (error.code === 'auth/unauthorized-domain') {
-                    alert(`網域未授權。\n請至 Firebase Console -> Authentication -> Settings -> Authorized domains 新增：\n${window.location.hostname}`);
-                } else if (error.code !== 'auth/popup-closed-by-user') {
-                    alert("登入失敗：" + error.message);
+                    alert(`網域未授權。\n請至 Firebase Console 新增：\n${window.location.hostname}`);
+                } else {
+                    logError("登入失敗", error.message);
                 }
             }
         };
@@ -163,7 +173,6 @@
         window.logout = async () => {
             if(!auth) return;
             await signOut(auth);
-            alert("已登出");
             location.reload(); 
         };
 
@@ -183,57 +192,74 @@
             }
         }
 
-        // --- 核心同步邏輯 (雙向即時) ---
-
-        // 1. 上傳 (寫入時呼叫)
+        // 寫入
         window.syncToCloud = async (key, data) => {
             if (!user || !db) return;
-            // 顯示同步中...
             const statusEl = document.getElementById('sync-status');
-            if(statusEl) statusEl.innerText = "正在儲存至雲端...";
+            if(statusEl) statusEl.innerText = "正在上傳...";
             
             try {
                 const docRef = doc(db, "users", user.uid, "notes", key);
                 await setDoc(docRef, { data: data }, { merge: true });
-                if(statusEl) statusEl.innerText = "所有變更已儲存";
+                if(statusEl) statusEl.innerText = "✅ 儲存成功";
                 setTimeout(() => { if(statusEl) statusEl.innerText = ""; }, 2000);
             } catch (e) {
-                console.error("同步失敗:", e);
-                if(statusEl) statusEl.innerText = "雲端儲存失敗 (請檢查網路或權限)";
-                
+                if(statusEl) statusEl.innerText = "❌ 上傳失敗";
                 if (e.code === 'permission-denied') {
-                    alert('權限不足：無法寫入資料庫。\n請確認 Firebase Firestore Rules 已設定為允許登入用戶寫入。');
+                    logError("權限不足：無法寫入資料庫", "請檢查 Firestore Rules 是否允許寫入。");
+                } else {
+                    logError("上傳錯誤", e.message);
                 }
             }
         };
 
-        // 2. 建立即時監聽 (登入後自動執行)
+        // 監聽
         function setupRealtimeListeners() {
             const keys = ['witty_devotions', 'witty_prayers', 'witty_gratitude', 'witty_emotions', 'witty_letters', 'witty_blank_notes'];
             
             keys.forEach(key => {
                 const docRef = doc(db, "users", user.uid, "notes", key);
-                
-                // 建立監聽器
                 const unsub = onSnapshot(docRef, (docSnap) => {
                     if (docSnap.exists()) {
                         const cloudData = docSnap.data().data;
                         if (cloudData && Array.isArray(cloudData)) {
-                            // 收到雲端更新 -> 寫入 LocalStorage -> 重新渲染 UI
-                            // 為了避免本地寫入觸發無限迴圈，這裡我們直接更新 storage 並渲染
-                            // 注意：這會覆蓋掉本地剛寫入但還沒上傳的資料 (若網路極慢)，但在正常狀況下這是正確的同步行為
+                            console.log("收到雲端更新:", key);
                             localStorage.setItem(key, JSON.stringify(cloudData));
                             if (window.refreshAllLists) window.refreshAllLists();
                         }
                     }
                 }, (error) => {
-                    console.error("監聽失敗:", error);
+                    if (error.code === 'permission-denied') {
+                         logError("權限不足：無法讀取雲端資料", "請檢查 Firestore Rules。");
+                    } else {
+                         logError("監聽錯誤", error.message);
+                    }
                 });
-                
                 unsubscribeListeners.push(unsub);
             });
-            console.log("已啟動雲端即時同步");
+            const statusEl = document.getElementById('sync-status');
+            if(statusEl) statusEl.innerText = "雲端同步連線中...";
         }
+
+        // 強制手動同步
+        window.forceSync = async () => {
+             if (!user || !db) return;
+             alert("開始從雲端重新下載資料...");
+             const keys = ['witty_devotions', 'witty_prayers', 'witty_gratitude', 'witty_emotions', 'witty_letters', 'witty_blank_notes'];
+             for (const key of keys) {
+                try {
+                    const docRef = doc(db, "users", user.uid, "notes", key);
+                    const docSnap = await getDoc(docRef);
+                    if (docSnap.exists()) {
+                         const cloudData = docSnap.data().data;
+                         localStorage.setItem(key, JSON.stringify(cloudData));
+                    }
+                } catch(e) { console.error(e); }
+             }
+             if (window.refreshAllLists) window.refreshAllLists();
+             alert("同步完成！請檢查資料。");
+        };
+
     </script>
 
     <!-- 業務邏輯 -->
@@ -326,10 +352,6 @@
                 <div id="tab-blank" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-4">隨手記下聖靈的感動或生活的靈感。</p><div class="space-y-4"><div class="form-group"><textarea id="blank-content" class="form-input" rows="5" placeholder="在此輸入內容..."></textarea></div><div class="text-center"><button onclick="saveBlankNote()" class="nature-btn">儲存筆記</button></div><div class="mt-4 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-2 text-sm">📅 當日靈感紀錄</h4><div id="blank-note-list" class="space-y-2 max-h-60 overflow-y-auto"></div></div></div>${getBackupUI('witty_blank_notes', '靈感筆記')}</div></div>
             `;
             document.getElementById('chaplain-content').innerHTML = html;
-            renderPrayerList();
-            renderGratitudeList();
-            renderBlankNoteList();
-            renderTimeCapsule();
         }
 
         function switchTab(id, btn) {
