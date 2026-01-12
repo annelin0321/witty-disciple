@@ -21,11 +21,17 @@
             user-select: none;
             -webkit-user-select: none;
             touch-action: manipulation; /* 優化觸控體驗 */
+            overscroll-behavior: none; /* 防止手機上下拉動重整 */
         }
     </style>
 </head>
-<body class="bg-amber-50">
-    <div id="root"></div>
+<!-- 
+    Body 樣式調整：
+    - 手機預設: h-[100dvh] overflow-hidden (鎖定一頁，無捲軸)
+    - 電腦 (md): md:h-auto md:min-h-screen md:overflow-y-auto (恢復自動高度，內容多時可捲動)
+-->
+<body class="bg-amber-50 h-[100dvh] w-screen overflow-hidden md:h-auto md:w-auto md:min-h-screen md:overflow-y-auto">
+    <div id="root" class="h-full w-full"></div>
 
     <script type="text/babel">
         const { useState, useEffect, useCallback, useRef } = React;
@@ -55,8 +61,8 @@
             { name: "創世記", icon: "🌏" }, { name: "出埃及記", icon: "🌊" }, { name: "利未記", icon: "🐏" }, { name: "民數記", icon: "🔢" }, { name: "申命記", icon: "📜" }, 
             { name: "約書亞記", icon: "🎺" }, { name: "士師記", icon: "💪" }, { name: "路得記", icon: "🌾" }, { name: "撒母耳記上", icon: "🤴" }, { name: "撒母耳記下", icon: "🏰" }, 
             { name: "列王紀上", icon: "👑" }, { name: "列王紀下", icon: "⚔️" }, { name: "歷代志上", icon: "📝" }, { name: "歷代志下", icon: "🏗️" }, 
-            { name: "以斯拉記", icon: "🕎" }, // 修正：改為燈臺
-            { name: "尼希米記", icon: "🧱" }, // 修正：改為磚塊
+            { name: "以斯拉記", icon: "🕎" }, 
+            { name: "尼希米記", icon: "🧱" }, 
             { name: "以斯帖記", icon: "👸" }, { name: "約伯記", icon: "🤕" }, { name: "詩篇", icon: "🎼" }, { name: "箴言", icon: "🦉" }, 
             { name: "傳道書", icon: "☀️" }, { name: "雅歌", icon: "🌹" }, { name: "以賽亞書", icon: "🌿" }, { name: "耶利米書", icon: "😭" }, { name: "耶利米哀歌", icon: "💧" }, 
             { name: "以西結書", icon: "💀" }, { name: "但以理書", icon: "🦁" }, { name: "何西阿書", icon: "💍" }, { name: "約珥書", icon: "🦗" }, { name: "阿摩司書", icon: "🧺" }, 
@@ -64,7 +70,7 @@
             { name: "西番雅書", icon: "🕯️" }, { name: "哈该書", icon: "🏠" }, { name: "撒迦利亞書", icon: "🦓" }, { name: "瑪拉基書", icon: "🗣️" },
             { name: "馬太福音", icon: "💰" }, { name: "馬可福音", icon: "🐾" }, { name: "路加福音", icon: "🐂" }, { name: "約翰福音", icon: "🦅" }, { name: "使徒行傳", icon: "🔥" }, 
             { name: "羅馬書", icon: "❤️" }, { name: "哥林多前書", icon: "⛪" }, { name: "哥林多後書", icon: "🛐" }, { name: "加拉太書", icon: "⛓️" }, 
-            { name: "以弗所書", icon: "🛡️" }, // 保留盾牌
+            { name: "以弗所書", icon: "🛡️" }, 
             { name: "腓立比書", icon: "😃" }, { name: "歌羅西書", icon: "🧭" }, { name: "帖撒羅尼迦前書", icon: "💤" }, { name: "帖撒羅尼迦後書", icon: "🌩️" }, 
             { name: "提摩太前書", icon: "👔" }, { name: "提摩太後書", icon: "🏁" }, { name: "提多書", icon: "🏝️" }, { name: "腓利門書", icon: "🔓" }, { name: "希伯來書", icon: "🩸" }, 
             { name: "雅各書", icon: "👅" }, { name: "彼得前書", icon: "💎" }, { name: "彼得後書", icon: "⚠️" }, { name: "約翰一書", icon: "💡" }, { name: "約翰二書", icon: "🚧" }, 
@@ -88,7 +94,7 @@
             // 響應式網格列數
             useEffect(() => {
                 const handleResize = () => {
-                    // 平板 (768px) 以下用 5 欄，以上用 10 欄
+                    // 平板 (768px) 以下用 5 欄 (手機模式)，以上用 10 欄 (電腦模式)
                     if (window.innerWidth < 768) {
                         setGridCols(5);
                     } else {
@@ -320,34 +326,40 @@
                 return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
             };
 
+            // 用於判斷是否為手機版的輔助變數
+            const isMobile = gridCols === 5;
+
             return (
-                <div className="min-h-screen flex flex-col items-center py-6 px-2 select-none">
-                    <header className="mb-4 text-center">
-                        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-amber-800 flex items-center justify-center gap-2 mb-1">
-                            <Book className="w-6 h-6 md:w-8 md:h-8" /> 
+                <div className={`flex flex-col items-center py-2 px-2 mx-auto w-full ${isMobile ? 'h-full' : 'h-auto max-w-6xl md:py-6'}`}>
+                    
+                    {/* 標題區 */}
+                    <header className="flex-shrink-0 mb-2 text-center">
+                        <h1 className="text-xl md:text-3xl font-bold text-amber-800 flex items-center justify-center gap-2">
+                            <Book className="w-5 h-5 md:w-8 md:h-8" /> 
                             Bible Connect (聖經連連看)
                         </h1>
-                        <p className="text-amber-700 opacity-80 text-xs md:text-sm">
+                        <p className="text-amber-700 opacity-80 text-[10px] md:text-sm">
                             兩張相同圖案，連線轉彎不超過2次即可消除
                         </p>
                     </header>
 
-                    <div className="w-full max-w-6xl flex justify-between items-center mb-4 px-4 bg-white p-3 rounded-lg shadow-sm border border-amber-200 sticky top-2 z-20">
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-lg font-medium text-amber-900">
-                                <Clock className="w-5 h-5" />
+                    {/* 控制列 */}
+                    <div className="flex-shrink-0 w-full flex justify-between items-center mb-2 px-3 bg-white p-2 rounded-lg shadow-sm border border-amber-200 z-20">
+                        <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-1 text-base md:text-lg font-medium text-amber-900">
+                                <Clock className="w-4 h-4 md:w-5 md:h-5" />
                                 <span>{formatTime(timer)}</span>
                             </div>
-                            <div className="flex items-center gap-1 text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-                                <Lightbulb className="w-4 h-4" />
+                            <div className="flex items-center gap-1 text-xs md:text-sm font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-full border border-blue-100">
+                                <Lightbulb className="w-3 h-3 md:w-4 md:h-4" />
                                 <span className="hidden sm:inline">可消除:</span>
                                 <span>{availableCount} 對</span>
                             </div>
                         </div>
                         
-                        <div className="absolute left-1/2 transform -translate-x-1/2 top-14 md:top-auto pointer-events-none w-full text-center">
+                        <div className="absolute left-1/2 transform -translate-x-1/2 top-12 md:top-auto pointer-events-none w-full text-center z-30">
                             {message && (
-                                <span className="bg-amber-600 text-white px-4 py-2 rounded-full text-sm shadow-lg animate-pulse inline-block mx-2">
+                                <span className="bg-amber-600 text-white px-3 py-1 rounded-full text-xs md:text-sm shadow-lg animate-pulse inline-block mx-2">
                                     {message}
                                 </span>
                             )}
@@ -355,19 +367,23 @@
 
                         <button 
                             onClick={initGame}
-                            className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition-colors shadow-sm text-sm font-bold active:scale-95"
+                            className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-lg transition-colors shadow-sm text-xs md:text-sm font-bold active:scale-95"
                         >
-                            <RefreshCw className="w-4 h-4" /> 
+                            <RefreshCw className="w-3 h-3 md:w-4 md:h-4" /> 
                             <span className="hidden sm:inline">重來</span>
                         </button>
                     </div>
 
-                    <div className="relative w-full max-w-6xl flex justify-center">
+                    {/* 遊戲區域 */}
+                    <div className={`w-full relative flex justify-center items-center ${isMobile ? 'flex-1 min-h-0' : 'h-auto'}`}>
                         <div 
                             ref={gridRef}
-                            className="grid gap-1 p-2 bg-amber-100/50 rounded-xl relative w-full"
+                            className={`grid gap-1 bg-amber-100/50 rounded-xl relative w-full ${isMobile ? 'h-full' : 'h-auto'}`}
                             style={{
-                                gridTemplateColumns: `repeat(${gridCols}, 1fr)`
+                                gridTemplateColumns: `repeat(${gridCols}, 1fr)`,
+                                // 手機版 (5欄): 自動計算行高填滿剩餘高度 (flex-1)
+                                // 電腦版 (10欄): 讓高度自然撐開 (不設定特定行高)
+                                gridTemplateRows: isMobile ? `repeat(${Math.ceil(50/gridCols)}, 1fr)` : 'none'
                             }}
                         >
                             {cards.map((card, index) => {
@@ -379,9 +395,10 @@
                                         <div 
                                             key={`empty-${index}`} 
                                             className={`
-                                                aspect-[4/5] md:aspect-square w-full
+                                                w-full h-full
                                                 rounded-lg border border-transparent
                                                 flex justify-center items-center
+                                                ${!isMobile ? 'aspect-square' : ''}
                                                 ${isPath ? 'bg-yellow-400/30' : ''} 
                                             `}
                                         >
@@ -395,21 +412,22 @@
                                         key={card.uniqueId}
                                         onClick={() => handleCardClick(index)}
                                         className={`
-                                            aspect-[4/5] md:aspect-square w-full
+                                            w-full h-full
                                             flex flex-col justify-center items-center text-center 
-                                            border-2 rounded-lg cursor-pointer shadow-sm
-                                            transition-all duration-200 relative
+                                            border md:border-2 rounded-lg cursor-pointer shadow-sm
+                                            transition-all duration-200 relative overflow-hidden
+                                            ${!isMobile ? 'aspect-square' : ''} /* 電腦版恢復正方形，手機版填滿高度 */
                                             ${isSelected 
-                                                ? "bg-amber-100 border-amber-600 ring-2 ring-amber-400 z-10 scale-105" 
+                                                ? "bg-amber-100 border-amber-600 ring-1 ring-amber-400 z-10" 
                                                 : "bg-white border-amber-200 hover:border-amber-400 hover:shadow-md"
                                             }
                                             ${isPath ? "bg-green-100 border-green-500 scale-95 opacity-50" : ""}
                                         `}
                                     >
-                                        <span className="text-3xl sm:text-4xl md:text-5xl mb-0 md:mb-1 filter drop-shadow-sm select-none">
+                                        <span className="text-[7vmin] md:text-4xl lg:text-5xl leading-none filter drop-shadow-sm select-none">
                                             {card.icon}
                                         </span>
-                                        <span className="text-xs sm:text-sm font-bold leading-tight px-1 break-words select-none">
+                                        <span className="text-[2.5vmin] md:text-xs lg:text-sm font-bold leading-tight px-1 break-words select-none mt-1">
                                             {card.book}
                                         </span>
                                         {isPath && <Zap className="absolute text-yellow-500 w-6 h-6 animate-pulse opacity-80" />}
@@ -420,12 +438,12 @@
                         
                         {gameWon && (
                             <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl animate-fade-in">
-                                <div className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-sm mx-4 transform animate-bounce-short border-4 border-amber-400">
-                                    <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
-                                        <Trophy className="w-10 h-10 text-yellow-600" />
+                                <div className="bg-white p-6 md:p-8 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-xs md:max-w-sm mx-4 transform animate-bounce-short border-4 border-amber-400">
+                                    <div className="w-16 h-16 md:w-20 md:h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                                        <Trophy className="w-8 h-8 md:w-10 md:h-10 text-yellow-600" />
                                     </div>
-                                    <h2 className="text-2xl font-bold text-slate-800 mb-2">哈利路亞！</h2>
-                                    <p className="text-slate-600 mb-6">
+                                    <h2 className="text-xl md:text-2xl font-bold text-slate-800 mb-2">哈利路亞！</h2>
+                                    <p className="text-sm md:text-base text-slate-600 mb-6">
                                         您成功完成了連連看挑戰。<br/>
                                         耗時：<span className="font-bold text-amber-600 text-lg">{formatTime(timer)}</span>
                                     </p>
@@ -440,7 +458,7 @@
                         )}
                     </div>
 
-                    <footer className="mt-8 text-slate-400 text-xs text-center">
+                    <footer className="flex-shrink-0 mt-2 text-slate-400 text-[10px] text-center">
                         <p>連連看規則：路徑轉彎不超過兩次 • 無解自動重新排列</p>
                     </footer>
                 </div>
