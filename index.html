@@ -49,6 +49,8 @@
             text-decoration: none;
             /* 增加點擊範圍 */
             padding: 5px;
+            /* 確保文字不會換行導致版面亂掉 */
+            white-space: nowrap;
         }
 
         .node-icon {
@@ -67,7 +69,8 @@
         .node-label {
             background: var(--text-primary); color: #fff; padding: 4px 12px;
             border-radius: 12px; font-size: 0.85rem; margin-top: 10px;
-            font-family: 'Noto Serif TC', serif; opacity: 0.8; transition: all 0.3s; white-space: nowrap;
+            font-family: 'Noto Serif TC', serif; opacity: 0.9; transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .map-node:hover .node-label { background: var(--accent-green); opacity: 1; transform: scale(1.05); }
 
@@ -75,31 +78,27 @@
         .notice-board-container { animation: swing 3s ease-in-out infinite; transform-origin: top center; }
         @keyframes swing { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
         .notice-board-icon {
-            width: 80px; height: 60px;
+            width: 70px; height: 50px;
             background: #8D7B68; border: 3px solid #5D4037; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
             box-shadow: 0 6px 0 #3E2723, 0 10px 15px rgba(0,0,0,0.2); position: relative; transition: all 0.3s;
         }
         .notice-paper {
-            width: 60px; height: 40px; background: #FFF; transform: rotate(-2deg);
+            width: 50px; height: 30px; background: #FFF; transform: rotate(-2deg);
             display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .map-node:hover .notice-board-icon { transform: scale(1.1) translateY(-5px); background: #A18E78; }
         .notice-badge {
             position: absolute; top: -8px; right: -8px;
             background: #D85C42; color: white; border-radius: 50%;
-            width: 24px; height: 24px; font-size: 13px;
+            width: 20px; height: 20px; font-size: 12px;
             display: flex; align-items: center; justify-content: center;
             font-weight: bold; border: 2px solid #fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulse-red 1.5s infinite; z-index: 20;
         }
-        @keyframes pulse-red { 
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 92, 66, 0.7); }
-            70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(216, 92, 66, 0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(216, 92, 66, 0); }
-        }
+        @keyframes pulse-red { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
 
-        /* Modal 樣式 */
+        /* Modal */
         #notice-modal {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(60, 60, 58, 0.6); backdrop-filter: blur(4px);
@@ -126,23 +125,19 @@
         /* RWD 手機版特別調整 */
         @media (max-width: 768px) {
             .map-container {
-                /* 手機版：拉高高度，確保分佈均勻 */
                 height: 80vh; 
-                min-height: 650px; 
+                min-height: 600px; 
                 max-height: 800px;
-                display: block; /* 確保 absolute 生效 */
+                display: block; 
             }
             
-            /* 手機版圖示微調 */
-            .node-icon { width: 60px; height: 60px; }
-            .map-node.center-hub .node-icon { width: 75px; height: 75px; }
+            /* 手機版圖示尺寸調整 */
+            .node-icon { width: 64px; height: 64px; }
+            .map-node.center-hub .node-icon { width: 80px; height: 80px; }
             
-            /* SVG 切換 */
+            /* 切換 SVG */
             .desktop-svg { display: none; }
             .mobile-svg { display: block; }
-            
-            /* 公告欄圖示縮小一點 */
-            .notice-board-icon { width: 70px; height: 50px; }
         }
         
         @media (min-width: 769px) {
@@ -186,18 +181,18 @@
                 <path d="M500 450 Q 650 480 800 500" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
             </svg>
 
-            <!-- 手機版路徑 (上下放射狀：中心連結四個角落) -->
+            <!-- 手機版路徑 (X型發散) -->
             <svg class="mobile-svg absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
                 <!-- 中心到上 (校牧) -->
-                <path d="M50 50 L 50 10" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 L 50 15" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
                 <!-- 中心到左上 (公告) -->
-                <path d="M50 50 Q 30 40 25 22" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 L 20 20" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
                 <!-- 中心到右上 (圖書館) -->
-                <path d="M50 50 Q 70 40 75 22" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 L 80 20" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
                 <!-- 中心到左下 (學霸) -->
-                <path d="M50 50 Q 30 60 25 75" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 L 20 80" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
                 <!-- 中心到右下 (課外) -->
-                <path d="M50 50 Q 70 60 75 75" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 L 80 80" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
             </svg>
 
             <!-- 裝飾樹木 -->
@@ -205,18 +200,19 @@
             <div class="tree-deco bottom-5 left-5 text-[#8D7B68]"><i data-lucide="trees" class="w-8 h-8 md:w-12 md:h-12"></i></div>
             <div class="tree-deco top-1/2 right-5 text-[#6B8E23]"><i data-lucide="trees" class="w-12 h-12 md:w-20 md:h-20"></i></div>
             
-            <!-- ================= 地標佈局 (Mobile Optimized) ================= -->
+            <!-- ================= 地標佈局 ================= -->
             
-            <!-- 1. 校牧室 (Chaplain) - 最高點 -->
+            <!-- 1. 校牧室 (Chaplain) - 正上方 -->
             <!-- 手機: top-10% left-50% -->
-            <a href="chaplain/index.html" class="map-node top-[10%] left-1/2 md:top-[12%] group">
+            <a href="chaplain/index.html" class="map-node top-[12%] left-1/2 group">
                 <div class="node-icon w-16 h-16 float-mid bg-[#FDFBF7]"><i data-lucide="church" class="w-6 h-6"></i></div>
-                <div class="node-label bg-[#8D7B68]">校牧室</div>
+                <!-- 修正：強制指定背景色 style="background: #8D7B68" 以解決顏色跑掉問題 -->
+                <div class="node-label" style="background: #8D7B68; color: white;">校牧室</div>
             </a>
 
-            <!-- 2. 公告欄 (Notice) -->
-            <!-- 手機: top-22% left-25% (左上) -->
-            <div class="map-node top-[22%] left-[25%] md:top-[15%] md:right-[10%] md:left-auto group z-30" onclick="openNoticeModal()">
+            <!-- 2. 公告欄 (Notice) - 左上 -->
+            <!-- 手機: top-20% left-15% (往旁邊推開) / 電腦: top-15% right-10% -->
+            <div class="map-node top-[20%] left-[15%] md:top-[15%] md:right-[10%] md:left-auto group z-30" onclick="openNoticeModal()">
                 <div class="notice-board-container scale-75 md:scale-100">
                     <div class="notice-board-icon">
                         <div class="notice-paper"><i data-lucide="bell" class="w-6 h-6 text-[#D85C42]"></i></div>
@@ -227,33 +223,33 @@
                 <div class="node-label mt-2" style="background: #8D7B68; border: 2px solid #5D4037; font-size: 0.75rem;">公告</div>
             </div>
 
-            <!-- 3. 圖書館 (Library) -->
-            <!-- 手機: top-22% right-25% (右上) -->
-            <a href="library/index.html" class="map-node top-[22%] right-[25%] md:top-[30%] md:left-[20%] md:right-auto group">
+            <!-- 3. 圖書館 (Library) - 右上 -->
+            <!-- 手機: top-20% right-15% (往旁邊推開) / 電腦: top-30% left-20% -->
+            <a href="library/index.html" class="map-node top-[20%] right-[15%] md:top-[30%] md:left-[20%] md:right-auto group">
                 <div class="node-icon float-mid"><i data-lucide="library" class="w-8 h-8"></i></div>
                 <div class="node-label">圖書館</div>
                 <div class="absolute -top-6 -left-6 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="search" class="w-6 h-6 text-[#6B8E23] animate-bounce"></i></div>
             </a>
 
-            <!-- 4. 通識中心 (Daily) - 中央 -->
+            <!-- 4. 通識中心 (Daily) - 正中央 -->
             <!-- 手機: top-50% left-50% -->
             <a href="daily/index.html" class="map-node center-hub top-1/2 left-1/2 group">
                 <div class="node-icon w-24 h-24 z-10 float-slow"><i data-lucide="book-open-check" class="w-10 h-10"></i></div>
                 <div class="node-label text-lg font-bold">通識中心</div>
-                <div class="text-xs text-[#8D7B68] mt-1 bg-white/80 px-2 rounded backdrop-blur-sm shadow-sm">每日靈糧</div>
+                <!-- 修正：移除下方的每日靈糧文字 -->
             </a>
 
-            <!-- 5. 學霸養成班 (School) -->
-            <!-- 手機: top-75% left-25% (左下) -->
-            <a href="school/index.html" class="map-node top-[75%] left-[25%] md:top-[30%] md:right-[20%] md:left-auto group">
+            <!-- 5. 學霸養成班 (School) - 左下 -->
+            <!-- 手機: top-80% left-15% (往旁邊推開) / 電腦: top-30% right-20% -->
+            <a href="school/index.html" class="map-node top-[80%] left-[15%] md:top-[30%] md:right-[20%] md:left-auto group">
                 <div class="node-icon float-fast"><i data-lucide="graduation-cap" class="w-8 h-8"></i></div>
                 <div class="node-label">學霸養成班</div>
                 <div class="absolute -top-4 -right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-[#D85C42] text-white text-[10px] px-2 py-1 rounded-full shadow-sm">Quiz!</div>
             </a>
 
-            <!-- 6. 課外活動 (Games) -->
-            <!-- 手機: top-75% right-25% (右下) -->
-            <a href="games/index.html" class="map-node top-[75%] right-[25%] md:bottom-[15%] md:right-[15%] md:top-auto group">
+            <!-- 6. 課外活動 (Games) - 右下 -->
+            <!-- 手機: top-80% right-15% (往旁邊推開) / 電腦: bottom-15% right-15% -->
+            <a href="games/index.html" class="map-node top-[80%] right-[15%] md:bottom-[15%] md:right-[15%] md:top-auto group">
                 <div class="node-icon float-mid"><i data-lucide="tent" class="w-8 h-8"></i></div>
                 <div class="node-label">課外活動</div>
                 <div class="absolute bottom-0 right-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="gamepad-2" class="w-5 h-5 text-[#8FA4AE]"></i></div>
@@ -275,7 +271,7 @@
         © 機智的門徒生活 | Map View
     </footer>
 
-    <!-- 公告 Modal -->
+    <!-- 公告 Modal (內容不變) -->
     <div id="notice-modal" onclick="closeNoticeModal(event)">
         <div class="notice-content" onclick="event.stopPropagation()">
             <button onclick="closeNoticeModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
