@@ -10,7 +10,6 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 保留 Lucide 供其他部分使用，但列表按鈕改用內嵌 SVG -->
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="../assets/js/common.js"></script>
@@ -47,7 +46,7 @@
             border: 1px solid #d1d5db;
             border-radius: 12px; 
             padding: 1rem; 
-            padding-right: 5.5rem; /* 預留更多空間給按鈕 */
+            padding-right: 5.5rem; 
             margin-bottom: 0.75rem; 
             position: relative;
         }
@@ -61,7 +60,8 @@
             display: flex; 
             gap: 0.5rem;
             z-index: 20;
-            background-color: rgba(255,255,255,0.8);
+            /* 移除背景色，讓它更融入 */
+            /* background-color: rgba(255,255,255,0.8); */
             padding: 2px;
             border-radius: 6px;
         }
@@ -71,9 +71,9 @@
             justify-content: center;
             width: 30px;
             height: 30px;
-            color: #555; 
-            background-color: #f3f4f6;
-            border: 1px solid #d1d5db;
+            color: #999; /* 顏色調淡一點 */
+            background-color: transparent; /* 背景透明 */
+            border: 1px solid transparent; /* 邊框透明 */
             border-radius: 6px;
             cursor: pointer !important;
             transition: all 0.2s;
@@ -81,14 +81,13 @@
         .action-btn:hover { 
             background-color: #ecfccb; 
             color: #6B8E23; 
-            border-color: #6B8E23;
+            /* border-color: #6B8E23; 滑鼠移上去才顯示邊框 */
         }
         .action-btn.delete:hover { 
             background-color: #fee2e2; 
             color: #ef4444; 
-            border-color: #ef4444;
+            /* border-color: #ef4444; */
         }
-        /* 讓 SVG 繼承文字顏色 */
         .action-btn svg { width: 16px; height: 16px; stroke-width: 2; }
     </style>
 </head>
@@ -722,15 +721,7 @@
             }
             let html = '';
             unlocked.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(l => {
-                html += `
-                    <div class="bg-white p-3 rounded-lg border border-[#8D7B68]/30 shadow-sm relative">
-                        <div class="text-xs text-[#8D7B68] font-bold mb-1 flex justify-between items-center">
-                            <span>📅 來自 ${l.createdDate || '過去'} 的信</span>
-                            <button onclick="deleteItem('witty_letters', ${l.id})" class="text-gray-300 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
-                        </div>
-                        <div class="text-sm text-[#3E3B39] whitespace-pre-wrap leading-relaxed">${l.content}</div>
-                    </div>
-                `;
+                html += `<div class="bg-white p-3 rounded-lg border border-[#8D7B68]/30 shadow-sm relative"><div class="text-xs text-[#8D7B68] font-bold mb-1 flex justify-between items-center"><span>📅 來自 ${l.createdDate || '過去'} 的信</span><button onclick="deleteItem('witty_letters', ${l.id})" class="text-gray-300 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div><div class="text-sm text-[#3E3B39] whitespace-pre-wrap leading-relaxed">${l.content}</div></div>`;
             });
             listEl.innerHTML = html;
         }
