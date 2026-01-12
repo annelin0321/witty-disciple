@@ -48,12 +48,13 @@
         }
         .journal-item:last-child { margin-bottom: 0; }
         
-        /* 操作按鈕區 */
+        /* 操作按鈕樣式 (編輯/刪除) */
         .action-btns {
             position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem;
         }
         .action-btn {
             color: #d1d5db; transition: color 0.2s; padding: 2px;
+            cursor: pointer;
         }
         .action-btn:hover { color: #6B8E23; }
         .action-btn.delete:hover { color: #ef4444; }
@@ -114,7 +115,7 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-        // Your Firebase Config (請確認與之前填入的一致)
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCHn_OgHIg553J-h6EOByNYKwwWfRX2i2k",
             authDomain: "witty-disciple.firebaseapp.com",
@@ -137,7 +138,7 @@
                 user = currentUser;
                 updateAuthUI();
                 if (user) {
-                    setupRealtimeListeners(); 
+                    setupRealtimeListeners();
                 } else {
                     unsubscribeListeners.forEach(unsub => unsub());
                     unsubscribeListeners = [];
@@ -154,7 +155,11 @@
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error(error);
-                alert("登入失敗：" + error.message);
+                if (error.code === 'auth/unauthorized-domain') {
+                    alert(`網域未授權。\n請至 Firebase Console 新增此網域：\n${window.location.hostname}`);
+                } else if (error.code !== 'auth/popup-closed-by-user') {
+                    alert("登入失敗：" + error.message);
+                }
             }
         };
 
@@ -181,7 +186,6 @@
             }
         }
 
-        // 1. 上傳 (寫入時呼叫)
         window.syncToCloud = async (key, data) => {
             if (!user || !db) return;
             try {
@@ -193,7 +197,6 @@
             }
         };
 
-        // 2. 監聽
         function setupRealtimeListeners() {
             const keys = ['witty_devotions', 'witty_prayers', 'witty_gratitude', 'witty_emotions', 'witty_letters', 'witty_blank_notes'];
             keys.forEach(key => {
@@ -212,13 +215,13 @@
         }
     </script>
 
-    <!-- 業務邏輯 (新增編輯功能) -->
+    <!-- 業務邏輯 -->
     <script>
         const PRAYERS_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/prayers.json';
         let prayersData = [];
         let currentTabId = 'tab-devotion'; 
-        let editingId = null; // 追蹤正在編輯的項目 ID
-        let editingKey = null; // 追蹤正在編輯的 Storage Key
+        let editingId = null;
+        let editingKey = null;
 
         const emotionCategories = {
             "愉悅與連結": ["幸福", "滿足", "興奮", "感激", "自豪", "樂觀", "被愛", "敬畏", "熱情", "平靜"],
@@ -248,7 +251,6 @@
             }
         }
 
-        // 修改後的備份 UI 說明
         function getBackupUI(storageKey, title) {
             return `
                 <div class="mt-8 p-4 bg-yellow-50 rounded-xl border border-yellow-200">
@@ -259,7 +261,7 @@
                         <div class="flex-1">
                             <h5 class="text-sm font-bold text-yellow-800 mb-1">記得備份您的${title}</h5>
                             <p class="text-xs text-yellow-700 mb-3 leading-relaxed">
-                                ⚠️ <strong>重要提示</strong>：資料預設儲存於本機。若您沒有登入 Google 雲端同步，請務必定期使用下方的<strong>「匯出」</strong>按鈕備份，以免更換手機或清除快取時資料遺失。匯入功能可用於還原資料。
+                                資料僅儲存在此裝置。建議使用上方 Google 登入開啟雲端同步。
                             </p>
                             <div class="flex flex-wrap gap-2">
                                 <button onclick="exportNotebook('${storageKey}', '${title}')" class="px-3 py-1.5 bg-white border border-yellow-300 rounded-lg hover:bg-yellow-100 text-yellow-900 text-xs transition-colors flex items-center gap-1 shadow-sm">
@@ -296,24 +298,18 @@
                 <div class="flex justify-center mb-8"><div class="flex flex-wrap justify-center gap-2 w-full max-w-3xl"><button class="chaplain-tab-btn active" onclick="switchTab('tab-devotion', this)">靈修筆記</button><button class="chaplain-tab-btn" onclick="switchTab('tab-prayer', this)">禱告日記</button><button class="chaplain-tab-btn" onclick="switchTab('tab-gratitude', this)">感恩日記</button><button class="chaplain-tab-btn" onclick="switchTab('tab-emotion', this)">情緒日記</button><button class="chaplain-tab-btn" onclick="switchTab('tab-letter', this)">時空膠囊</button><button class="chaplain-tab-btn" onclick="switchTab('tab-blank', this)">靈感筆記</button></div></div>
                 <div class="flex justify-center mb-8 items-center gap-2 bg-white/40 p-2 rounded-lg inline-flex mx-auto border border-[#8D7B68]/20"><i data-lucide="calendar" class="w-4 h-4 text-[#8D7B68]"></i><label for="journal-date" class="text-sm font-bold text-[#3E3B39]">選擇日期：</label><input type="date" id="journal-date" class="bg-white/80 border border-gray-300 rounded px-2 py-1 text-sm text-gray-600 focus:outline-none focus:border-[#6B8E23]" onchange="refreshAllLists()"></div>
 
-                <!-- 1. 靈修筆記 -->
                 <div id="tab-devotion" class="chaplain-tab-content fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-6">聆聽神聲音，回應祂的愛。</p><div class="space-y-4"><div class="form-group"><label class="form-label">今日經文</label><input type="text" class="form-input bg-white/50" placeholder="例如：詩篇 23" id="dev-ref"></div><div class="form-group"><label class="form-label">經文大意</label><textarea id="dev-summary" class="form-input" rows="3" placeholder="這段經文在說什麼..."></textarea></div><div class="form-group"><label class="form-label">感動經文</label><input id="dev-verse" type="text" class="form-input" placeholder="哪一句話抓住了你的心？"></div><div class="form-group"><label class="form-label">生活應用</label><textarea id="dev-app" class="form-input" rows="2" placeholder="如何應用在生活中？"></textarea></div><div class="form-group"><label class="form-label">天父心意</label><textarea id="dev-heart" class="form-input" rows="2" placeholder="天父想對你說什麼？"></textarea></div><div class="form-group"><label class="form-label">回應禱告</label><textarea id="dev-prayer" class="form-input" rows="3" placeholder="親愛的天父..."></textarea></div><div class="text-center pt-2 flex gap-2 justify-center"><button id="btn-save-devotion" onclick="saveDevotion()" class="nature-btn">儲存筆記</button><button id="btn-cancel-devotion" onclick="cancelEdit('devotion')" class="nature-btn hidden bg-gray-200 border-gray-300 text-gray-600">取消</button></div></div><div class="mt-8 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-3 text-sm">📅 當日靈修紀錄</h4><div id="devotion-list" class="space-y-3"></div></div>${getBackupUI('witty_devotions', '靈修筆記')}</div></div>
-                <!-- 2. 禱告日記 -->
                 <div id="tab-prayer" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><div class="mb-6 space-y-4"><div class="form-group"><label class="form-label">禱告主題</label><input id="pray-topic" type="text" class="form-input" placeholder="例如：家人健康..."></div><div class="form-group"><label class="form-label">具體內容</label><textarea id="pray-content" class="form-input" rows="3" placeholder="向神訴說..."></textarea></div><div class="flex gap-2"><select id="pray-status" class="form-input w-auto"><option value="praying">禱告中</option><option value="answered">已成就</option></select><button id="btn-save-prayer" onclick="savePrayer()" class="nature-btn flex-1 justify-center">紀錄</button><button id="btn-cancel-prayer" onclick="cancelEdit('prayer')" class="nature-btn hidden bg-gray-200 border-gray-300 text-gray-600">取消</button></div></div><div class="mt-8 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-3 text-sm">📅 當日禱告紀錄</h4><div id="prayer-list-display" class="space-y-2"></div></div>${getBackupUI('witty_prayers', '禱告日記')}</div></div>
-                <!-- 3. 感恩日記 -->
                 <div id="tab-gratitude" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-4">數算恩典，看見神的手。</p><div class="space-y-4"><div class="form-group"><label class="form-label">感恩事項</label><textarea id="grat-content" class="form-input" rows="4" placeholder="今天發生了什麼值得感謝的事？"></textarea></div><div class="text-center flex gap-2 justify-center"><button id="btn-save-gratitude" onclick="saveGratitude()" class="nature-btn">存入恩典罐</button><button id="btn-cancel-gratitude" onclick="cancelEdit('gratitude')" class="nature-btn hidden bg-gray-200 border-gray-300 text-gray-600">取消</button></div></div><div class="mt-8 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-3 text-sm">📅 當日感恩紀錄</h4><div id="gratitude-list" class="space-y-2 max-h-60 overflow-y-auto"></div></div>${getBackupUI('witty_gratitude', '感恩日記')}</div></div>
-                <!-- 4. 情緒日記 -->
                 <div id="tab-emotion" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-6">誠實面對情緒，帶到神面前。</p><div class="space-y-4"><div class="form-group"><label class="form-label">事件</label><input id="emo-event" type="text" class="form-input" placeholder="發生了什麼引發情緒的事？"></div><div class="form-group"><label class="form-label">情緒標註</label><div class="bg-white/50 p-4 rounded-lg border border-gray-200" id="emotion-tags">${emotionHtml}</div></div><div class="form-group"><label class="form-label">信念</label><textarea id="emo-belief" class="form-input" rows="2" placeholder="當下我心裡是怎麼想的？"></textarea></div><div class="form-group"><label class="form-label">神如何看</label><textarea id="emo-god" class="form-input" rows="2" placeholder="神的話語或真理是怎麼說的？"></textarea></div><div class="form-group"><label class="form-label">回應禱告</label><textarea id="emo-prayer" class="form-input" rows="3" placeholder="根據新的看見，向神禱告..."></textarea></div><div class="text-center flex gap-2 justify-center"><button id="btn-save-emotion" onclick="saveEmotion()" class="nature-btn">完成日記</button><button id="btn-cancel-emotion" onclick="cancelEdit('emotion')" class="nature-btn hidden bg-gray-200 border-gray-300 text-gray-600">取消</button></div></div><div class="mt-8 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-3 text-sm">📅 當日情緒紀錄</h4><div id="emotion-list" class="space-y-3"></div></div>${getBackupUI('witty_emotions', '情緒日記')}</div></div>
-                <!-- 5. 時空膠囊 (不支援編輯) -->
                 <div id="tab-letter" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-4">寫給未來的自己，信心的宣告。</p><div class="space-y-4"><div class="form-group"><label class="form-label">開啟日期</label><input type="date" id="letter-date" class="form-input"></div><div class="form-group"><label class="form-label">給未來的信</label><textarea id="letter-content" class="form-input" rows="6" placeholder="親愛的自己..."></textarea></div><div class="text-center"><button onclick="saveLetter()" class="nature-btn">投遞信件</button><p class="text-xs text-gray-400 mt-2">信件將在指定日期後開啟。</p></div></div><div class="mt-8 pt-6 border-t border-gray-200/50"><div class="bg-white/40 rounded-xl p-4 text-center border border-[#8D7B68]/20"><div onclick="toggleCapsuleList()" class="cursor-pointer inline-block relative group"><div class="p-3 bg-[#FDFBF7] rounded-full border-2 border-[#8D7B68] shadow-sm group-hover:shadow-md transition-all"><i data-lucide="package" class="w-8 h-8 text-[#8D7B68]"></i></div><span id="capsule-badge" class="hidden absolute -top-1 -right-1 bg-[#D85C42] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm animate-bounce">!</span></div><h4 class="font-bold text-[#3E3B39] mt-2">時空寶盒</h4><p id="capsule-status" class="text-xs text-gray-500 mt-1">目前沒有信件</p><div id="capsule-list" class="hidden mt-4 text-left space-y-3 max-h-60 overflow-y-auto"></div></div></div><div class="mt-8 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-3 text-sm">📅 當日寫信紀錄</h4><div id="letter-list-daily" class="space-y-2"></div></div>${getBackupUI('witty_letters', '時空膠囊')}</div></div>
-                <!-- 6. 靈感筆記 -->
                 <div id="tab-blank" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-4">隨手記下聖靈的感動或生活的靈感。</p><div class="space-y-4"><div class="form-group"><textarea id="blank-content" class="form-input" rows="5" placeholder="在此輸入內容..."></textarea></div><div class="text-center flex gap-2 justify-center"><button id="btn-save-blank" onclick="saveBlankNote()" class="nature-btn">儲存筆記</button><button id="btn-cancel-blank" onclick="cancelEdit('blank')" class="nature-btn hidden bg-gray-200 border-gray-300 text-gray-600">取消</button></div><div class="mt-4 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-2 text-sm">📅 當日靈感紀錄</h4><div id="blank-note-list" class="space-y-2 max-h-60 overflow-y-auto"></div></div></div>${getBackupUI('witty_blank_notes', '靈感筆記')}</div></div>
             `;
             document.getElementById('chaplain-content').innerHTML = html;
         }
 
         function switchTab(id, btn) {
-            cancelEdit(); // 切換分頁時取消編輯
+            cancelEdit();
             document.querySelectorAll('.chaplain-tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(id).classList.remove('hidden');
             document.querySelectorAll('.chaplain-tab-btn').forEach(el => el.classList.remove('active'));
@@ -332,15 +328,53 @@
             if(window.lucide) lucide.createIcons();
         }
 
-        // --- 核心編輯邏輯 ---
+        function exportNotebook(key, title) {
+            const data = localStorage.getItem(key);
+            if (!data || data === '[]') return alert('目前沒有資料可匯出');
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const date = new Date().toISOString().slice(0,10);
+            a.href = url;
+            a.download = `witty_${title}_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importNotebook(input, key) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData)) throw new Error("格式錯誤");
+                    const oldData = JSON.parse(localStorage.getItem(key) || '[]');
+                    const combined = [...importedData, ...oldData];
+                    const unique = [];
+                    const ids = new Set();
+                    combined.forEach(item => {
+                        if (item.id) { if (!ids.has(item.id)) { ids.add(item.id); unique.push(item); } } 
+                        else { unique.push(item); }
+                    });
+                    localStorage.setItem(key, JSON.stringify(unique));
+                    saveData(key, unique); 
+                    alert('匯入成功！');
+                    refreshAllLists();
+                } catch (err) { alert('匯入失敗'); }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
+
+        // --- 編輯功能實作 ---
         function startEditing(type, id) {
             editingKey = type; 
             editingId = id;
-            
-            // 捲動到頂部
             document.querySelector('.notebook-card').scrollIntoView({ behavior: 'smooth' });
 
-            // 根據類型填充表單
             if (type === 'witty_devotions') {
                 const list = JSON.parse(localStorage.getItem('witty_devotions') || '[]');
                 const item = list.find(i => i.id === id);
@@ -362,9 +396,7 @@
                     document.getElementById('pray-content').value = item.content || '';
                     document.getElementById('pray-status').value = item.status || 'praying';
                     document.getElementById('btn-save-prayer').innerText = '更新紀錄';
-                    // 修正：禱告區塊的按鈕在 flex container 裡，直接操作 classList
-                    const cancelBtn = document.getElementById('btn-cancel-prayer');
-                    if(cancelBtn) cancelBtn.classList.remove('hidden');
+                    document.getElementById('btn-cancel-prayer').classList.remove('hidden');
                 }
             } else if (type === 'witty_gratitude') {
                 const list = JSON.parse(localStorage.getItem('witty_gratitude') || '[]');
@@ -382,7 +414,6 @@
                     document.getElementById('emo-belief').value = item.belief || '';
                     document.getElementById('emo-god').value = item.god || '';
                     document.getElementById('emo-prayer').value = item.prayer || '';
-                    // 還原情緒標籤選擇
                     const tags = document.querySelectorAll('.emotion-chip');
                     tags.forEach(t => {
                         if (item.emotions && item.emotions.includes(t.innerText)) t.classList.add('selected');
@@ -406,7 +437,7 @@
             editingId = null;
             editingKey = null;
             
-            // 重置表單與按鈕
+            // 重置表單
             if (uiType === 'devotion' || !uiType) {
                 ['dev-ref','dev-summary','dev-verse','dev-app','dev-heart','dev-prayer'].forEach(id => {
                     const el = document.getElementById(id);
@@ -449,51 +480,6 @@
             }
         }
 
-        // --- 匯出/匯入 (保持原樣) ---
-        function exportNotebook(key, title) {
-            const data = localStorage.getItem(key);
-            if (!data || data === '[]') return alert('目前沒有資料可匯出');
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const date = new Date().toISOString().slice(0,10);
-            a.href = url;
-            a.download = `witty_${title}_${date}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function importNotebook(input, key) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (!Array.isArray(importedData)) throw new Error("格式錯誤");
-                    const oldData = JSON.parse(localStorage.getItem(key) || '[]');
-                    const combined = [...importedData, ...oldData];
-                    const unique = [];
-                    const ids = new Set();
-                    combined.forEach(item => {
-                        if (item.id) { if (!ids.has(item.id)) { ids.add(item.id); unique.push(item); } } 
-                        else { unique.push(item); }
-                    });
-                    localStorage.setItem(key, JSON.stringify(unique));
-                    saveData(key, unique); 
-                    alert('匯入成功！');
-                    refreshAllLists();
-                } catch (err) { alert('匯入失敗'); }
-            };
-            reader.readAsText(file);
-            input.value = '';
-        }
-
-        // --- 功能函數 (更新為支援編輯) ---
-
-        // 1. 靈修
         function saveDevotion() {
             const date = getSelectedDate();
             const ref = document.getElementById('dev-ref').value;
@@ -502,56 +488,10 @@
             const app = document.getElementById('dev-app').value;
             const heart = document.getElementById('dev-heart').value;
             const prayer = document.getElementById('dev-prayer').value;
-            
             if(!ref && !verse) return alert('請填寫內容');
             
             let list = JSON.parse(localStorage.getItem('witty_devotions') || '[]');
             const newData = { id: editingId || Date.now(), date, ref, summary, verse, app, heart, prayer };
-
-            if (editingId) { // 更新
-                const index = list.findIndex(i => i.id === editingId);
-                if(index !== -1) list[index] = newData;
-                else list.unshift(newData);
-            } else { // 新增
-                list.unshift(newData);
-            }
-            
-            saveData('witty_devotions', list);
-            cancelEdit('devotion');
-            renderDevotionList();
-        }
-
-        function renderDevotionList() {
-            const date = getSelectedDate();
-            const list = JSON.parse(localStorage.getItem('witty_devotions') || '[]');
-            const filtered = list.filter(item => item.date === date);
-            
-            let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
-            filtered.forEach(item => {
-                html += `
-                    <div class="journal-item">
-                        <div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div>
-                        <div class="text-sm text-gray-600 whitespace-pre-wrap">${item.summary || item.verse || '內容...'}</div>
-                        <div class="action-btns">
-                            <button onclick="startEditing('witty_devotions', ${item.id})" class="action-btn"><i data-lucide="edit" class="w-4 h-4"></i></button>
-                            <button onclick="deleteItem('witty_devotions', ${item.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
-                        </div>
-                    </div>
-                `;
-            });
-            document.getElementById('devotion-list').innerHTML = html;
-        }
-
-        // 2. 禱告
-        function savePrayer() {
-            const date = getSelectedDate();
-            const topic = document.getElementById('pray-topic').value;
-            const content = document.getElementById('pray-content').value;
-            const status = document.getElementById('pray-status').value;
-            if(!topic) return alert('請填寫主題');
-
-            let list = JSON.parse(localStorage.getItem('witty_prayers') || '[]');
-            const newData = { id: editingId || Date.now(), date, topic, content, status };
 
             if (editingId) {
                 const index = list.findIndex(i => i.id === editingId);
@@ -559,6 +499,34 @@
             } else {
                 list.unshift(newData);
             }
+            saveData('witty_devotions', list);
+            cancelEdit('devotion');
+            renderDevotionList();
+        }
+        function renderDevotionList() {
+            const date = getSelectedDate();
+            const list = JSON.parse(localStorage.getItem('witty_devotions') || '[]');
+            const filtered = list.filter(item => item.date === date);
+            let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
+            filtered.forEach(item => {
+                // 加上編輯按鈕
+                html += `<div class="journal-item"><div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div><div class="text-sm text-gray-600 whitespace-pre-wrap">${item.summary || item.verse || '內容...'}</div><div class="action-btns"><button onclick="startEditing('witty_devotions', ${item.id})" class="action-btn"><i data-lucide="edit" class="w-4 h-4"></i></button><button onclick="deleteItem('witty_devotions', ${item.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+            });
+            document.getElementById('devotion-list').innerHTML = html;
+        }
+
+        function savePrayer() {
+            const date = getSelectedDate();
+            const topic = document.getElementById('pray-topic').value;
+            const content = document.getElementById('pray-content').value;
+            const status = document.getElementById('pray-status').value;
+            if(!topic) return alert('請填寫主題');
+            let list = JSON.parse(localStorage.getItem('witty_prayers') || '[]');
+            const newData = { id: editingId || Date.now(), date, topic, content, status };
+            if (editingId) {
+                const index = list.findIndex(i => i.id === editingId);
+                if(index !== -1) list[index] = newData;
+            } else { list.unshift(newData); }
             saveData('witty_prayers', list);
             cancelEdit('prayer');
             renderPrayerList();
@@ -575,7 +543,6 @@
             document.getElementById('prayer-list-display').innerHTML = html;
         }
 
-        // 3. 感恩
         function saveGratitude() {
             const date = getSelectedDate();
             const content = document.getElementById('grat-content').value;
@@ -601,7 +568,6 @@
             document.getElementById('gratitude-list').innerHTML = html;
         }
 
-        // 4. 情緒
         function toggleEmotion(el) { el.classList.toggle('selected'); }
         function saveEmotion() {
             const date = getSelectedDate();
@@ -613,12 +579,10 @@
             const prayer = document.getElementById('emo-prayer').value;
             let list = JSON.parse(localStorage.getItem('witty_emotions') || '[]');
             const newData = { id: editingId || Date.now(), date, event, emotions, belief, god, prayer };
-            
             if (editingId) {
                 const index = list.findIndex(i => i.id === editingId);
                 if(index !== -1) list[index] = newData;
             } else { list.unshift(newData); }
-            
             saveData('witty_emotions', list);
             cancelEdit('emotion');
             renderEmotionList();
@@ -634,7 +598,6 @@
             document.getElementById('emotion-list').innerHTML = html;
         }
 
-        // 5. 時空膠囊 (不提供編輯，只提供刪除，維持時空膠囊的不可逆感，或可視需求加入)
         function saveLetter() {
             const createdDate = getSelectedDate();
             const date = document.getElementById('letter-date').value;
@@ -653,7 +616,7 @@
             const filtered = list.filter(l => (l.createdDate === date) || (!l.createdDate && l.date === date)); 
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無寫信紀錄</p>';
             filtered.forEach(l => {
-                html += `<div class="journal-item"><div class="text-xs text-gray-500 mb-1">預計於 ${l.date} 開啟</div><div class="text-sm text-[#3E3B39] line-clamp-2">${l.content}</div><button onclick="deleteItem('witty_letters', ${l.id})" class="delete-btn"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div>`;
+                html += `<div class="journal-item"><div class="text-xs text-gray-500 mb-1">預計於 ${l.date} 開啟</div><div class="text-sm text-[#3E3B39] line-clamp-2">${l.content}</div><div class="action-btns"><button onclick="deleteItem('witty_letters', ${l.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
             });
             document.getElementById('letter-list-daily').innerHTML = html;
         }
@@ -684,7 +647,6 @@
         }
         function toggleCapsuleList() { document.getElementById('capsule-list').classList.toggle('hidden'); }
 
-        // 6. 靈感筆記
         function saveBlankNote() {
             const date = getSelectedDate();
             const content = document.getElementById('blank-content').value;
@@ -710,14 +672,12 @@
             document.getElementById('blank-note-list').innerHTML = html;
         }
 
-        // --- 共用刪除函式 ---
         window.deleteItem = function(storageKey, id) {
             if(!confirm('確定刪除此紀錄？')) return;
             let list = JSON.parse(localStorage.getItem(storageKey) || '[]');
             list = list.filter(item => item.id !== id);
             saveData(storageKey, list);
             refreshAllLists();
-            // 如果刪除的是正在編輯的項目，取消編輯狀態
             if (editingId === id) cancelEdit();
         };
 
