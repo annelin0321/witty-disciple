@@ -20,7 +20,6 @@
         <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
     </div>
 
-    <!-- 導覽列 -->
     <nav class="nature-nav sticky top-0 z-50">
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
@@ -91,11 +90,14 @@
 
     <script>
         const DEVOTION_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/devotionals.json';
-        const READING_PLAN_URL = '../assets/data/reading-plan.json'; // 指向您建立的 JSON 檔案
+        // 讀經計畫檔路徑
+        const READING_PLAN_URL = '../assets/data/reading-plan.json'; 
         const BIBLE_DB_URL = 'https://raw.githubusercontent.com/annelin0321/bible-zh/main/bible_complete.db';
         
         let devotionalsData = [];
         let bibleReadingPlan = {}; 
+        let isPlanLoadedFromFile = false; 
+        let planLoadError = "";
         
         let db = null;
         let isDbLoading = false;
@@ -165,7 +167,6 @@
             try {
                 const parsed = parseBibleReference(reference);
                 
-                // 標題顯示邏輯
                 const getSubtitle = () => {
                     if (!parsed) return reference;
                     let s = `${parsed.book} 第 ${parsed.chapter} 章`;
@@ -175,6 +176,33 @@
                     return s;
                 };
 
+                const executeQuery = (query, subtitle) => {
+                    try {
+                        const res = database.exec(query);
+                        if (res.length > 0) {
+                            let html = '';
+                            let currentChap = -1;
+                            res[0].values.forEach(row => {
+                                if (row.length === 3) { 
+                                    const c = row[0], v = row[1], t = row[2];
+                                    if (c !== currentChap && parsed?.endChapter) {
+                                        html += `<div class="text-center my-4"><span class="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-600">第 ${c} 章</span></div>`;
+                                        currentChap = c;
+                                    }
+                                    html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
+                                } else {
+                                    const v = row[0], t = row[1];
+                                    html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
+                                }
+                            });
+                            modalTitle.innerText = subtitle;
+                            modalBody.innerHTML = html;
+                            return true;
+                        }
+                        return false;
+                    } catch(e) { console.error(e); return false; }
+                };
+
                 if (parsed) {
                     let query;
                     // 使用 CAST AS INTEGER 確保數字比對正確
@@ -182,36 +210,23 @@
                          query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND CAST(${dbCols.chap} AS INTEGER) >= ${parsed.chapter} AND CAST(${dbCols.chap} AS INTEGER) <= ${parsed.endChapter} ORDER BY CAST(${dbCols.chap} AS INTEGER), CAST(${dbCols.ver} AS INTEGER)`;
                     } else if (parsed.endVerse && parsed.endVerse > parsed.verse) {
                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND CAST(${dbCols.ver} AS INTEGER) >= ${parsed.verse} AND CAST(${dbCols.ver} AS INTEGER) <= ${parsed.endVerse} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
-                    } else if (parsed.endVerse === null && !reference.includes(':')) {
-                        // 整章
-                        query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
+                    } else if (parsed.endVerse === null) {
+                        if (!reference.includes(':')) {
+                             query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
+                        } else {
+                            query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} = ${parsed.verse}`;
+                        }
                     } else {
-                        // 單節
                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} = ${parsed.verse}`;
                     }
 
-                    const res = database.exec(query);
-                    if (res.length > 0) {
-                        let html = '';
-                        let currentChap = -1;
-                        res[0].values.forEach(row => {
-                            if (row.length === 3) { 
-                                const c = row[0], v = row[1], t = row[2];
-                                if (c !== currentChap && parsed.endChapter) {
-                                    html += `<div class="text-center my-4"><span class="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-600">第 ${c} 章</span></div>`;
-                                    currentChap = c;
-                                }
-                                html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
-                            } else {
-                                const v = row[0], t = row[1];
-                                html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
-                            }
-                        });
-                        modalTitle.innerText = getSubtitle();
-                        modalBody.innerHTML = html;
-                    } else {
-                        // 查無資料時，不自動跳回整章，而是顯示找不到，避免誤導
-                        modalBody.innerHTML = `<p class="text-center py-6">找不到經文範圍：${reference}<br><span class="text-sm text-gray-400">請確認資料庫中是否有此章節</span></p>`;
+                    if (!executeQuery(query, getSubtitle())) {
+                        console.log("Range not found, fallback to chapter");
+                        const fallbackQuery = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
+                        
+                        if (!executeQuery(fallbackQuery, `${parsed.book} 第 ${parsed.chapter} 章 (完整章節)`)) {
+                             modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}<br><span class="text-sm text-gray-400">請確認書卷名稱是否正確</span></p>`;
+                        }
                     }
                 } else {
                     modalTitle.innerText = reference;
@@ -228,21 +243,27 @@
             document.getElementById('bible-modal').classList.remove('show');
         }
 
+        // --- 讀經計畫生成 (嚴格讀取檔案) ---
         async function generateReadingPlan() {
             try {
-                const res = await fetch(READING_PLAN_URL);
+                // 加入時間戳記防止快取
+                const res = await fetch(`${READING_PLAN_URL}?t=${Date.now()}`);
                 if (res.ok) {
                     const data = await res.json();
                     data.forEach(day => { bibleReadingPlan[day.date] = day; });
-                    return;
+                    isPlanLoadedFromFile = true;
+                    console.log("Reading plan loaded from file successfully.");
+                } else {
+                    planLoadError = `HTTP ${res.status}`;
                 }
-            } catch (e) { console.log("Reading plan not found or parse error."); }
-            // 若無 JSON，這裡暫不使用演算法 fallback，直接留空，讓使用者發現並上傳 JSON
+            } catch (e) { 
+                console.log("Fetching plan failed:", e);
+                planLoadError = e.message;
+            }
         }
 
         async function init() {
             if(window.lucide) lucide.createIcons();
-            // 強制掛載
             window.openScripture = openScripture;
             
             await generateReadingPlan(); 
@@ -268,17 +289,16 @@
         function renderDailyDevotional(items) {
             const container = document.getElementById('daily-content');
             const dObj = new Date();
-            const todayStr = `${dObj.getMonth()+1}-${dObj.getDate()}`; // 格式: M-D
             
-            // 查詢計畫 (優先使用 reading-plan.json)
-            let plan = bibleReadingPlan[todayStr];
+            // 處理日期格式：支援 M-D (1-1) 與 MM-DD (01-01)
+            const m = dObj.getMonth() + 1;
+            const d = dObj.getDate();
+            const keySimple = `${m}-${d}`;
+            const keyPadded = `${m.toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
             
-            // 如果 JSON 沒資料，提供一個「請上傳」的提示，而不是錯誤的演算法資料
-            if (!plan) {
-                 // 使用今天的日期作為 key，但內容為空
-                 plan = null;
-            }
-
+            // 優先找有資料的 key
+            let plan = bibleReadingPlan[keySimple] || bibleReadingPlan[keyPadded];
+            
             const start = new Date(dObj.getFullYear(), 0, 0);
             const diff = dObj - start;
             const oneDay = 1000 * 60 * 60 * 24;
@@ -292,7 +312,7 @@
                     <div class="mb-10 text-center w-full">
                         <div class="inline-block px-6 py-2 border-b-2 border-[#6B8E23] mb-6">
                             <h2 class="text-2xl font-serif text-[#3E3B39] tracking-widest">今日讀經</h2>
-                            <p class="text-xs text-[#8D7B68] uppercase mt-1">${todayStr} (Day ${dayOfYear})</p>
+                            <p class="text-xs text-[#8D7B68] uppercase mt-1">Date: ${plan.date} (Day ${dayOfYear})</p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto px-2">
                             ${['ot','nt','ps','pr'].map(k => plan[k] ? `
@@ -303,15 +323,20 @@
                                 </button>
                             ` : '').join('')}
                         </div>
+                        ${isPlanLoadedFromFile ? '<p class="text-[10px] text-gray-300 mt-4">來源：檔案讀取成功</p>' : ''}
                     </div>
                     <div class="divider-water opacity-50 mb-10 w-full"></div>
                 `;
             } else {
                 html += `
                     <div class="mb-10 text-center w-full">
-                        <div class="p-6 bg-white/50 rounded-xl border border-dashed border-gray-300">
-                             <p class="text-gray-500 mb-2">📅 今日 (${todayStr}) 尚無讀經進度</p>
-                             <p class="text-xs text-gray-400">請確認 assets/data/reading-plan.json 是否包含此日期的資料。</p>
+                        <div class="p-6 bg-white/50 rounded-xl border border-dashed border-gray-300 inline-block">
+                             <p class="text-gray-600 mb-2 font-bold">📅 今日 (${keySimple}) 尚無讀經進度</p>
+                             <div class="text-xs text-gray-400 text-left mt-2 space-y-1">
+                                <p>無法讀取 assets/data/reading-plan.json</p>
+                                <p>請確認檔案已上傳且格式正確。</p>
+                                <p class="text-red-400">錯誤訊息: ${planLoadError || '無資料'}</p>
+                             </div>
                         </div>
                     </div>
                 `;
@@ -322,13 +347,15 @@
                 const index = dayOfYear % items.length;
                 const todayItem = items[index];
                 html += generateSingleDevotionalHtml(todayItem);
+            } else {
+                 html += `<div class="py-10 text-[#8D7B68]">今日暫無額外靈修文章</div>`;
             }
             container.innerHTML = html;
             if(window.lucide) lucide.createIcons();
         }
         
         function getLabel(key) {
-            const map = { ot: 'OLD TESTAMENT', nt: 'NEW TESTAMENT', ps: 'PSALMS', pr: 'PROVERBS' };
+            const map = { ot: 'OLD TESTAMENT (舊約)', nt: 'NEW TESTAMENT (新約)', ps: 'PSALMS (詩篇)', pr: 'PROVERBS (箴言)' };
             return map[key] || key;
         }
 
