@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Connect - 聖經連連看</title>
+    
+    <!-- 引入 React 和 ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    
+    <!-- 引入 Babel 用來解析 JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- 引入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        /* 防止雙擊選取文字，讓遊戲體驗更好 */
+        body {
+            user-select: none;
+            -webkit-user-select: none;
+        }
+    </style>
+</head>
+<body class="bg-amber-50">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        // --- 圖示組件 (手動定義以移除外部依賴) ---
+        const Book = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        );
+        const RefreshCw = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
+        );
+        const Trophy = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+        );
+        const Clock = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        );
+        const Zap = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        );
+        const Lightbulb = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-1 1.5-2.4 1.5-3.8 0-3.2-2.7-5.8-6-5.8S6 4.6 6 7.8c0 1.4.6 2.8 1.5 3.8.8.8 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>
+        );
+
+        // --- 遊戲資料 ---
+        const BIBLE_BOOKS_DATA = [
+            { name: "創世記", icon: "🌏" }, { name: "出埃及記", icon: "🌊" }, { name: "利未記", icon: "🐏" }, { name: "民數記", icon: "🔢" }, { name: "申命記", icon: "📜" }, 
+            { name: "約書亞記", icon: "🎺" }, { name: "士師記", icon: "💪" }, { name: "路得記", icon: "🌾" }, { name: "撒母耳記上", icon: "🤴" }, { name: "撒母耳記下", icon: "🏰" }, 
+            { name: "列王紀上", icon: "👑" }, { name: "列王紀下", icon: "⚔️" }, { name: "歷代志上", icon: "📝" }, { name: "歷代志下", icon: "🏗️" }, { name: "以斯拉記", icon: "🧱" }, 
+            { name: "尼希米記", icon: "🛡️" }, { name: "以斯帖記", icon: "👸" }, { name: "約伯記", icon: "🤕" }, { name: "詩篇", icon: "🎼" }, { name: "箴言", icon: "🦉" }, 
+            { name: "傳道書", icon: "☀️" }, { name: "雅歌", icon: "🌹" }, { name: "以賽亞書", icon: "🌿" }, { name: "耶利米書", icon: "😭" }, { name: "耶利米哀歌", icon: "💧" }, 
+            { name: "以西結書", icon: "💀" }, { name: "但以理書", icon: "🦁" }, { name: "何西阿書", icon: "💍" }, { name: "約珥書", icon: "🦗" }, { name: "阿摩司書", icon: "🧺" }, 
+            { name: "俄巴底亞書", icon: "⛰️" }, { name: "約拿書", icon: "🐋" }, { name: "彌迦書", icon: "⚖️" }, { name: "那鴻書", icon: "👣" }, { name: "哈巴谷書", icon: "🔭" }, 
+            { name: "西番雅書", icon: "🕯️" }, { name: "哈该書", icon: "🏠" }, { name: "撒迦利亞書", icon: "🦓" }, { name: "瑪拉基書", icon: "🗣️" },
+            { name: "馬太福音", icon: "💰" }, { name: "馬可福音", icon: "🐾" }, { name: "路加福音", icon: "🐂" }, { name: "約翰福音", icon: "🦅" }, { name: "使徒行傳", icon: "🔥" }, 
+            { name: "羅馬書", icon: "❤️" }, { name: "哥林多前書", icon: "⛪" }, { name: "哥林多後書", icon: "🛐" }, { name: "加拉太書", icon: "⛓️" }, { name: "以弗所書", icon: "🛡️" }, 
+            { name: "腓立比書", icon: "😃" }, { name: "歌羅西書", icon: "🧭" }, { name: "帖撒羅尼迦前書", icon: "💤" }, { name: "帖撒羅尼迦後書", icon: "🌩️" }, 
+            { name: "提摩太前書", icon: "👔" }, { name: "提摩太後書", icon: "🏁" }, { name: "提多書", icon: "🏝️" }, { name: "腓利門書", icon: "🔓" }, { name: "希伯來書", icon: "🩸" }, 
+            { name: "雅各書", icon: "👅" }, { name: "彼得前書", icon: "💎" }, { name: "彼得後書", icon: "⚠️" }, { name: "約翰一書", icon: "💡" }, { name: "約翰二書", icon: "🚧" }, 
+            { name: "約翰三書", icon: "🤝" }, { name: "猶大書", icon: "🌌" }, { name: "啟示錄", icon: "🗝️" }
+        ];
+
+        // --- 主遊戲元件 ---
+        const BibleMatchGame = () => {
+            // 遊戲狀態
+            const [cards, setCards] = useState([]); // null 代表該格子是空的
+            const [selectedIndices, setSelectedIndices] = useState([]);
+            const [timer, setTimer] = useState(0);
+            const [gameWon, setGameWon] = useState(false);
+            const [gameActive, setGameActive] = useState(false);
+            const [gridCols, setGridCols] = useState(10); // 預設 10 (電腦版)
+            const [message, setMessage] = useState(""); // 提示訊息
+            const [connectingPath, setConnectingPath] = useState(null); // 用於繪製連線路徑
+            const [availableCount, setAvailableCount] = useState(0); // 新增：可消除的對數
+
+            const gridRef = useRef(null);
+
+            // 響應式網格列數
+            useEffect(() => {
+                const handleResize = () => {
+                if (window.innerWidth < 768) {
+                    setGridCols(5);
+                } else {
+                    setGridCols(10);
+                }
+                };
+                handleResize();
+                window.addEventListener('resize', handleResize);
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            // -------------------------
+            // 核心邏輯：連連看路徑搜尋 (包含外圍路徑)
+            // -------------------------
+
+            const getCoords = useCallback((index, cols) => ({
+                r: Math.floor(index / cols),
+                c: index % cols
+            }), []);
+
+            const getIndex = useCallback((r, c, cols) => {
+                if (r < 0 || c < 0 || c >= cols) return -1;
+                return r * cols + c;
+            }, []);
+
+            const isInsideGrid = (r, c, rows, cols) => {
+                return r >= 0 && r < rows && c >= 0 && c < cols;
+            };
+
+            // BFS 搜尋路徑
+            const findPath = (startIdx, endIdx, currentCards, cols) => {
+                const totalCells = currentCards.length;
+                const rows = Math.ceil(totalCells / cols);
+                const start = getCoords(startIdx, cols);
+                const end = getCoords(endIdx, cols);
+
+                const queue = [
+                { r: start.r, c: start.c, turns: 0, dir: 0, path: [{ r: start.r, c: start.c }] }
+                ];
+
+                const visited = new Set(); 
+
+                while (queue.length > 0) {
+                const { r, c, turns, dir, path } = queue.shift();
+
+                if (r === end.r && c === end.c) {
+                    return path;
+                }
+
+                const moves = [
+                    { dr: -1, dc: 0, newDir: 1 }, // Up
+                    { dr: 1, dc: 0, newDir: 2 },  // Down
+                    { dr: 0, dc: -1, newDir: 3 }, // Left
+                    { dr: 0, dc: 1, newDir: 4 }   // Right
+                ];
+
+                for (let move of moves) {
+                    const nr = r + move.dr;
+                    const nc = c + move.dc;
+
+                    // 允許向外擴展一圈
+                    if (nr >= -1 && nr <= rows && nc >= -1 && nc <= cols) {
+                    const newTurns = (dir !== 0 && dir !== move.newDir) ? turns + 1 : turns;
+
+                    if (newTurns <= 2) {
+                        const isTarget = (nr === end.r && nc === end.c);
+                        
+                        let isPassable = false;
+                        if (!isInsideGrid(nr, nc, rows, cols)) {
+                        isPassable = true;
+                        } else {
+                        const nextIdx = getIndex(nr, nc, cols);
+                        if (nextIdx >= 0 && nextIdx < currentCards.length) {
+                            isPassable = (currentCards[nextIdx] === null || isTarget);
+                        } else {
+                            isPassable = true; 
+                        }
+                        }
+
+                        if (isPassable) {
+                        const stateKey = `${nr},${nc},${move.newDir},${newTurns}`;
+                        if (!visited.has(stateKey)) {
+                            visited.add(stateKey);
+                            queue.push({
+                            r: nr,
+                            c: nc,
+                            turns: newTurns,
+                            dir: move.newDir,
+                            path: [...path, { r: nr, c: nc }]
+                            });
+                        }
+                        }
+                    }
+                    }
+                }
+                }
+                return null;
+            };
+
+            // 計算目前還有幾對可消除
+            const getAvailableMatchCount = (currentCards, cols) => {
+                const indices = currentCards.map((c, i) => c !== null ? i : -1).filter(i => i !== -1);
+                const idMap = {};
+                
+                indices.forEach(idx => {
+                const id = currentCards[idx].id;
+                if (!idMap[id]) idMap[id] = [];
+                idMap[id].push(idx);
+                });
+
+                let count = 0;
+                Object.values(idMap).forEach(pair => {
+                if (pair.length === 2) {
+                    if (findPath(pair[0], pair[1], currentCards, cols)) {
+                    count++;
+                    }
+                }
+                });
+                return count;
+            };
+
+            // 重新排列
+            const shuffleBoard = (currentCards) => {
+                const remainingCards = currentCards.filter(c => c !== null);
+                const occupiedIndices = currentCards
+                .map((c, i) => c !== null ? i : -1)
+                .filter(i => i !== -1);
+                
+                const shuffledContent = [...remainingCards].sort(() => 0.5 - Math.random());
+                const newCards = [...currentCards];
+                occupiedIndices.forEach((pos, i) => {
+                newCards[pos] = shuffledContent[i];
+                });
+                return newCards;
+            };
+
+            // 初始化遊戲
+            const initGame = () => {
+                const allIndices = Array.from({ length: 66 }, (_, i) => i);
+                const shuffledIndices = allIndices.sort(() => 0.5 - Math.random());
+                const selectedIndices = shuffledIndices.slice(0, 25);
+
+                let deck = [];
+                selectedIndices.forEach((bookIndex) => {
+                const bookData = BIBLE_BOOKS_DATA[bookIndex];
+                const cardData = { book: bookData.name, icon: bookData.icon, id: bookIndex };
+                deck.push({ ...cardData, uniqueId: `${bookIndex}-a` });
+                deck.push({ ...cardData, uniqueId: `${bookIndex}-b` });
+                });
+
+                deck.sort(() => 0.5 - Math.random());
+                
+                let safeDeck = deck;
+                let attempts = 0;
+                let initialCount = 0;
+                
+                do {
+                safeDeck = [...safeDeck].sort(() => 0.5 - Math.random());
+                initialCount = getAvailableMatchCount(safeDeck, gridCols);
+                attempts++;
+                } while (initialCount === 0 && attempts < 20);
+
+                setCards(safeDeck);
+                setAvailableCount(initialCount);
+                setSelectedIndices([]);
+                setTimer(0);
+                setGameWon(false);
+                setGameActive(true);
+                setMessage("");
+            };
+
+            useEffect(() => {
+                initGame();
+            }, [gridCols]);
+
+            useEffect(() => {
+                let interval = null;
+                if (gameActive && !gameWon) {
+                interval = setInterval(() => {
+                    setTimer((prev) => prev + 1);
+                }, 1000);
+                }
+                return () => clearInterval(interval);
+            }, [gameActive, gameWon]);
+
+            const handleCardClick = (index) => {
+                if (gameWon || !cards[index] || connectingPath) return;
+
+                if (selectedIndices.includes(index)) {
+                setSelectedIndices([]);
+                return;
+                }
+
+                const newSelected = [...selectedIndices, index];
+                
+                if (newSelected.length === 1) {
+                setSelectedIndices(newSelected);
+                } else if (newSelected.length === 2) {
+                setSelectedIndices(newSelected);
+                const idx1 = newSelected[0];
+                const idx2 = newSelected[1];
+
+                if (cards[idx1].id === cards[idx2].id) {
+                    const pathCoords = findPath(idx1, idx2, cards, gridCols);
+                    
+                    if (pathCoords) {
+                    const pathIndices = pathCoords
+                        .map(p => getIndex(p.r, p.c, gridCols))
+                        .filter(idx => idx !== -1);
+
+                    setConnectingPath(pathIndices);
+                    
+                    setTimeout(() => {
+                        const newCards = [...cards];
+                        newCards[idx1] = null;
+                        newCards[idx2] = null;
+                        
+                        const remaining = newCards.filter(c => c !== null).length;
+                        if (remaining === 0) {
+                        setGameWon(true);
+                        setGameActive(false);
+                        setCards(newCards);
+                        setAvailableCount(0);
+                        } else {
+                        let count = getAvailableMatchCount(newCards, gridCols);
+                        
+                        if (count === 0) {
+                            setMessage("無可消除牌組，自動排列中...");
+                            
+                            let shuffled = newCards;
+                            let attempts = 0;
+                            do {
+                            shuffled = shuffleBoard(shuffled);
+                            count = getAvailableMatchCount(shuffled, gridCols);
+                            attempts++;
+                            } while (count === 0 && attempts < 20);
+
+                            setCards(shuffled);
+                            setAvailableCount(count);
+                            
+                            setTimeout(() => setMessage(""), 1500);
+                        } else {
+                            setCards(newCards);
+                            setAvailableCount(count);
+                        }
+                        }
+                        setSelectedIndices([]);
+                        setConnectingPath(null);
+                    }, 300);
+                    } else {
+                    setMessage("路徑受阻！");
+                    setTimeout(() => {
+                        setSelectedIndices([]);
+                        setMessage("");
+                    }, 500);
+                    }
+                } else {
+                    setTimeout(() => {
+                    setSelectedIndices([]);
+                    }, 500);
+                }
+                }
+            };
+
+            const formatTime = (seconds) => {
+                const mins = Math.floor(seconds / 60);
+                const secs = seconds % 60;
+                return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col items-center py-6 px-2 select-none">
+                    <header className="mb-4 text-center">
+                        <h1 className="text-2xl md:text-4xl font-bold text-amber-800 flex items-center justify-center gap-2 mb-1">
+                        <Book className="w-8 h-8" /> Bible Connect (聖經連連看)
+                        </h1>
+                        <p className="text-amber-700 opacity-80 text-xs md:text-sm">
+                        兩張相同圖案，連線轉彎不超過2次即可消除 (可走外圍)
+                        </p>
+                    </header>
+
+                    <div className="w-full max-w-4xl flex justify-between items-center mb-4 px-4 bg-white p-3 rounded-lg shadow-sm border border-amber-200 sticky top-2 z-20">
+                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 text-lg font-medium text-amber-900">
+                            <Clock className="w-5 h-5" />
+                            <span>{formatTime(timer)}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-1 text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+                            <Lightbulb className="w-4 h-4" />
+                            <span>可消除: {availableCount} 對</span>
+                        </div>
+                        </div>
+                        
+                        <div className="absolute left-1/2 transform -translate-x-1/2 top-14 md:top-auto pointer-events-none w-full text-center">
+                        {message && (
+                            <span className="bg-amber-600 text-white px-4 py-2 rounded-full text-sm shadow-lg animate-pulse inline-block mx-2">
+                            {message}
+                            </span>
+                        )}
+                        </div>
+
+                        <div>
+                        <button 
+                            onClick={initGame}
+                            className="flex items-center gap-1 bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg transition-colors shadow-sm text-sm font-bold active:scale-95"
+                        >
+                            <RefreshCw className="w-4 h-4" /> 重來
+                        </button>
+                        </div>
+                    </div>
+
+                    <div className="relative w-full max-w-5xl flex justify-center">
+                        <div 
+                        ref={gridRef}
+                        className={`grid gap-1 p-2 bg-amber-100/50 rounded-xl relative`}
+                        style={{
+                            gridTemplateColumns: `repeat(${gridCols}, minmax(0, 1fr))`,
+                            width: gridCols === 5 ? '100%' : 'auto'
+                        }}
+                        >
+                        {cards.map((card, index) => {
+                            const isSelected = selectedIndices.includes(index);
+                            const isPath = connectingPath && connectingPath.includes(index);
+                            
+                            if (card === null) {
+                            return (
+                                <div 
+                                key={`empty-${index}`} 
+                                className={`
+                                    aspect-[4/5] md:aspect-square w-14 md:w-20
+                                    rounded-lg border border-transparent
+                                    flex justify-center items-center
+                                    ${isPath ? 'bg-yellow-400/30' : ''} 
+                                `}
+                                >
+                                {isPath && <div className="w-2 h-2 bg-yellow-500 rounded-full animate-ping" />}
+                                </div>
+                            );
+                            }
+
+                            return (
+                            <div 
+                                key={card.uniqueId}
+                                onClick={() => handleCardClick(index)}
+                                className={`
+                                aspect-[4/5] md:aspect-square w-14 md:w-20
+                                flex flex-col justify-center items-center text-center 
+                                border-2 rounded-lg cursor-pointer shadow-sm
+                                transition-all duration-200 relative
+                                ${isSelected 
+                                    ? "bg-amber-100 border-amber-600 ring-2 ring-amber-400 z-10 scale-105" 
+                                    : "bg-white border-amber-200 hover:border-amber-400 hover:shadow-md"
+                                }
+                                ${isPath ? "bg-green-100 border-green-500 scale-95 opacity-50" : ""}
+                                `}
+                            >
+                                <span className="text-2xl md:text-4xl mb-1 filter drop-shadow-sm select-none">
+                                {card.icon}
+                                </span>
+                                <span className="text-[10px] md:text-xs font-bold leading-tight px-1 break-words select-none">
+                                {card.book}
+                                </span>
+                                {isPath && <Zap className="absolute text-yellow-500 w-6 h-6 animate-pulse opacity-80" />}
+                            </div>
+                            );
+                        })}
+                        </div>
+                        
+                        {gameWon && (
+                        <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-xl animate-fade-in">
+                            <div className="bg-white p-8 rounded-2xl shadow-2xl flex flex-col items-center text-center max-w-sm mx-4 transform animate-bounce-short border-4 border-amber-400">
+                            <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mb-4">
+                                <Trophy className="w-10 h-10 text-yellow-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-slate-800 mb-2">哈利路亞！</h2>
+                            <p className="text-slate-600 mb-6">
+                                您成功完成了連連看挑戰。<br/>
+                                耗時：<span className="font-bold text-amber-600 text-lg">{formatTime(timer)}</span>
+                            </p>
+                            <button 
+                                onClick={initGame}
+                                className="w-full bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white font-bold py-3 px-6 rounded-xl shadow-lg transform transition hover:-translate-y-1"
+                            >
+                                再玩一局
+                            </button>
+                            </div>
+                        </div>
+                        )}
+                    </div>
+
+                    <footer className="mt-8 text-slate-400 text-xs text-center">
+                        <p>連連看規則：路徑轉彎不超過兩次 • 無解自動重新排列</p>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById("root"));
+        root.render(<BibleMatchGame />);
+    </script>
+</body>
+</html>
