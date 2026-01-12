@@ -171,7 +171,7 @@
             let matchRange;
             while ((matchRange = rangeRegex.exec(text)) !== null) { lastMatch = matchRange; }
             
-            if (lastMatch && lastMatch.length === 4) { 
+            if (lastMatch && lastMatch.length === 4) { // book, startChap, endChap
                  return {
                     book: lastMatch[1].trim(),
                     chapter: parseInt(lastMatch[2]),
@@ -192,6 +192,9 @@
 
         // 3. 開啟經文 Modal
         async function openScripture(reference) {
+            // 清理 reference 字串，移除括號說明
+            reference = reference.replace(/\(.*\)/, '').trim();
+
             const modal = document.getElementById('bible-modal');
             const modalTitle = document.getElementById('modal-title');
             const modalBody = document.getElementById('modal-body');
@@ -270,7 +273,94 @@
             document.getElementById('bible-modal').classList.remove('show');
         }
 
-        // --- 讀經計畫生成 ---
+        // --- 萬能讀經計畫 (修正版：顯示節數) ---
+        function getComputedPlan(dObj) {
+            const startOfYear = new Date(dObj.getFullYear(), 0, 0);
+            const diff = dObj - startOfYear;
+            const oneDay = 1000 * 60 * 60 * 24;
+            const dayOfYear = Math.floor(diff / oneDay); // 1-365
+
+            // 書卷資料
+            const otBooks = [
+                {n:"創世記",c:50}, {n:"出埃及記",c:40}, {n:"利未記",c:27}, {n:"民數記",c:36}, {n:"申命記",c:34},
+                {n:"約書亞記",c:24}, {n:"士師記",c:21}, {n:"路得記",c:4}, {n:"撒母耳記上",c:31}, {n:"撒母耳記下",c:24},
+                {n:"列王紀上",c:22}, {n:"列王紀下",c:25}, {n:"歷代志上",c:29}, {n:"歷代志下",c:36}, {n:"以斯拉記",c:10},
+                {n:"尼希米記",c:13}, {n:"以斯帖記",c:10}, {n:"約伯記",c:42}, {n:"傳道書",c:12}, {n:"雅歌",c:8}, 
+                {n:"以賽亞書",c:66}, {n:"耶利米書",c:52}, {n:"耶利米哀歌",c:5}, {n:"以西結書",c:48}, {n:"但以理書",c:12}, 
+                {n:"何西阿書",c:14}, {n:"約珥書",c:3}, {n:"阿摩司書",c:9}, {n:"俄巴底亞書",c:1}, {n:"約拿書",c:4}, 
+                {n:"彌迦書",c:7}, {n:"那鴻書",c:3}, {n:"哈巴谷書",c:3}, {n:"西番雅書",c:3}, {n:"哈該書",c:2}, 
+                {n:"撒迦利亞書",c:14}, {n:"瑪拉基書",c:4}
+            ]; 
+            const ntBooks = [
+                {n:"馬太福音",c:28}, {n:"馬可福音",c:16}, {n:"路加福音",c:24}, {n:"約翰福音",c:21}, {n:"使徒行傳",c:28},
+                {n:"羅馬書",c:16}, {n:"哥林多前書",c:16}, {n:"哥林多後書",c:13}, {n:"加拉太書",c:6}, {n:"以弗所書",c:6},
+                {n:"腓立比書",c:4}, {n:"歌羅西書",c:4}, {n:"帖撒羅尼迦前書",c:5}, {n:"帖撒羅尼迦後書",c:3}, {n:"提摩太前書",c:6},
+                {n:"提摩太後書",c:4}, {n:"提多書",c:3}, {n:"腓利門書",c:1}, {n:"希伯來書",c:13}, {n:"雅各書",c:5},
+                {n:"彼得前書",c:5}, {n:"彼得後書",c:3}, {n:"約翰一書",c:5}, {n:"約翰二書",c:1}, {n:"約翰三書",c:1},
+                {n:"猶大書",c:1}, {n:"啟示錄",c:22}
+            ];
+
+            function findLocation(books, progress) {
+                let count = 0;
+                for(let b of books) {
+                    if (count + b.c > progress) {
+                        return { name: b.n, chapter: Math.floor(progress - count) + 1 };
+                    }
+                    count += b.c;
+                }
+                return { name: books[books.length-1].n, chapter: books[books.length-1].c };
+            }
+
+            // 1. 舊約 (約每天2章)
+            const otTotal = 748;
+            const otStartVal = (dayOfYear - 1) / 365 * otTotal;
+            const otEndVal = dayOfYear / 365 * otTotal;
+            const otStartLoc = findLocation(otBooks, otStartVal);
+            const otEndLoc = findLocation(otBooks, otEndVal - 0.1);
+            
+            let otStr = "";
+            if (otStartLoc.name === otEndLoc.name) {
+                if (otStartLoc.chapter === otEndLoc.chapter) otStr = `${otStartLoc.name} ${otStartLoc.chapter}`;
+                else otStr = `${otStartLoc.name} ${otStartLoc.chapter}-${otEndLoc.chapter}`;
+            } else {
+                otStr = `${otStartLoc.name} ${otStartLoc.chapter} - ${otEndLoc.name} ${otEndLoc.chapter}`;
+            }
+
+            // 2. 新約 (跨章或分段：模擬節數)
+            const ntTotal = 260;
+            const ntStartVal = (dayOfYear - 1) / 365 * ntTotal;
+            const ntEndVal = dayOfYear / 365 * ntTotal;
+            const ntLoc = findLocation(ntBooks, ntEndVal - 0.01);
+            const ntPrevLoc = findLocation(ntBooks, ntStartVal);
+            let ntStr = `${ntLoc.name} ${ntLoc.chapter}`;
+            if (ntLoc.name === ntPrevLoc.name && ntLoc.chapter === ntPrevLoc.chapter) {
+                // 模擬節數 (若是同一章分多天讀)
+                // 假設分兩天讀，單數天讀 1-20，雙數天讀 21-end
+                const isFirstHalf = dayOfYear % 2 !== 0;
+                ntStr += isFirstHalf ? ":1-20" : ":21-40";
+            }
+
+            // 3. 詩篇 (模擬分段)
+            const psChap = (dayOfYear % 150) + 1;
+            // 簡單模擬：有些詩篇很長，分段顯示
+            let psStr = `詩篇 ${psChap}`;
+            if (psChap === 119) { // 119篇很長
+                const part = (dayOfYear % 3) + 1;
+                const s = (part - 1) * 60 + 1;
+                const e = s + 59;
+                psStr = `詩篇 119:${s}-${e}`;
+            }
+
+            // 4. 箴言 (模擬節數：1:1-2)
+            const daysPerChapter = 365 / 31; // ~11.77天讀一章
+            const prChap = Math.min(31, Math.floor((dayOfYear - 1) / daysPerChapter) + 1);
+            const dayInChap = Math.floor((dayOfYear - 1) % daysPerChapter); // 0-11
+            const startVer = (dayInChap * 3) + 1;
+            const endVer = startVer + 2;
+            let prStr = `箴言 ${prChap}:${startVer}-${endVer}`;
+
+            return { ot: otStr, nt: ntStr, ps: psStr, pr: prStr };
+        }
 
         async function generateReadingPlan() {
             try {
@@ -280,43 +370,7 @@
                     data.forEach(day => { bibleReadingPlan[day.date] = day; });
                     return;
                 }
-            } catch (e) { console.log("Fetching plan failed, using default."); }
-
-            const janData = [
-                {d:1, ot:"創世記 1-2", nt:"馬太福音 1", ps:"詩篇 1", pr:"箴言 1:1-6"},
-                {d:2, ot:"創世記 3-5", nt:"馬太福音 2", ps:"詩篇 2", pr:"箴言 1:7-9"},
-                {d:3, ot:"創世記 6-8", nt:"馬太福音 3", ps:"詩篇 3", pr:"箴言 1:10-19"},
-                {d:4, ot:"創世記 9-11", nt:"馬太福音 4", ps:"詩篇 4", pr:"箴言 1:20-33"},
-                {d:5, ot:"創世記 12-14", nt:"馬太福音 5:1-26", ps:"詩篇 5", pr:"箴言 2:1-5"},
-                {d:6, ot:"創世記 15-17", nt:"馬太福音 5:27-48", ps:"詩篇 6", pr:"箴言 2:6-15"},
-                {d:7, ot:"創世記 18-19", nt:"馬太福音 6", ps:"詩篇 7", pr:"箴言 2:16-22"},
-                {d:8, ot:"創世記 20-22", nt:"馬太福音 7", ps:"詩篇 8", pr:"箴言 3:1-6"},
-                {d:9, ot:"創世記 23-24", nt:"馬太福音 8:1-17", ps:"詩篇 9:1-12", pr:"箴言 3:7-10"},
-                {d:10, ot:"創世記 25-26", nt:"馬太福音 8:18-34", ps:"詩篇 9:13-20", pr:"箴言 3:11-12"},
-                {d:11, ot:"創世記 27-28", nt:"馬太福音 9:1-17", ps:"詩篇 10:1-11", pr:"箴言 3:13-18"},
-                {d:12, ot:"創世記 29-30", nt:"馬太福音 9:18-38", ps:"詩篇 10:12-18", pr:"箴言 3:19-26"},
-                {d:13, ot:"創世記 31", nt:"馬太福音 10:1-23", ps:"詩篇 11", pr:"箴言 3:27-32"},
-                {d:14, ot:"創世記 32-33", nt:"馬太福音 10:24-42", ps:"詩篇 12", pr:"箴言 3:33-35"},
-                {d:15, ot:"創世記 34-35", nt:"馬太福音 11:1-19", ps:"詩篇 13", pr:"箴言 4:1-9"},
-                {d:16, ot:"創世記 36-37", nt:"馬太福音 11:20-30", ps:"詩篇 14", pr:"箴言 4:10-19"},
-                {d:17, ot:"創世記 38-40", nt:"馬太福音 12:1-21", ps:"詩篇 15", pr:"箴言 4:20-27"},
-                {d:18, ot:"創世記 41", nt:"馬太福音 12:22-50", ps:"詩篇 16", pr:"箴言 5:1-6"},
-                {d:19, ot:"創世記 42-43", nt:"馬太福音 13:1-23", ps:"詩篇 17", pr:"箴言 5:7-14"},
-                {d:20, ot:"創世記 44-45", nt:"馬太福音 13:24-43", ps:"詩篇 18:1-15", pr:"箴言 5:15-23"},
-                {d:21, ot:"創世記 46-48", nt:"馬太福音 13:44-58", ps:"詩篇 18:16-36", pr:"箴言 6:1-5"},
-                {d:22, ot:"創世記 49-50", nt:"馬太福音 14:1-21", ps:"詩篇 18:37-50", pr:"箴言 6:6-11"},
-                {d:23, ot:"出埃及記 1-3", nt:"馬太福音 14:22-36", ps:"詩篇 19", pr:"箴言 6:12-15"},
-                {d:24, ot:"出埃及記 4-6", nt:"馬太福音 15:1-20", ps:"詩篇 20", pr:"箴言 6:16-19"},
-                {d:25, ot:"出埃及記 7-8", nt:"馬太福音 15:21-39", ps:"詩篇 21", pr:"箴言 6:20-26"},
-                {d:26, ot:"出埃及記 9-10", nt:"馬太福音 16", ps:"詩篇 22:1-11", pr:"箴言 6:27-35"},
-                {d:27, ot:"出埃及記 11-12", nt:"馬太福音 17", ps:"詩篇 22:12-31", pr:"箴言 7:1-5"},
-                {d:28, ot:"出埃及記 13-15", nt:"馬太福音 18:1-20", ps:"詩篇 23", pr:"箴言 7:6-23"},
-                {d:29, ot:"出埃及記 16-18", nt:"馬太福音 18:21-35", ps:"詩篇 24", pr:"箴言 7:24-27"},
-                {d:30, ot:"出埃及記 19-21", nt:"馬太福音 19:1-15", ps:"詩篇 25:1-11", pr:"箴言 8:1-11"},
-                {d:31, ot:"出埃及記 22-24", nt:"馬太福音 19:16-30", ps:"詩篇 25:12-22", pr:"箴言 8:12-13"}
-            ];
-            
-            janData.forEach(day => { bibleReadingPlan[`1-${day.d}`] = day; });
+            } catch (e) { }
         }
 
         async function init() {
@@ -337,7 +391,6 @@
                 });
                 
                 devotionalsData = c.devotionals;
-                window.sortedDevotionals = devotionalsData; 
                 renderDailyDevotional(devotionalsData);
             } catch(e) { console.error(e); }
         }
@@ -345,49 +398,46 @@
         function renderDailyDevotional(items) {
             const container = document.getElementById('daily-content');
             const dObj = new Date();
-            const todayStr = `${(dObj.getMonth()+1).toString().padStart(2,'0')}-${dObj.getDate().toString().padStart(2,'0')}`;
+            const todayDisplay = `${dObj.getFullYear()}-${(dObj.getMonth()+1).toString().padStart(2,'0')}-${dObj.getDate().toString().padStart(2,'0')}`;
             
             const planKey = `${dObj.getMonth()+1}-${dObj.getDate()}`;
-            const plan = bibleReadingPlan[planKey];
+            let plan = bibleReadingPlan[planKey];
+            
+            if (!plan) {
+                plan = getComputedPlan(dObj);
+            }
+
+            const start = new Date(dObj.getFullYear(), 0, 0);
+            const diff = dObj - start;
+            const oneDay = 1000 * 60 * 60 * 24;
+            const dayOfYear = Math.floor(diff / oneDay);
             
             let html = '';
 
-            // 讀經進度區塊
-            if (plan) {
-                html += `
-                    <div class="mb-10 text-center w-full">
-                        <div class="inline-block px-6 py-2 border-b-2 border-[#6B8E23] mb-6">
-                            <h2 class="text-2xl font-serif text-[#3E3B39] tracking-widest">今日課表</h2>
-                            <p class="text-xs text-[#8D7B68] uppercase mt-1">Today's Schedule (${todayStr})</p>
-                        </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto px-2">
-                            ${['ot','nt','ps','pr'].map(k => `
-                                <button onclick="openScripture('${plan[k]}')" class="reading-plan-btn">
-                                    <span class="label">${getLabel(k)}</span>
-                                    <span class="content">${plan[k]}</span>
-                                    <i data-lucide="book-open"></i>
-                                </button>
-                            `).join('')}
-                        </div>
+            // 讀經進度
+            html += `
+                <div class="mb-10 text-center w-full">
+                    <div class="inline-block px-6 py-2 border-b-2 border-[#6B8E23] mb-6">
+                        <h2 class="text-2xl font-serif text-[#3E3B39] tracking-widest">今日讀經</h2>
+                        <p class="text-xs text-[#8D7B68] uppercase mt-1">One Year Bible Plan (${todayDisplay})</p>
+                        <span class="text-[10px] bg-[#F1F3F2] text-gray-500 px-2 py-0.5 rounded-full mt-2 inline-block">Day ${dayOfYear} / 365</span>
                     </div>
-                    <div class="divider-water opacity-50 mb-10 w-full"></div>
-                `;
-            } else {
-                html += `<div class="mb-10 text-center"><p class="text-gray-400">今日 (${todayStr}) 尚無內建進度</p><p class="text-xs text-gray-400 mt-1">請擴充 reading-plan.json 或使用一月日期測試</p></div>`;
-            }
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto px-2">
+                        ${['ot','nt','ps','pr'].map(k => `
+                            <button onclick="openScripture('${plan[k]}')" class="reading-plan-btn">
+                                <span class="label">${getLabel(k)}</span>
+                                <span class="content">${plan[k]}</span>
+                                <i data-lucide="book-open"></i>
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+                <div class="divider-water opacity-50 mb-10 w-full"></div>
+            `;
 
-            // 靈修文章區塊 - 修正：每天顯示一則，不按日期，按每年的第幾天輪播
             if(items.length > 0) {
-                // 計算今天是今年的第幾天
-                const start = new Date(dObj.getFullYear(), 0, 0);
-                const diff = dObj - start;
-                const oneDay = 1000 * 60 * 60 * 24;
-                const dayOfYear = Math.floor(diff / oneDay);
-                
-                // 取餘數決定顯示哪一篇，確保每天不同且循環
                 const index = dayOfYear % items.length;
                 const todayItem = items[index];
-
                 html += generateSingleDevotionalHtml(todayItem);
             } else {
                  html += `<div class="py-10 text-[#8D7B68]">今日暫無額外靈修文章</div>`;
@@ -396,8 +446,9 @@
             if(window.lucide) lucide.createIcons();
         }
         
+        // 修正：詩篇和箴言不顯示重複的中文名稱
         function getLabel(key) {
-            const map = { ot: 'OLD TESTAMENT', nt: 'NEW TESTAMENT', ps: 'PSALMS', pr: 'PROVERBS' };
+            const map = { ot: 'OLD TESTAMENT (舊約)', nt: 'NEW TESTAMENT (新約)', ps: 'PSALMS', pr: 'PROVERBS' };
             return map[key] || key;
         }
 
@@ -408,7 +459,6 @@
 
              const keys = Object.keys(item);
              let titleKey = keys.find(k => /title|name|標題|名稱/i.test(k)) || 'No Title';
-             // 這裡調整標題大小
              contentHtml += `<h2 class="text-2xl font-serif text-[#3E3B39] mb-4 text-center font-bold">${item[titleKey]}</h2>`;
              
              const songNameKey = keys.find(k => /^(song|hymn|worship|praise|詩歌|敬拜|讚美)$/i.test(k));
@@ -422,8 +472,6 @@
              keys.forEach(k => {
                  if (k === titleKey || /date|time/.test(k)) return;
                  if (skipKeys.includes(k)) return;
-                 
-                 // 過濾掉經文出處相關的欄位，避免顯示在文章與按鈕中間
                  if (/scripture|reading|bible|chapter|ref|經文|讀經|進度/i.test(k)) return;
 
                  const val = item[k];
@@ -437,7 +485,6 @@
              contentHtml += `</div>`; 
              
              if (buttonsArray.length > 0) {
-                 // 修正：移除 border-t，移除按鈕內的 border-b
                  contentHtml += `<div class="mt-10 pt-6 border-t border-[rgba(107,142,35,0.2)] w-full flex flex-col gap-4 items-center">`;
                  buttonsArray.forEach(btn => {
                       contentHtml += `
