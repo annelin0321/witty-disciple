@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>機智的門徒生活 | 通識中心</title>
-    <!-- 手機版設定與圖示 (路徑需加 ../) -->
     <link rel="icon" href="../assets/images/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="../assets/images/favicon.svg">
     <meta name="apple-mobile-web-app-title" content="機智門徒">
@@ -14,7 +13,6 @@
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
-    <!-- 為了確保預覽功能正常，我们将逻辑直接内嵌，避免依賴外部 JS -->
 </head>
 <body class="pb-20">
     
@@ -27,7 +25,6 @@
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
                  <div class="flex items-center gap-3 mb-4 md:mb-0 group cursor-pointer" onclick="window.location.href='../index.html'">
-                    <!-- 修改 Logo 為新版 SVG -->
                     <div class="w-10 h-10 hover:scale-110 transition-transform">
                         <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="50" cy="50" r="48" fill="#FDFBF7" stroke="#6B8E23" stroke-width="2"/>
@@ -78,7 +75,7 @@
         </div>
     </div>
 
-    <!-- 簡易經文 Modal -->
+    <!-- Modal -->
     <div id="bible-modal" onclick="closeBibleModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <button onclick="closeBibleModal()" class="absolute top-6 right-6 flex items-center justify-center gap-1 text-xs text-[#6B8E23] hover:text-[#556B2F] bg-[#F1F3F2] px-4 py-1.5 rounded-full z-50">
@@ -100,7 +97,6 @@
         let devotionalsData = [];
         let bibleReadingPlan = {}; 
         
-        // DB 變數
         let db = null;
         let isDbLoading = false;
         let dbCols = {};
@@ -114,6 +110,10 @@
 
             isDbLoading = true;
             try {
+                if (typeof initSqlJs === 'undefined') {
+                    console.error("SQL.js not loaded!");
+                    return null;
+                }
                 const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm` });
                 const response = await fetch(BIBLE_DB_URL);
                 if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
@@ -151,48 +151,24 @@
             text = text.replace(/[\(\)\uff08\uff09]/g, ' ').replace(/：/g, ':').trim();
             const bookPat = "([1-3]?\\s?[\\u4e00-\\u9fa5]{1,15}|[1-3]?\\s?[a-zA-Z]+)";
             const chapVersePat = "(\\d+)\\s*:\\s*(\\d+)(?:\\s*[-–~]\\s*(\\d+))?";
-            
             const cvRegex = new RegExp(`${bookPat}\\s*${chapVersePat}`, 'g');
             let match = null;
-            let lastMatch = null;
-            while ((match = cvRegex.exec(text)) !== null) { lastMatch = match; }
-
-            if (lastMatch) {
-                return {
-                    book: lastMatch[1].trim(),
-                    chapter: parseInt(lastMatch[2]),
-                    verse: parseInt(lastMatch[3]),
-                    endVerse: lastMatch[4] ? parseInt(lastMatch[4]) : parseInt(lastMatch[3])
-                };
-            }
+            while ((match = cvRegex.exec(text)) !== null) { let lastMatch = match; return { book: lastMatch[1].trim(), chapter: parseInt(lastMatch[2]), verse: parseInt(lastMatch[3]), endVerse: lastMatch[4] ? parseInt(lastMatch[4]) : parseInt(lastMatch[3]) }; }
             
             const chapRangePat = "(\\d+)\\s*[-–~]\\s*(\\d+)";
             const rangeRegex = new RegExp(`${bookPat}\\s*${chapRangePat}`, 'g');
-            let matchRange;
-            while ((matchRange = rangeRegex.exec(text)) !== null) { lastMatch = matchRange; }
-            
-            if (lastMatch && lastMatch.length === 4) { // book, startChap, endChap
-                 return {
-                    book: lastMatch[1].trim(),
-                    chapter: parseInt(lastMatch[2]),
-                    verse: 1,
-                    endVerse: null,
-                    endChapter: parseInt(lastMatch[3])
-                };
-            }
+            while ((match = rangeRegex.exec(text)) !== null) { return { book: match[1].trim(), chapter: parseInt(match[2]), verse: 1, endVerse: null, endChapter: parseInt(match[3]) }; }
 
             const chapRegex = new RegExp(`${bookPat}\\s*(\\d+)\\s*$`, 'g'); 
-            while ((match = chapRegex.exec(text)) !== null) { lastMatch = match; }
-            
-            if (lastMatch) {
-                return { book: lastMatch[1].trim(), chapter: parseInt(lastMatch[2]), verse: 1, endVerse: null };
-            }
+            while ((match = chapRegex.exec(text)) !== null) { return { book: match[1].trim(), chapter: parseInt(match[2]), verse: 1, endVerse: null }; }
             return null;
         }
 
-        // 3. 開啟經文 Modal
+        // 3. 開啟經文 Modal (核心函式)
         async function openScripture(reference) {
-            // 清理 reference 字串，移除括號說明
+            console.log("Opening:", reference);
+            
+            // 清理 reference 字串
             reference = reference.replace(/\(.*\)/, '').trim();
 
             const modal = document.getElementById('bible-modal');
@@ -235,7 +211,7 @@
                         let currentChap = -1;
                         
                         res[0].values.forEach(row => {
-                            if (row.length === 3) { // has chapter col
+                            if (row.length === 3) { 
                                 const c = row[0], v = row[1], t = row[2];
                                 if (c !== currentChap && parsed.endChapter) {
                                     html += `<div class="text-center my-4"><span class="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-600">第 ${c} 章</span></div>`;
@@ -259,8 +235,7 @@
                     }
                 } else {
                     modalTitle.innerText = reference;
-                    modalBody.innerHTML = `<p class="text-center py-6">無法解析經文格式，請嘗試前往圖書館查詢。</p>
-                    <div class="text-center"><a href="../library/index.html" class="nature-btn">前往圖書館</a></div>`;
+                    modalBody.innerHTML = `<p class="text-center py-6">無法解析經文格式</p>`;
                 }
             } catch (e) {
                 console.error(e);
@@ -311,22 +286,18 @@
                 return { name: books[books.length-1].n, chapter: books[books.length-1].c };
             }
 
-            // 1. 舊約 (約每天2章)
+            // 1. 舊約
             const otTotal = 748;
             const otStartVal = (dayOfYear - 1) / 365 * otTotal;
             const otEndVal = dayOfYear / 365 * otTotal;
             const otStartLoc = findLocation(otBooks, otStartVal);
             const otEndLoc = findLocation(otBooks, otEndVal - 0.1);
-            
-            let otStr = "";
-            if (otStartLoc.name === otEndLoc.name) {
-                if (otStartLoc.chapter === otEndLoc.chapter) otStr = `${otStartLoc.name} ${otStartLoc.chapter}`;
-                else otStr = `${otStartLoc.name} ${otStartLoc.chapter}-${otEndLoc.chapter}`;
-            } else {
-                otStr = `${otStartLoc.name} ${otStartLoc.chapter} - ${otEndLoc.name} ${otEndLoc.chapter}`;
-            }
+            let otStr = (otStartLoc.name === otEndLoc.name) ?
+                `${otStartLoc.name} ${otStartLoc.chapter}-${otEndLoc.chapter}` :
+                `${otStartLoc.name} ${otStartLoc.chapter} - ${otEndLoc.name} ${otEndLoc.chapter}`;
+            if (otStartLoc.name === otEndLoc.name && otStartLoc.chapter === otEndLoc.chapter) otStr = `${otStartLoc.name} ${otStartLoc.chapter}`;
 
-            // 2. 新約 (跨章或分段：模擬節數)
+            // 2. 新約 (模擬節數)
             const ntTotal = 260;
             const ntStartVal = (dayOfYear - 1) / 365 * ntTotal;
             const ntEndVal = dayOfYear / 365 * ntTotal;
@@ -334,27 +305,17 @@
             const ntPrevLoc = findLocation(ntBooks, ntStartVal);
             let ntStr = `${ntLoc.name} ${ntLoc.chapter}`;
             if (ntLoc.name === ntPrevLoc.name && ntLoc.chapter === ntPrevLoc.chapter) {
-                // 模擬節數 (若是同一章分多天讀)
-                // 假設分兩天讀，單數天讀 1-20，雙數天讀 21-end
-                const isFirstHalf = dayOfYear % 2 !== 0;
-                ntStr += isFirstHalf ? ":1-20" : ":21-40";
+                ntStr += (dayOfYear % 2 !== 0) ? ":1-20" : ":21-40";
             }
 
             // 3. 詩篇 (模擬分段)
             const psChap = (dayOfYear % 150) + 1;
-            // 簡單模擬：有些詩篇很長，分段顯示
-            let psStr = `詩篇 ${psChap}`;
-            if (psChap === 119) { // 119篇很長
-                const part = (dayOfYear % 3) + 1;
-                const s = (part - 1) * 60 + 1;
-                const e = s + 59;
-                psStr = `詩篇 119:${s}-${e}`;
-            }
+            let psStr = `詩篇 ${Math.min(150, psChap)}`;
 
-            // 4. 箴言 (模擬節數：1:1-2)
-            const daysPerChapter = 365 / 31; // ~11.77天讀一章
+            // 4. 箴言 (模擬節數)
+            const daysPerChapter = 365 / 31; 
             const prChap = Math.min(31, Math.floor((dayOfYear - 1) / daysPerChapter) + 1);
-            const dayInChap = Math.floor((dayOfYear - 1) % daysPerChapter); // 0-11
+            const dayInChap = Math.floor((dayOfYear - 1) % daysPerChapter); 
             const startVer = (dayInChap * 3) + 1;
             const endVer = startVer + 2;
             let prStr = `箴言 ${prChap}:${startVer}-${endVer}`;
@@ -375,6 +336,10 @@
 
         async function init() {
             if(window.lucide) lucide.createIcons();
+            
+            // 強制將 openScripture 掛載到 window，避免按鈕找不到函式
+            window.openScripture = openScripture;
+
             await generateReadingPlan(); 
             
             try {
@@ -424,7 +389,7 @@
                     </div>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto px-2">
                         ${['ot','nt','ps','pr'].map(k => `
-                            <button onclick="openScripture('${plan[k]}')" class="reading-plan-btn">
+                            <button onclick="window.openScripture('${plan[k]}')" class="reading-plan-btn">
                                 <span class="label">${getLabel(k)}</span>
                                 <span class="content">${plan[k]}</span>
                                 <i data-lucide="book-open"></i>
@@ -446,9 +411,8 @@
             if(window.lucide) lucide.createIcons();
         }
         
-        // 修正：詩篇和箴言不顯示重複的中文名稱
         function getLabel(key) {
-            const map = { ot: 'OLD TESTAMENT (舊約)', nt: 'NEW TESTAMENT (新約)', ps: 'PSALMS', pr: 'PROVERBS' };
+            const map = { ot: 'OLD TESTAMENT (舊約)', nt: 'NEW TESTAMENT (新約)', ps: 'PSALMS (詩篇)', pr: 'PROVERBS (箴言)' };
             return map[key] || key;
         }
 
