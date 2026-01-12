@@ -1,0 +1,2557 @@
+[
+  {
+    "date": "1-1",
+    "old_testament": "創世紀1-2",
+    "new_testament": "馬太福音1:1-25",
+    "psalms": "詩篇1:1-6",
+    "proverbs": "箴言1:1-6"
+  },
+  {
+    "date": "1-2",
+    "old_testament": "創世紀3-4",
+    "new_testament": "馬太福音2:1-23",
+    "psalms": "詩篇2:1-6",
+    "proverbs": "箴言1:7-9"
+  },
+  {
+    "date": "1-3",
+    "old_testament": "創世紀5-6",
+    "new_testament": "馬太福音3:1-17",
+    "psalms": "詩篇2:7-12",
+    "proverbs": "箴言1:10-19"
+  },
+  {
+    "date": "1-4",
+    "old_testament": "創世紀7-8",
+    "new_testament": "馬太福音4:1-25",
+    "psalms": "詩篇3:1-8",
+    "proverbs": "箴言1:20-23"
+  },
+  {
+    "date": "1-5",
+    "old_testament": "創世紀9-10",
+    "new_testament": "馬太福音5:1-26",
+    "psalms": "詩篇4:1-8",
+    "proverbs": "箴言1:24-28"
+  },
+  {
+    "date": "1-6",
+    "old_testament": "創世紀11-12",
+    "new_testament": "馬太福音5:27-48",
+    "psalms": "詩篇5:1-6",
+    "proverbs": "箴言1:29-33"
+  },
+  {
+    "date": "1-7",
+    "old_testament": "創世紀13-14",
+    "new_testament": "馬太福音6:1-34",
+    "psalms": "詩篇5:7-12",
+    "proverbs": "箴言2:1-5"
+  },
+  {
+    "date": "1-8",
+    "old_testament": "創世紀15-16",
+    "new_testament": "馬太福音7:1-29",
+    "psalms": "詩篇6:1-5",
+    "proverbs": "箴言2:6-15"
+  },
+  {
+    "date": "1-9",
+    "old_testament": "創世紀17-18",
+    "new_testament": "馬太福音8:1-34",
+    "psalms": "詩篇6:6-10",
+    "proverbs": "箴言2:16-22"
+  },
+  {
+    "date": "1-10",
+    "old_testament": "創世紀19-20",
+    "new_testament": "馬太福音9:1-38",
+    "psalms": "詩篇7:1-5",
+    "proverbs": "箴言3:1-6"
+  },
+  {
+    "date": "1-11",
+    "old_testament": "創世紀21-22",
+    "new_testament": "馬太福音10:1-25",
+    "psalms": "詩篇7:6-12",
+    "proverbs": "箴言3:7-8"
+  },
+  {
+    "date": "1-12",
+    "old_testament": "創世紀23-24",
+    "new_testament": "馬太福音10:26-42",
+    "psalms": "詩篇7:13-17",
+    "proverbs": "箴言3:9-10"
+  },
+  {
+    "date": "1-13",
+    "old_testament": "創世紀25-26",
+    "new_testament": "馬太福音11:1-30",
+    "psalms": "詩篇8:1-9",
+    "proverbs": "箴言3:11-12"
+  },
+  {
+    "date": "1-14",
+    "old_testament": "創世紀27-28",
+    "new_testament": "馬太福音12:1-32",
+    "psalms": "詩篇9:1-8",
+    "proverbs": "箴言3:13-15"
+  },
+  {
+    "date": "1-15",
+    "old_testament": "創世紀29-30",
+    "new_testament": "馬太福音12:33-50",
+    "psalms": "詩篇9:9-14",
+    "proverbs": "箴言3:16-18"
+  },
+  {
+    "date": "1-16",
+    "old_testament": "創世紀31-32",
+    "new_testament": "馬太福音13:1-30",
+    "psalms": "詩篇9:15-20",
+    "proverbs": "箴言3:19-20"
+  },
+  {
+    "date": "1-17",
+    "old_testament": "創世紀33-34",
+    "new_testament": "馬太福音13:31-58",
+    "psalms": "詩篇10:1-6",
+    "proverbs": "箴言3:21-26"
+  },
+  {
+    "date": "1-18",
+    "old_testament": "創世紀35-36",
+    "new_testament": "馬太福音14:1-36",
+    "psalms": "詩篇10:7-13",
+    "proverbs": "箴言3:27-32"
+  },
+  {
+    "date": "1-19",
+    "old_testament": "創世紀37-38",
+    "new_testament": "馬太福音15:1-39",
+    "psalms": "詩篇10:7-13",
+    "proverbs": "箴言3:33-35"
+  },
+  {
+    "date": "1-20",
+    "old_testament": "創世紀39-40",
+    "new_testament": "馬太福音16:1-28",
+    "psalms": "詩篇11:1-7",
+    "proverbs": "箴言4:1-6"
+  },
+  {
+    "date": "1-21",
+    "old_testament": "創世紀41-42",
+    "new_testament": "馬太福音17:1-27",
+    "psalms": "詩篇12:1-8",
+    "proverbs": "箴言4:7-10"
+  },
+  {
+    "date": "1-22",
+    "old_testament": "創世紀43-44",
+    "new_testament": "馬太福音18:1-35",
+    "psalms": "詩篇13:1-6",
+    "proverbs": "箴言4:11-13"
+  },
+  {
+    "date": "1-23",
+    "old_testament": "創世紀45-46",
+    "new_testament": "馬太福音19:1-30",
+    "psalms": "詩篇14:1-7",
+    "proverbs": "箴言4:14-19"
+  },
+  {
+    "date": "1-24",
+    "old_testament": "創世紀47-48",
+    "new_testament": "馬太福音20:1-34",
+    "psalms": "詩篇15:1-5",
+    "proverbs": "箴言4:20-27"
+  },
+  {
+    "date": "1-25",
+    "old_testament": "創世紀49-50",
+    "new_testament": "馬太福音21:1-22",
+    "psalms": "詩篇16:1-6",
+    "proverbs": "箴言5:1-6"
+  },
+  {
+    "date": "1-26",
+    "old_testament": "出埃及記1-2",
+    "new_testament": "馬太福音21:23-46",
+    "psalms": "詩篇16:7-11",
+    "proverbs": "箴言5:7-14"
+  },
+  {
+    "date": "1-27",
+    "old_testament": "出埃及記3-4",
+    "new_testament": "馬太福音22:1-22",
+    "psalms": "詩篇17:1-5",
+    "proverbs": "箴言5:15-21"
+  },
+  {
+    "date": "1-28",
+    "old_testament": "出埃及記5-6",
+    "new_testament": "馬太福音22:23-46",
+    "psalms": "詩篇17:6-9",
+    "proverbs": "箴言5:22-23"
+  },
+  {
+    "date": "1-29",
+    "old_testament": "出埃及記7-8",
+    "new_testament": "馬太福音23:1-39",
+    "psalms": "詩篇17:10-15",
+    "proverbs": "箴言6:1-5"
+  },
+  {
+    "date": "1-30",
+    "old_testament": "出埃及記9-10",
+    "new_testament": "馬太福音24:1-31",
+    "psalms": "詩篇18:1-3",
+    "proverbs": "箴言6:6-11"
+  },
+  {
+    "date": "1-31",
+    "old_testament": "出埃及記11-12",
+    "new_testament": "馬太福音24:32-51",
+    "psalms": "詩篇18:4-8",
+    "proverbs": "箴言6:12-15"
+  },
+  {
+    "date": "2-1",
+    "old_testament": "出埃及記13-14",
+    "new_testament": "馬太福音25:1-30",
+    "psalms": "詩篇18:9-14",
+    "proverbs": "箴言6:16-19"
+  },
+  {
+    "date": "2-2",
+    "old_testament": "出埃及記15-16",
+    "new_testament": "馬太福音25:31-46",
+    "psalms": "詩篇18:15-19",
+    "proverbs": "箴言6:20-26"
+  },
+  {
+    "date": "2-3",
+    "old_testament": "出埃及記17-18",
+    "new_testament": "馬太福音26:1-30",
+    "psalms": "詩篇18:20-24",
+    "proverbs": "箴言6:27-35"
+  },
+  {
+    "date": "2-4",
+    "old_testament": "出埃及記19-20",
+    "new_testament": "馬太福音26:31-56",
+    "psalms": "詩篇18:25-30",
+    "proverbs": "箴言7:1-5"
+  },
+  {
+    "date": "2-5",
+    "old_testament": "出埃及記21-22",
+    "new_testament": "馬太福音26:57-75",
+    "psalms": "詩篇18:31-45",
+    "proverbs": "箴言7:6-23"
+  },
+  {
+    "date": "2-6",
+    "old_testament": "出埃及記23-24",
+    "new_testament": "馬太福音27:1-31",
+    "psalms": "詩篇18:46-50",
+    "proverbs": "箴言7:24-27"
+  },
+  {
+    "date": "2-7",
+    "old_testament": "出埃及記25-26",
+    "new_testament": "馬太福音27:32-66",
+    "psalms": "詩篇19:1-6",
+    "proverbs": "箴言8:1-11"
+  },
+  {
+    "date": "2-8",
+    "old_testament": "出埃及記27-28",
+    "new_testament": "馬太福音28:1-20",
+    "psalms": "詩篇19:7-14",
+    "proverbs": "箴言8:12-13"
+  },
+  {
+    "date": "2-9",
+    "old_testament": "出埃及記29-30",
+    "new_testament": "馬可福音1:1-28",
+    "psalms": "詩篇20:1-5",
+    "proverbs": "箴言8:14-26"
+  },
+  {
+    "date": "2-10",
+    "old_testament": "出埃及記31-32",
+    "new_testament": "馬可福音1:29-45",
+    "psalms": "詩篇20:6-9",
+    "proverbs": "箴言8:27-32"
+  },
+  {
+    "date": "2-11",
+    "old_testament": "出埃及記33-34",
+    "new_testament": "馬可福音2:1-28",
+    "psalms": "詩篇21:1-7",
+    "proverbs": "箴言8:33-36"
+  },
+  {
+    "date": "2-12",
+    "old_testament": "出埃及記35-36",
+    "new_testament": "馬可福音3:1-19",
+    "psalms": "詩篇21:8-13",
+    "proverbs": "箴言9:1-6"
+  },
+  {
+    "date": "2-13",
+    "old_testament": "出埃及記37-38",
+    "new_testament": "馬可福音3:20-35",
+    "psalms": "詩篇22:1-8",
+    "proverbs": "箴言9:7-8"
+  },
+  {
+    "date": "2-14",
+    "old_testament": "出埃及記39-40",
+    "new_testament": "馬可福音4:1-20",
+    "psalms": "詩篇22:9-15",
+    "proverbs": "箴言9:9-10"
+  },
+  {
+    "date": "2-15",
+    "old_testament": "利未記1-2",
+    "new_testament": "馬可福音4:21-41",
+    "psalms": "詩篇22:16-24",
+    "proverbs": "箴言9:11-12"
+  },
+  {
+    "date": "2-16",
+    "old_testament": "利未記3-4",
+    "new_testament": "馬可福音5:1-20",
+    "psalms": "詩篇22:25-31",
+    "proverbs": "箴言9:13-18"
+  },
+  {
+    "date": "2-17",
+    "old_testament": "利未記5-6",
+    "new_testament": "馬可福音5:21-43",
+    "psalms": "詩篇23:1-6",
+    "proverbs": "箴言10:1-2"
+  },
+  {
+    "date": "2-18",
+    "old_testament": "利未記7-8",
+    "new_testament": "馬可福音6:1-29",
+    "psalms": "詩篇24:1-6",
+    "proverbs": "箴言10:3-4"
+  },
+  {
+    "date": "2-19",
+    "old_testament": "利未記9-10",
+    "new_testament": "馬可福音6:30-56",
+    "psalms": "詩篇24:7-10",
+    "proverbs": "箴言10:5"
+  },
+  {
+    "date": "2-20",
+    "old_testament": "利未記11-12",
+    "new_testament": "馬可福音7:1-23",
+    "psalms": "詩篇25:1-7",
+    "proverbs": "箴言10:6-7"
+  },
+  {
+    "date": "2-21",
+    "old_testament": "利未記13-14",
+    "new_testament": "馬可福音7:24-37",
+    "psalms": "詩篇25:8-15",
+    "proverbs": "箴言10:8-9"
+  },
+  {
+    "date": "2-22",
+    "old_testament": "利未記15-16",
+    "new_testament": "馬可福音8:1-21",
+    "psalms": "詩篇25:16-22",
+    "proverbs": "箴言10:10"
+  },
+  {
+    "date": "2-23",
+    "old_testament": "利未記17-18",
+    "new_testament": "馬可福音8:22-38",
+    "psalms": "詩篇26:1-7",
+    "proverbs": "箴言10:11-12"
+  },
+  {
+    "date": "2-24",
+    "old_testament": "利未記19-20",
+    "new_testament": "馬可福音9:1-29",
+    "psalms": "詩篇26:8-12",
+    "proverbs": "箴言10:13-14"
+  },
+  {
+    "date": "2-25",
+    "old_testament": "利未記21-22",
+    "new_testament": "馬可福音9:30-50",
+    "psalms": "詩篇27:1-7",
+    "proverbs": "箴言10:15-16"
+  },
+  {
+    "date": "2-26",
+    "old_testament": "利未記23-24",
+    "new_testament": "馬可福音10:1-31",
+    "psalms": "詩篇27:8-14",
+    "proverbs": "箴言10:17"
+  },
+  {
+    "date": "2-27",
+    "old_testament": "利未記25-26",
+    "new_testament": "馬可福音10:32-52",
+    "psalms": "詩篇28:1-5",
+    "proverbs": "箴言10:18"
+  },
+  {
+    "date": "2-28",
+    "old_testament": "利未記27-28",
+    "new_testament": "馬可福音11:1-33",
+    "psalms": "詩篇28:6-9",
+    "proverbs": "箴言10:19"
+  },
+  {
+    "date": "3-1",
+    "old_testament": "民數記1-2",
+    "new_testament": "馬可福音12:1-27",
+    "psalms": "詩篇29:1-6",
+    "proverbs": "箴言10:20-21"
+  },
+  {
+    "date": "3-2",
+    "old_testament": "民數記3-4",
+    "new_testament": "馬可福音12:28-44",
+    "psalms": "詩篇29:7-11",
+    "proverbs": "箴言10:22"
+  },
+  {
+    "date": "3-3",
+    "old_testament": "民數記5-6",
+    "new_testament": "馬可福音13:1-37",
+    "psalms": "詩篇30:1-7",
+    "proverbs": "箴言10:23"
+  },
+  {
+    "date": "3-4",
+    "old_testament": "民數記7-8",
+    "new_testament": "馬可福音14:1-26",
+    "psalms": "詩篇30:8-12",
+    "proverbs": "箴言10:24-25"
+  },
+  {
+    "date": "3-5",
+    "old_testament": "民數記9-10",
+    "new_testament": "馬可福音14:27-52",
+    "psalms": "詩篇31:1-8",
+    "proverbs": "箴言10:26"
+  },
+  {
+    "date": "3-6",
+    "old_testament": "民數記11-12",
+    "new_testament": "馬可福音14:53-72",
+    "psalms": "詩篇31:9-18",
+    "proverbs": "箴言10:27-28"
+  },
+  {
+    "date": "3-7",
+    "old_testament": "民數記13-14",
+    "new_testament": "馬可福音15:1-20",
+    "psalms": "詩篇31:19-24",
+    "proverbs": "箴言10:29-30"
+  },
+  {
+    "date": "3-8",
+    "old_testament": "民數記15-16",
+    "new_testament": "馬可福音15:21-47",
+    "psalms": "詩篇32:1-7",
+    "proverbs": "箴言10:31-32"
+  },
+  {
+    "date": "3-9",
+    "old_testament": "民數記17-18",
+    "new_testament": "馬可福音16:1-20",
+    "psalms": "詩篇32:8-11",
+    "proverbs": "箴言11:1-3"
+  },
+  {
+    "date": "3-10",
+    "old_testament": "民數記19-20",
+    "new_testament": "路加福音1:1-25",
+    "psalms": "詩篇33:1-7",
+    "proverbs": "箴言11:4"
+  },
+  {
+    "date": "3-11",
+    "old_testament": "民數記21-22",
+    "new_testament": "路加福音1:26-56",
+    "psalms": "詩篇33:8-17",
+    "proverbs": "箴言11:5-6"
+  },
+  {
+    "date": "3-12",
+    "old_testament": "民數記23-24",
+    "new_testament": "路加福音1:57-80",
+    "psalms": "詩篇33:18-22",
+    "proverbs": "箴言11:7"
+  },
+  {
+    "date": "3-13",
+    "old_testament": "民數記25-26",
+    "new_testament": "路加福音2:1-20",
+    "psalms": "詩篇34:1-7",
+    "proverbs": "箴言11:8"
+  },
+  {
+    "date": "3-14",
+    "old_testament": "民數記27-28",
+    "new_testament": "路加福音2:21-52",
+    "psalms": "詩篇34:8-14",
+    "proverbs": "箴言11:9-11"
+  },
+  {
+    "date": "3-15",
+    "old_testament": "民數記29-30",
+    "new_testament": "路加福音3:1-22",
+    "psalms": "詩篇34:15-22",
+    "proverbs": "箴言11:12-13"
+  },
+  {
+    "date": "3-16",
+    "old_testament": "民數記31-32",
+    "new_testament": "路加福音3:23-38",
+    "psalms": "詩篇35:1-6",
+    "proverbs": "箴言11:14"
+  },
+  {
+    "date": "3-17",
+    "old_testament": "民數記33-34",
+    "new_testament": "路加福音4:1-30",
+    "psalms": "詩篇35:7-10",
+    "proverbs": "箴言11:15"
+  },
+  {
+    "date": "3-18",
+    "old_testament": "民數記35-36",
+    "new_testament": "路加福音4:31-44",
+    "psalms": "詩篇35:11-16",
+    "proverbs": "箴言11:16-17"
+  },
+  {
+    "date": "3-19",
+    "old_testament": "申命記1-2",
+    "new_testament": "路加福音5:1-16",
+    "psalms": "詩篇35:17-21",
+    "proverbs": "箴言11:18-19"
+  },
+  {
+    "date": "3-20",
+    "old_testament": "申命記3-4",
+    "new_testament": "路加福音5:17-38",
+    "psalms": "詩篇35:22-28",
+    "proverbs": "箴言11:20-21"
+  },
+  {
+    "date": "3-21",
+    "old_testament": "申命記5-6",
+    "new_testament": "路加福音6:1-26",
+    "psalms": "詩篇36:1-4",
+    "proverbs": "箴言11:22"
+  },
+  {
+    "date": "3-22",
+    "old_testament": "申命記7-8",
+    "new_testament": "路加福音6:27-49",
+    "psalms": "詩篇36:5-12",
+    "proverbs": "箴言11:23"
+  },
+  {
+    "date": "3-23",
+    "old_testament": "申命記9-10",
+    "new_testament": "路加福音7:1-17",
+    "psalms": "詩篇37:1-9",
+    "proverbs": "箴言11:24-26"
+  },
+  {
+    "date": "3-24",
+    "old_testament": "申命記11-12",
+    "new_testament": "路加福音7:18-50",
+    "psalms": "詩篇37:10-17",
+    "proverbs": "箴言11:27"
+  },
+  {
+    "date": "3-25",
+    "old_testament": "申命記13-14",
+    "new_testament": "路加福音8:1-25",
+    "psalms": "詩篇37:18-24",
+    "proverbs": "箴言11:28"
+  },
+  {
+    "date": "3-26",
+    "old_testament": "申命記15-16",
+    "new_testament": "路加福音8:26-56",
+    "psalms": "詩篇37:25-31",
+    "proverbs": "箴言11:29-31"
+  },
+  {
+    "date": "3-27",
+    "old_testament": "申命記17-18",
+    "new_testament": "路加福音9:1-36",
+    "psalms": "詩篇37:32-40",
+    "proverbs": "箴言12:1"
+  },
+  {
+    "date": "3-28",
+    "old_testament": "申命記19-20",
+    "new_testament": "路加福音9:37-62",
+    "psalms": "詩篇38:1-8",
+    "proverbs": "箴言12:2-3"
+  },
+  {
+    "date": "3-29",
+    "old_testament": "申命記21-22",
+    "new_testament": "路加福音10:1-20",
+    "psalms": "詩篇38:9-16",
+    "proverbs": "箴言12:4"
+  },
+  {
+    "date": "3-30",
+    "old_testament": "申命記23-24",
+    "new_testament": "路加福音10:21-42",
+    "psalms": "詩篇38:17-22",
+    "proverbs": "箴言12:5-7"
+  },
+  {
+    "date": "3-31",
+    "old_testament": "申命記25-26",
+    "new_testament": "路加福音11:1-28",
+    "psalms": "詩篇39:1-6",
+    "proverbs": "箴言12:8-9"
+  },
+  {
+    "date": "4-1",
+    "old_testament": "申命記27-28",
+    "new_testament": "路加福音11:29-54",
+    "psalms": "詩篇39:7-13",
+    "proverbs": "箴言12:10"
+  },
+  {
+    "date": "4-2",
+    "old_testament": "申命記29-30",
+    "new_testament": "路加福音12:1-31",
+    "psalms": "詩篇40:1-5",
+    "proverbs": "箴言12:11"
+  },
+  {
+    "date": "4-3",
+    "old_testament": "申命記31-32",
+    "new_testament": "路加福音12:32-59",
+    "psalms": "詩篇40:6-11",
+    "proverbs": "箴言12:12-14"
+  },
+  {
+    "date": "4-4",
+    "old_testament": "申命記33-34",
+    "new_testament": "路加福音13:1-17",
+    "psalms": "詩篇40:12-17",
+    "proverbs": "箴言12:15-17"
+  },
+  {
+    "date": "4-5",
+    "old_testament": "約書亞記1-2",
+    "new_testament": "路加福音13:18-35",
+    "psalms": "詩篇41:1-7",
+    "proverbs": "箴言12:18"
+  },
+  {
+    "date": "4-6",
+    "old_testament": "約書亞記3-4",
+    "new_testament": "路加福音15:1-35",
+    "psalms": "詩篇41:8-13",
+    "proverbs": "箴言12:19-20"
+  },
+  {
+    "date": "4-7",
+    "old_testament": "約書亞記5-6",
+    "new_testament": "路加福音15:1-32",
+    "psalms": "詩篇42:1-5",
+    "proverbs": "箴言12:21-23"
+  },
+  {
+    "date": "4-8",
+    "old_testament": "約書亞記7-8",
+    "new_testament": "路加福音16:1-31",
+    "psalms": "詩篇42:6-11",
+    "proverbs": "箴言12:24"
+  },
+  {
+    "date": "4-9",
+    "old_testament": "約書亞記9-10",
+    "new_testament": "路加福音17:1-37",
+    "psalms": "詩篇43:1-5",
+    "proverbs": "箴言12:25"
+  },
+  {
+    "date": "4-10",
+    "old_testament": "約書亞記11-12",
+    "new_testament": "路加福音18:1-30",
+    "psalms": "詩篇44:1-8",
+    "proverbs": "箴言12:26"
+  },
+  {
+    "date": "4-11",
+    "old_testament": "約書亞記13-14",
+    "new_testament": "路加福音18:31-43",
+    "psalms": "詩篇44:9-17",
+    "proverbs": "箴言12:27-28"
+  },
+  {
+    "date": "4-12",
+    "old_testament": "約書亞記15-16",
+    "new_testament": "路加福音19:1-27",
+    "psalms": "詩篇44:18-22",
+    "proverbs": "箴言13:1"
+  },
+  {
+    "date": "4-13",
+    "old_testament": "約書亞記17-18",
+    "new_testament": "路加福音19:28-47",
+    "psalms": "詩篇44:23-26",
+    "proverbs": "箴言13:2-3"
+  },
+  {
+    "date": "4-14",
+    "old_testament": "約書亞記19-20",
+    "new_testament": "路加福音20:1-18",
+    "psalms": "詩篇45:1-5",
+    "proverbs": "箴言13:4"
+  },
+  {
+    "date": "4-15",
+    "old_testament": "約書亞記21-22",
+    "new_testament": "路加福音20:19-47",
+    "psalms": "詩篇45:6-12",
+    "proverbs": "箴言13:5-6"
+  },
+  {
+    "date": "4-16",
+    "old_testament": "約書亞記23-24",
+    "new_testament": "路加福音21:1-19",
+    "psalms": "詩篇45:13-17",
+    "proverbs": "箴言13:7-8"
+  },
+  {
+    "date": "4-17",
+    "old_testament": "士師記1-2",
+    "new_testament": "路加福音21:20-38",
+    "psalms": "詩篇46:1-7",
+    "proverbs": "箴言13:9-10"
+  },
+  {
+    "date": "4-18",
+    "old_testament": "士師記3-4",
+    "new_testament": "路加福音22:1-23",
+    "psalms": "詩篇46:8-11",
+    "proverbs": "箴言13:11"
+  },
+  {
+    "date": "4-19",
+    "old_testament": "士師記5-6",
+    "new_testament": "路加福音22:23-46",
+    "psalms": "詩篇47:1-4",
+    "proverbs": "箴言13:12-14"
+  },
+  {
+    "date": "4-20",
+    "old_testament": "士師記7-8",
+    "new_testament": "路加福音22:47-71",
+    "psalms": "詩篇47:5-9",
+    "proverbs": "箴言13:15-16"
+  },
+  {
+    "date": "4-21",
+    "old_testament": "士師記9-10",
+    "new_testament": "路加福音23:1-25",
+    "psalms": "詩篇48:1-8",
+    "proverbs": "箴言13:17-19"
+  },
+  {
+    "date": "4-22",
+    "old_testament": "士師記11-12",
+    "new_testament": "路加福音23:26-56",
+    "psalms": "詩篇48:9-14",
+    "proverbs": "箴言13:20-23"
+  },
+  {
+    "date": "4-23",
+    "old_testament": "士師記13-14",
+    "new_testament": "路加福音24:1-27",
+    "psalms": "詩篇49:1-9",
+    "proverbs": "箴言13:24-25"
+  },
+  {
+    "date": "4-24",
+    "old_testament": "士師記15-16",
+    "new_testament": "路加福音24:28-52",
+    "psalms": "詩篇49:10-15",
+    "proverbs": "箴言14:1-2"
+  },
+  {
+    "date": "4-25",
+    "old_testament": "士師記17-18",
+    "new_testament": "約翰福音1:1-28",
+    "psalms": "詩篇49:16-20",
+    "proverbs": "箴言14:3-4"
+  },
+  {
+    "date": "4-26",
+    "old_testament": "士師記19-21",
+    "new_testament": "約翰福音1:29-51",
+    "psalms": "詩篇50:1-6",
+    "proverbs": "箴言14:5-6"
+  },
+  {
+    "date": "4-27",
+    "old_testament": "路得記1-2",
+    "new_testament": "約翰福音2:1-25",
+    "psalms": "詩篇50:7-15",
+    "proverbs": "箴言14:7-8"
+  },
+  {
+    "date": "4-28",
+    "old_testament": "路得記3-4",
+    "new_testament": "約翰福音3:1-21",
+    "psalms": "詩篇50:15-23",
+    "proverbs": "箴言14:9-10"
+  },
+  {
+    "date": "4-29",
+    "old_testament": "撒母耳記上1-2",
+    "new_testament": "約翰福音3:22-36",
+    "psalms": "詩篇51:1-5",
+    "proverbs": "箴言14:11-12"
+  },
+  {
+    "date": "4-30",
+    "old_testament": "撒母耳記上3-4",
+    "new_testament": "約翰福音4:1-42",
+    "psalms": "詩篇51:6-14",
+    "proverbs": "箴言14:13-14"
+  },
+  {
+    "date": "5-1",
+    "old_testament": "撒母耳記5-6",
+    "new_testament": "約翰福音4:43-54",
+    "psalms": "詩篇51:15-19",
+    "proverbs": "箴言14:15-16"
+  },
+  {
+    "date": "5-2",
+    "old_testament": "撒母耳記7-8",
+    "new_testament": "約翰福音5:1-18",
+    "psalms": "詩篇52:1-5",
+    "proverbs": "箴言14:17-19"
+  },
+  {
+    "date": "5-3",
+    "old_testament": "撒母耳記上9-10",
+    "new_testament": "約翰福音5:19-47",
+    "psalms": "詩篇52:6-9",
+    "proverbs": "箴言14:20-21"
+  },
+  {
+    "date": "5-4",
+    "old_testament": "撒母耳記上11-12",
+    "new_testament": "約翰福音6:1-21",
+    "psalms": "詩篇53:1-6",
+    "proverbs": "箴言14:22-24"
+  },
+  {
+    "date": "5-5",
+    "old_testament": "撒母耳記上13-14",
+    "new_testament": "約翰福音6:22-59",
+    "psalms": "詩篇54:1-7",
+    "proverbs": "箴言14:25"
+  },
+  {
+    "date": "5-6",
+    "old_testament": "撒母耳記上15-16",
+    "new_testament": "約翰福音6:60-71",
+    "psalms": "詩篇55:1-8",
+    "proverbs": "箴言14:26-27"
+  },
+  {
+    "date": "5-7",
+    "old_testament": "撒母耳記上17-18",
+    "new_testament": "約翰福音7:1-24",
+    "psalms": "詩篇55:9-15",
+    "proverbs": "箴言14:28-29"
+  },
+  {
+    "date": "5-8",
+    "old_testament": "撒母耳記上19-20",
+    "new_testament": "約翰福音7:25-52",
+    "psalms": "詩篇55:16-19",
+    "proverbs": "箴言14:30-31"
+  },
+  {
+    "date": "5-9",
+    "old_testament": "撒母耳記上21-22",
+    "new_testament": "約翰福音8:1-30",
+    "psalms": "詩篇55:20-23",
+    "proverbs": "箴言14:32-33"
+  },
+  {
+    "date": "5-10",
+    "old_testament": "撒母耳記上23-24",
+    "new_testament": "約翰福音8:31-59",
+    "psalms": "詩篇56:1-7",
+    "proverbs": "箴言14:34-35"
+  },
+  {
+    "date": "5-11",
+    "old_testament": "撒母耳記上25-26",
+    "new_testament": "約翰福音9:1-41",
+    "psalms": "詩篇56:8-13",
+    "proverbs": "箴言15:1-3"
+  },
+  {
+    "date": "5-12",
+    "old_testament": "撒母耳記上27-28",
+    "new_testament": "約翰福音10:1-21",
+    "psalms": "詩篇57:1-6",
+    "proverbs": "箴言15:4"
+  },
+  {
+    "date": "5-13",
+    "old_testament": "撒母耳記上29-30",
+    "new_testament": "約翰福音10:22-42",
+    "psalms": "詩篇57:7-11",
+    "proverbs": "箴言15:5-7"
+  },
+  {
+    "date": "5-14",
+    "old_testament": "撒母耳記上31",
+    "new_testament": "約翰福音11:1-27",
+    "psalms": "詩篇58:1-5",
+    "proverbs": "箴言15:8-10"
+  },
+  {
+    "date": "5-15",
+    "old_testament": "撒母耳記下1-2",
+    "new_testament": "約翰福音11:28-57",
+    "psalms": "詩篇58:6-11",
+    "proverbs": "箴言15:11"
+  },
+  {
+    "date": "5-16",
+    "old_testament": "撒母耳記下3-4",
+    "new_testament": "約翰福音12:1-26",
+    "psalms": "詩篇59:1-5",
+    "proverbs": "箴言15:12-14"
+  },
+  {
+    "date": "5-17",
+    "old_testament": "撒母耳記下5-6",
+    "new_testament": "約翰福音12:27-50",
+    "psalms": "詩篇59:6-10",
+    "proverbs": "箴言15:15-17"
+  },
+  {
+    "date": "5-18",
+    "old_testament": "撒母耳記下7-8",
+    "new_testament": "約翰福音13:1-20",
+    "psalms": "詩篇59:11-17",
+    "proverbs": "箴言15:18-19"
+  },
+  {
+    "date": "5-19",
+    "old_testament": "撒母耳記下9-10",
+    "new_testament": "約翰福音13:21-38",
+    "psalms": "詩篇60:1-5",
+    "proverbs": "箴言15:20-21"
+  },
+  {
+    "date": "5-20",
+    "old_testament": "撒母耳記下11-12",
+    "new_testament": "約翰福音14:1-31",
+    "psalms": "詩篇60:6-12",
+    "proverbs": "箴言15:22-23"
+  },
+  {
+    "date": "5-21",
+    "old_testament": "撒母耳記下13-14",
+    "new_testament": "約翰福音15:1-27",
+    "psalms": "詩篇61:1-4",
+    "proverbs": "箴言15:24-26"
+  },
+  {
+    "date": "5-22",
+    "old_testament": "撒母耳記下15-16",
+    "new_testament": "約翰福音16:1-33",
+    "psalms": "詩篇61:5-8",
+    "proverbs": "箴言15:27-28"
+  },
+  {
+    "date": "5-23",
+    "old_testament": "撒母耳記下17-18",
+    "new_testament": "約翰福音17:1-26",
+    "psalms": "詩篇62:1-8",
+    "proverbs": "箴言15:29-30"
+  },
+  {
+    "date": "5-24",
+    "old_testament": "撒母耳記下19-20",
+    "new_testament": "約翰福音18:1-24",
+    "psalms": "詩篇62:9-12",
+    "proverbs": "箴言15:31-32"
+  },
+  {
+    "date": "5-25",
+    "old_testament": "撒母耳記下21-22",
+    "new_testament": "約翰福音18:25-40",
+    "psalms": "詩篇63:1-4",
+    "proverbs": "箴言15:33"
+  },
+  {
+    "date": "5-26",
+    "old_testament": "撒母耳記下23-24",
+    "new_testament": "約翰福音19:1-27",
+    "psalms": "詩篇63:5-11",
+    "proverbs": "箴言16:1-3"
+  },
+  {
+    "date": "5-27",
+    "old_testament": "列王記上1-2",
+    "new_testament": "約翰福音19:28-42",
+    "psalms": "詩篇64:1-5",
+    "proverbs": "箴言16:4-5"
+  },
+  {
+    "date": "5-28",
+    "old_testament": "列王記上3-4",
+    "new_testament": "約翰福音20:1-18",
+    "psalms": "詩篇64:6-10",
+    "proverbs": "箴言16:6-7"
+  },
+  {
+    "date": "5-29",
+    "old_testament": "列王記上5-6",
+    "new_testament": "約翰福音20:19-31",
+    "psalms": "詩篇65:1-8",
+    "proverbs": "箴言16:8-9"
+  },
+  {
+    "date": "5-30",
+    "old_testament": "列王記上7-8",
+    "new_testament": "約翰福音21:1-14",
+    "psalms": "詩篇65:9-13",
+    "proverbs": "箴言16:10-11"
+  },
+  {
+    "date": "5-31",
+    "old_testament": "列王記上9-10",
+    "new_testament": "約翰福音21:15-25",
+    "psalms": "詩篇66:1-4",
+    "proverbs": "箴言16:12-13"
+  },
+  {
+    "date": "6-1",
+    "old_testament": "列王記上11-12",
+    "new_testament": "使徒行傳1:1-26",
+    "psalms": "詩篇66:5-7",
+    "proverbs": "箴言16:14-15"
+  },
+  {
+    "date": "6-2",
+    "old_testament": "列王記上13-14",
+    "new_testament": "使徒行傳2:1-13",
+    "psalms": "詩篇66:8-15",
+    "proverbs": "箴言16:16-17"
+  },
+  {
+    "date": "6-3",
+    "old_testament": "列王記上15-16",
+    "new_testament": "使徒行傳2:14-47",
+    "psalms": "詩篇66:16-20",
+    "proverbs": "箴言16:18"
+  },
+  {
+    "date": "6-4",
+    "old_testament": "列王記上17-18",
+    "new_testament": "使徒行傳3:1-26",
+    "psalms": "詩篇67:1-4",
+    "proverbs": "箴言16:19-20"
+  },
+  {
+    "date": "6-5",
+    "old_testament": "列王記上19-20",
+    "new_testament": "使徒行傳4:1-22",
+    "psalms": "詩篇67:5-7",
+    "proverbs": "箴言16:21-23"
+  },
+  {
+    "date": "6-6",
+    "old_testament": "列王記上21-22",
+    "new_testament": "使徒行傳4:23-37",
+    "psalms": "詩篇68:1-7",
+    "proverbs": "箴言16:24"
+  },
+  {
+    "date": "6-7",
+    "old_testament": "列王記下1-2",
+    "new_testament": "使徒行傳5:1-16",
+    "psalms": "詩篇68:8-14",
+    "proverbs": "箴言16:25"
+  },
+  {
+    "date": "6-8",
+    "old_testament": "列王記下3-4",
+    "new_testament": "使徒行傳5:17-42",
+    "psalms": "詩篇68:15-20",
+    "proverbs": "箴言16:26-27"
+  },
+  {
+    "date": "6-9",
+    "old_testament": "列王記下5-6",
+    "new_testament": "使徒行傳6:1-15",
+    "psalms": "詩篇68:21-27",
+    "proverbs": "箴言16:28-30"
+  },
+  {
+    "date": "6-10",
+    "old_testament": "列王記下7-8",
+    "new_testament": "使徒行傳7:1-29",
+    "psalms": "詩篇68:28-35",
+    "proverbs": "箴言16:31-33"
+  },
+  {
+    "date": "6-11",
+    "old_testament": "列王記下9-10",
+    "new_testament": "使徒行傳7:30-60",
+    "psalms": "詩篇69:1-7",
+    "proverbs": "箴言17:1"
+  },
+  {
+    "date": "6-12",
+    "old_testament": "列王記下11-12",
+    "new_testament": "使徒行傳8:1-25",
+    "psalms": "詩篇69:8-15",
+    "proverbs": "箴言17:2-3"
+  },
+  {
+    "date": "6-13",
+    "old_testament": "列王記下13-14",
+    "new_testament": "使徒行傳8:26-40",
+    "psalms": "詩篇69:16-21",
+    "proverbs": "箴言17:4-5"
+  },
+  {
+    "date": "6-14",
+    "old_testament": "列王記下15-16",
+    "new_testament": "使徒行傳9:1-22",
+    "psalms": "詩篇69:22-29",
+    "proverbs": "箴言17:6"
+  },
+  {
+    "date": "6-15",
+    "old_testament": "列王記上17-18",
+    "new_testament": "使徒行傳9:23-43",
+    "psalms": "詩篇69:30-36",
+    "proverbs": "箴言17:7-8"
+  },
+  {
+    "date": "6-16",
+    "old_testament": "列王記下19-20",
+    "new_testament": "使徒行傳10:1-33",
+    "psalms": "詩篇70:1-5",
+    "proverbs": "箴言17:9-11"
+  },
+  {
+    "date": "6-17",
+    "old_testament": "列王記下21-22",
+    "new_testament": "使徒行傳10:34-48",
+    "psalms": "詩篇71:1-6",
+    "proverbs": "箴言17:12-13"
+  },
+  {
+    "date": "6-18",
+    "old_testament": "列王記下23-24",
+    "new_testament": "使徒行傳11:1-30",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-19",
+    "old_testament": "列王記下25",
+    "new_testament": "使徒行傳12:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-20",
+    "old_testament": "歷代志上1-2",
+    "new_testament": "使徒行傳13:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-21",
+    "old_testament": "歷代志上3-4",
+    "new_testament": "使徒行傳13:26-52",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-22",
+    "old_testament": "歷代志上5-6",
+    "new_testament": "使徒行傳14:1-28",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-23",
+    "old_testament": "歷代志上7-8",
+    "new_testament": "使徒行傳15:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-24",
+    "old_testament": "歷代志上9-10",
+    "new_testament": "使徒行傳15:22-41",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-25",
+    "old_testament": "歷代志上11-12",
+    "new_testament": "使徒行傳16:1-15",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-26",
+    "old_testament": "歷代志上13-14",
+    "new_testament": "使徒行傳16:16-40",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-27",
+    "old_testament": "歷代志上15-16",
+    "new_testament": "使徒行傳17:1-34",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-28",
+    "old_testament": "歷代志上17-18",
+    "new_testament": "使徒行傳18:1-28",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-29",
+    "old_testament": "歷代志上19-20",
+    "new_testament": "使徒行傳19:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "6-30",
+    "old_testament": "歷代志上21-22",
+    "new_testament": "使徒行傳19:21-41",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-1",
+    "old_testament": "歷代志上23-24",
+    "new_testament": "使徒行傳20:1-38",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-2",
+    "old_testament": "歷代志上25-26",
+    "new_testament": "使徒行傳21:1-6",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-3",
+    "old_testament": "歷代志上27-28",
+    "new_testament": "使徒行傳21:17-40",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-4",
+    "old_testament": "歷代志上29",
+    "new_testament": "使徒行傳22:1-30",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-5",
+    "old_testament": "歷代志下1-2",
+    "new_testament": "使徒行傳23:1-35",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-6",
+    "old_testament": "歷代志上3-4",
+    "new_testament": "使徒行傳24:1-27",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-7",
+    "old_testament": "歷代志上5-6",
+    "new_testament": "使徒行傳25:1-27",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-8",
+    "old_testament": "歷代志上7-8",
+    "new_testament": "使徒行傳26:1-32",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-9",
+    "old_testament": "歷代志下9-10",
+    "new_testament": "使徒行傳27:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-10",
+    "old_testament": "歷代志下11-12",
+    "new_testament": "使徒行傳27:21-44",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-11",
+    "old_testament": "歷代志下13-14",
+    "new_testament": "使徒行傳28:1-31",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-12",
+    "old_testament": "歷代志下15-16",
+    "new_testament": "羅馬書1:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-13",
+    "old_testament": "歷代志下17-18",
+    "new_testament": "羅馬書1:18-32",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-14",
+    "old_testament": "歷代志下19-20",
+    "new_testament": "羅馬書2:1-29",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-15",
+    "old_testament": "歷代志下21-22",
+    "new_testament": "羅馬書3:1-31",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-16",
+    "old_testament": "歷代志下23-24",
+    "new_testament": "羅馬書4:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-17",
+    "old_testament": "歷代志下25-26",
+    "new_testament": "羅馬書5:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-18",
+    "old_testament": "歷代志下27-28",
+    "new_testament": "羅馬書6:1-23",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-19",
+    "old_testament": "歷代志下29-30",
+    "new_testament": "羅馬書7:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-20",
+    "old_testament": "歷代志下31-32",
+    "new_testament": "羅馬書8:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-21",
+    "old_testament": "歷代志下33-34",
+    "new_testament": "羅馬書8:18-39",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-22",
+    "old_testament": "歷代志下35-36",
+    "new_testament": "羅馬書9:1-33",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-23",
+    "old_testament": "以斯拉記1-2",
+    "new_testament": "羅馬書10:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-24",
+    "old_testament": "以斯拉記3-4",
+    "new_testament": "羅馬書11:1-24",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-25",
+    "old_testament": "以斯拉記5-6",
+    "new_testament": "羅馬書11:25-36",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-26",
+    "old_testament": "以斯拉記7-8",
+    "new_testament": "羅馬書12:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-27",
+    "old_testament": "以斯拉記9-10",
+    "new_testament": "羅馬書13:1-14",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-28",
+    "old_testament": "尼希米記1-2",
+    "new_testament": "羅馬書14:1-23",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-29",
+    "old_testament": "尼希米記3-4",
+    "new_testament": "羅馬書15:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-30",
+    "old_testament": "尼希米記5-6",
+    "new_testament": "羅馬書15:22-33",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "7-31",
+    "old_testament": "尼希米記7-8",
+    "new_testament": "羅馬書16:1-27",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-1",
+    "old_testament": "尼希米記9-10",
+    "new_testament": "哥林多前書1:1-31",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-2",
+    "old_testament": "尼希米記11-12",
+    "new_testament": "哥林多前書2:1-16",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-3",
+    "old_testament": "尼希米記13",
+    "new_testament": "哥林多前書3:1-23",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-4",
+    "old_testament": "以斯帖記1-2",
+    "new_testament": "哥林多前書4:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-5",
+    "old_testament": "以斯帖記3-4",
+    "new_testament": "哥林多前書5:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-6",
+    "old_testament": "以斯帖記5-6",
+    "new_testament": "哥林多前書6:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-7",
+    "old_testament": "以斯帖記7-8",
+    "new_testament": "哥林多前書7:1-24",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-8",
+    "old_testament": "以斯帖記9-10",
+    "new_testament": "哥林多前書7:25-40",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-9",
+    "old_testament": "約伯記1-2",
+    "new_testament": "哥林多前書8:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-10",
+    "old_testament": "約伯記3-4",
+    "new_testament": "哥林多前書9:1-27",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-11",
+    "old_testament": "約伯記5-6",
+    "new_testament": "哥林多前書10:1-12",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-12",
+    "old_testament": "約伯記7-8",
+    "new_testament": "哥林多前書10:23-33",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-13",
+    "old_testament": "約伯記9-10",
+    "new_testament": "哥林多前書11:1-22",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-14",
+    "old_testament": "約伯記11-12",
+    "new_testament": "哥林多前書11:23-34",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-15",
+    "old_testament": "約伯記13-14",
+    "new_testament": "哥林多前書12:1-31",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-16",
+    "old_testament": "約伯記15-16",
+    "new_testament": "哥林多前書13:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-17",
+    "old_testament": "約伯記17-18",
+    "new_testament": "哥林多前書14:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-18",
+    "old_testament": "約伯記19-20",
+    "new_testament": "哥林多前書14:26-40",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-19",
+    "old_testament": "約伯記21-22",
+    "new_testament": "哥林多前書15:1-34",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-20",
+    "old_testament": "約伯記23-24",
+    "new_testament": "哥林多前書15:35-58",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-21",
+    "old_testament": "約伯記25-26",
+    "new_testament": "哥林多前書16:1-24",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-22",
+    "old_testament": "約伯記27-28",
+    "new_testament": "哥林多後書1:1-24",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-23",
+    "old_testament": "約伯記29-30",
+    "new_testament": "哥林多後書2:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-24",
+    "old_testament": "約伯記31-32",
+    "new_testament": "哥林多後書3:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-25",
+    "old_testament": "約伯記33-34",
+    "new_testament": "哥林多後書4:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-26",
+    "old_testament": "約伯記35-36",
+    "new_testament": "哥林多後書5:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-27",
+    "old_testament": "約伯記37-38",
+    "new_testament": "哥林多後書6:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-28",
+    "old_testament": "約伯記39-40",
+    "new_testament": "哥林多後書7:1-16",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-29",
+    "old_testament": "約伯記41-42",
+    "new_testament": "哥林多後書8:1-24",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-30",
+    "old_testament": "傳道書1-2",
+    "new_testament": "哥林多後書9:1-15",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "8-31",
+    "old_testament": "傳道書3-4",
+    "new_testament": "哥林多後書10:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-1",
+    "old_testament": "傳道書5-6",
+    "new_testament": "哥林多後書11:1-15",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-2",
+    "old_testament": "傳道書7-8",
+    "new_testament": "哥林多後書11:16-33",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-3",
+    "old_testament": "傳道書9-10",
+    "new_testament": "哥林多後書12:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-4",
+    "old_testament": "傳道書11-12",
+    "new_testament": "哥林多後書13:1-14",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-5",
+    "old_testament": "雅歌1-2",
+    "new_testament": "加拉太書1:1-24",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-6",
+    "old_testament": "雅歌3-4",
+    "new_testament": "加拉太書2:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-7",
+    "old_testament": "雅歌5-6",
+    "new_testament": "加拉太書3:1-14",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-8",
+    "old_testament": "雅歌7-8",
+    "new_testament": "加拉太書3:15-29",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-9",
+    "old_testament": "以賽亞書1-2",
+    "new_testament": "加拉太書4:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-10",
+    "old_testament": "以賽亞書3-4",
+    "new_testament": "加拉太書4:21-31",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-11",
+    "old_testament": "以賽亞書5-6",
+    "new_testament": "加拉太書5:1-26",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-12",
+    "old_testament": "以賽亞書7-8",
+    "new_testament": "加拉太書6:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-13",
+    "old_testament": "以賽亞書9-10",
+    "new_testament": "以弗所書1:1-23",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-14",
+    "old_testament": "以賽亞書11-12",
+    "new_testament": "以弗所書2:1-22",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-15",
+    "old_testament": "以賽亞書13-14",
+    "new_testament": "以弗所書3:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-16",
+    "old_testament": "以賽亞書15-16",
+    "new_testament": "以弗所書4:1-16",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-17",
+    "old_testament": "以賽亞書17-18",
+    "new_testament": "以弗所書4:17-32",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-18",
+    "old_testament": "以賽亞書19-20",
+    "new_testament": "以弗所書5:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-19",
+    "old_testament": "以賽亞書21-22",
+    "new_testament": "以弗所書5:22-33",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-20",
+    "old_testament": "以賽亞書23-24",
+    "new_testament": "以弗所書6:1-24",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-21",
+    "old_testament": "以賽亞書25-26",
+    "new_testament": "腓立比書1:1-11",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-22",
+    "old_testament": "以賽亞書27-28",
+    "new_testament": "腓立比書1:12-30",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-23",
+    "old_testament": "以賽亞書29-30",
+    "new_testament": "腓立比書2:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-24",
+    "old_testament": "以賽亞書31-32",
+    "new_testament": "腓立比書2:19-30",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-25",
+    "old_testament": "以賽亞書33-34",
+    "new_testament": "腓立比書3:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-26",
+    "old_testament": "以賽亞書35-36",
+    "new_testament": "腓立比書4:1-23",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-27",
+    "old_testament": "以賽亞書37-38",
+    "new_testament": "歌羅西書1:1-29",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-28",
+    "old_testament": "以賽亞書39-40",
+    "new_testament": "歌羅西書2:1-23",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-29",
+    "old_testament": "以賽亞書41-42",
+    "new_testament": "歌羅西書3:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "9-30",
+    "old_testament": "以賽亞書43-44",
+    "new_testament": "歌羅西書4:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-1",
+    "old_testament": "以賽亞書45-46",
+    "new_testament": "帖撒羅尼迦前書1:1-10",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-2",
+    "old_testament": "以賽亞書47-48",
+    "new_testament": "帖撒羅尼迦前書2:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-3",
+    "old_testament": "以賽亞書49-50",
+    "new_testament": "帖撒羅尼迦前書3:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-4",
+    "old_testament": "以賽亞書51-52",
+    "new_testament": "帖撒羅尼迦前書4:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-5",
+    "old_testament": "以賽亞書53-54",
+    "new_testament": "帖撒羅尼迦前書5:1-11",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-6",
+    "old_testament": "以賽亞書55-56",
+    "new_testament": "帖撒羅尼迦前書5:12-28",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-7",
+    "old_testament": "以賽亞書57-58",
+    "new_testament": "帖撒羅尼迦後書1:1-12",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-8",
+    "old_testament": "以賽亞書59-60",
+    "new_testament": "帖撒羅尼迦後書2:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-9",
+    "old_testament": "以賽亞書61-62",
+    "new_testament": "帖撒羅尼迦後書3:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-10",
+    "old_testament": "以賽亞書63-64",
+    "new_testament": "提摩太前書1:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-11",
+    "old_testament": "以賽亞書65-66",
+    "new_testament": "提摩太前書2:1-15",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-12",
+    "old_testament": "耶利米書1-2",
+    "new_testament": "提摩太前書3:1-16",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-13",
+    "old_testament": "耶利米書3-4",
+    "new_testament": "提摩太前書4:1-16",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-14",
+    "old_testament": "耶利米書5-6",
+    "new_testament": "提摩太前書5:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-15",
+    "old_testament": "耶利米書7-8",
+    "new_testament": "提摩太前書6:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-16",
+    "old_testament": "耶利米書9-10",
+    "new_testament": "提摩太後書1:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-17",
+    "old_testament": "耶利米書11-12",
+    "new_testament": "提摩太後書2:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-18",
+    "old_testament": "耶利米書13-14",
+    "new_testament": "提摩太後書2:14-26",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-19",
+    "old_testament": "耶利米書15-16",
+    "new_testament": "提摩太後書3:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-20",
+    "old_testament": "耶利米書17-18",
+    "new_testament": "提摩太後書4:1-22",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-21",
+    "old_testament": "耶利米書19-20",
+    "new_testament": "提多書1:1-16",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-22",
+    "old_testament": "耶利米書21-22",
+    "new_testament": "提多書2:1-15",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-23",
+    "old_testament": "耶利米書23-24",
+    "new_testament": "提多書3:1-15",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-24",
+    "old_testament": "耶利米書25-26",
+    "new_testament": "腓立門書1:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-25",
+    "old_testament": "耶利米書27-28",
+    "new_testament": "希伯來書1:1-14",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-26",
+    "old_testament": "耶利米書29-30",
+    "new_testament": "希伯來書2:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-27",
+    "old_testament": "耶利米書31-32",
+    "new_testament": "希伯來書3:1-19",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-28",
+    "old_testament": "耶利米書33-34",
+    "new_testament": "希伯來書4:1-16",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-29",
+    "old_testament": "耶利米書35-36",
+    "new_testament": "希伯來書5:1-14",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-30",
+    "old_testament": "耶利米書37-38",
+    "new_testament": "希伯來書6:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "10-31",
+    "old_testament": "耶利米書39-40",
+    "new_testament": "希伯來書7:1-14",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-1",
+    "old_testament": "耶利米書41-42",
+    "new_testament": "希伯來書7:15-28",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-2",
+    "old_testament": "耶利米書43-44",
+    "new_testament": "希伯來書8:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-3",
+    "old_testament": "耶利米書45-46",
+    "new_testament": "希伯來書9:1-14",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-4",
+    "old_testament": "耶利米書47-48",
+    "new_testament": "希伯來書9:15-28",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-5",
+    "old_testament": "耶利米書49-50",
+    "new_testament": "希伯來書10:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-6",
+    "old_testament": "耶利米書51-52",
+    "new_testament": "希伯來書10:19-39",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-7",
+    "old_testament": "耶利米哀歌1-2",
+    "new_testament": "希伯來書11:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-8",
+    "old_testament": "耶利米哀歌3-5",
+    "new_testament": "希伯來書11:18-40",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-9",
+    "old_testament": "以西結書1-2",
+    "new_testament": "希伯來書12:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-10",
+    "old_testament": "以西結書3-4",
+    "new_testament": "希伯來書12:14-29",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-11",
+    "old_testament": "以西結書5-6",
+    "new_testament": "希伯來書13:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-12",
+    "old_testament": "以西結書7-8",
+    "new_testament": "雅各書1:1-11",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-13",
+    "old_testament": "以西結書9-10",
+    "new_testament": "雅各書1:12-27",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-14",
+    "old_testament": "以西結書11-12",
+    "new_testament": "雅各書2:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-15",
+    "old_testament": "以西結書13-14",
+    "new_testament": "雅各書2:14-26",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-16",
+    "old_testament": "以西結書15-16",
+    "new_testament": "雅各書3:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-17",
+    "old_testament": "以西結書17-18",
+    "new_testament": "雅各書4:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-18",
+    "old_testament": "以西結書19-20",
+    "new_testament": "雅各書5:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-19",
+    "old_testament": "以西結書21-22",
+    "new_testament": "彼得前書1:1-12",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-20",
+    "old_testament": "以西結書23-24",
+    "new_testament": "彼得前書1:13-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-21",
+    "old_testament": "以西結書25-26",
+    "new_testament": "彼得前書2:1-10",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-22",
+    "old_testament": "以西結書27-28",
+    "new_testament": "彼得前書2:11-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-23",
+    "old_testament": "以西結書29-30",
+    "new_testament": "彼得前書3:1-22",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-24",
+    "old_testament": "以西結書31-32",
+    "new_testament": "彼得前書4:1-19",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-25",
+    "old_testament": "以西結書33-34",
+    "new_testament": "彼得前書5:1-14",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-26",
+    "old_testament": "以西結書35-36",
+    "new_testament": "彼得後書1:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-27",
+    "old_testament": "以西結書37-38",
+    "new_testament": "彼得後書2:1-22",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-28",
+    "old_testament": "以西結書39-40",
+    "new_testament": "彼得後書3:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-29",
+    "old_testament": "以西結書41-42",
+    "new_testament": "約翰一書1:1-10",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "11-30",
+    "old_testament": "以西結書43-44",
+    "new_testament": "約翰一書2:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-1",
+    "old_testament": "以西結書45-46",
+    "new_testament": "約翰一書2:18-29",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-2",
+    "old_testament": "以西結書47-48",
+    "new_testament": "約翰一書3:1-24",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-3",
+    "old_testament": "但以理書1-2",
+    "new_testament": "約翰一書4:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-4",
+    "old_testament": "但以理書3-4",
+    "new_testament": "約翰一書5:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-5",
+    "old_testament": "但以理書5-6",
+    "new_testament": "約翰二書1:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-6",
+    "old_testament": "但以理書7-8",
+    "new_testament": "約翰三書1:1-15",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-7",
+    "old_testament": "但以理書9-10",
+    "new_testament": "猶大書1:1-25",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-8",
+    "old_testament": "但以理書11-12",
+    "new_testament": "啟示錄1:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-9",
+    "old_testament": "何西阿書1-2",
+    "new_testament": "啟示錄2:1-11",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-10",
+    "old_testament": "何西阿書3-6",
+    "new_testament": "啟示錄2:12-29",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-11",
+    "old_testament": "何西阿書7-9",
+    "new_testament": "啟示錄3:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-12",
+    "old_testament": "何西阿書10-12",
+    "new_testament": "啟示錄3:14-22",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-13",
+    "old_testament": "何西阿書13-14",
+    "new_testament": "啟示錄4:1-11",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-14",
+    "old_testament": "約珥書1-3",
+    "new_testament": "啟示錄5:1-14",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-15",
+    "old_testament": "阿摩司書1-3",
+    "new_testament": "啟示錄6:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-16",
+    "old_testament": "阿摩司書4-6",
+    "new_testament": "啟示錄7:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-17",
+    "old_testament": "阿摩司書7-9",
+    "new_testament": "啟示錄8:1-13",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-18",
+    "old_testament": "俄巴底亞書1",
+    "new_testament": "啟示錄9:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-19",
+    "old_testament": "約拿書1-4",
+    "new_testament": "啟示錄10:1-11",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-20",
+    "old_testament": "彌迦書1-4",
+    "new_testament": "啟示錄11:1-19",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-21",
+    "old_testament": "彌迦書5-7",
+    "new_testament": "啟示錄12:1-17",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-22",
+    "old_testament": "那鴻書1-3",
+    "new_testament": "啟示錄13:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-23",
+    "old_testament": "哈巴谷書1-3",
+    "new_testament": "啟示錄14:1-20",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-24",
+    "old_testament": "西番雅書1-3",
+    "new_testament": "啟示錄15:1-8",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-25",
+    "old_testament": "哈該書1-2",
+    "new_testament": "啟示錄16:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-26",
+    "old_testament": "撒迦利亞書1-4",
+    "new_testament": "啟示錄17:1-18",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-27",
+    "old_testament": "撒迦利亞書5-8",
+    "new_testament": "啟示錄18:1-24",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-28",
+    "old_testament": "撒迦利亞書9-12",
+    "new_testament": "啟示錄19:1-21",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-29",
+    "old_testament": "撒迦利亞書13-14",
+    "new_testament": "啟示錄20:1-15",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-30",
+    "old_testament": "瑪拉基書1-2",
+    "new_testament": "啟示錄21:1-27",
+    "psalms": "",
+    "proverbs": ""
+  },
+  {
+    "date": "12-31",
+    "old_testament": "瑪拉基書3-4",
+    "new_testament": "啟示錄22:1-21",
+    "psalms": "",
+    "proverbs": ""
+  }
+]
