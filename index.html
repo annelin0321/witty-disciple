@@ -49,7 +49,7 @@
             text-decoration: none;
             /* 增加點擊範圍 */
             padding: 5px;
-            /* 確保文字不會換行導致版面亂掉 */
+            /* 確保文字不會換行 */
             white-space: nowrap;
         }
 
@@ -125,6 +125,7 @@
         /* RWD 手機版特別調整 */
         @media (max-width: 768px) {
             .map-container {
+                /* 手機版：拉高高度，確保分佈均勻 */
                 height: 80vh; 
                 min-height: 600px; 
                 max-height: 800px;
@@ -181,18 +182,18 @@
                 <path d="M500 450 Q 650 480 800 500" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
             </svg>
 
-            <!-- 手機版路徑 (X型發散) -->
+            <!-- 手機版路徑 (優化版：更往角落延伸) -->
             <svg class="mobile-svg absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
                 <!-- 中心到上 (校牧) -->
-                <path d="M50 50 L 50 15" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 L 50 12" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
                 <!-- 中心到左上 (公告) -->
-                <path d="M50 50 L 20 20" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 Q 20 45 12 18" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
                 <!-- 中心到右上 (圖書館) -->
-                <path d="M50 50 L 80 20" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 Q 80 45 88 18" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
                 <!-- 中心到左下 (學霸) -->
-                <path d="M50 50 L 20 80" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 Q 20 55 12 82" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
                 <!-- 中心到右下 (課外) -->
-                <path d="M50 50 L 80 80" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
+                <path d="M50 50 Q 80 55 88 82" stroke="#8D7B68" stroke-width="1" stroke-dasharray="3" opacity="0.4" />
             </svg>
 
             <!-- 裝飾樹木 -->
@@ -203,16 +204,16 @@
             <!-- ================= 地標佈局 ================= -->
             
             <!-- 1. 校牧室 (Chaplain) - 正上方 -->
-            <!-- 手機: top-10% left-50% -->
+            <!-- 手機: top-12% left-50% -->
             <a href="chaplain/index.html" class="map-node top-[12%] left-1/2 group">
                 <div class="node-icon w-16 h-16 float-mid bg-[#FDFBF7]"><i data-lucide="church" class="w-6 h-6"></i></div>
-                <!-- 修正：強制指定背景色 style="background: #8D7B68" 以解決顏色跑掉問題 -->
+                <!-- 修正：強制指定背景色 -->
                 <div class="node-label" style="background: #8D7B68; color: white;">校牧室</div>
             </a>
 
             <!-- 2. 公告欄 (Notice) - 左上 -->
-            <!-- 手機: top-20% left-15% (往旁邊推開) / 電腦: top-15% right-10% -->
-            <div class="map-node top-[20%] left-[15%] md:top-[15%] md:right-[10%] md:left-auto group z-30" onclick="openNoticeModal()">
+            <!-- 手機: top-18% left-12% (更靠邊) / 電腦: top-15% right-10% -->
+            <div class="map-node top-[18%] left-[12%] md:top-[15%] md:right-[10%] md:left-auto group z-30" onclick="openNoticeModal()">
                 <div class="notice-board-container scale-75 md:scale-100">
                     <div class="notice-board-icon">
                         <div class="notice-paper"><i data-lucide="bell" class="w-6 h-6 text-[#D85C42]"></i></div>
@@ -224,8 +225,8 @@
             </div>
 
             <!-- 3. 圖書館 (Library) - 右上 -->
-            <!-- 手機: top-20% right-15% (往旁邊推開) / 電腦: top-30% left-20% -->
-            <a href="library/index.html" class="map-node top-[20%] right-[15%] md:top-[30%] md:left-[20%] md:right-auto group">
+            <!-- 手機: top-18% right-12% (更靠邊) / 電腦: top-30% left-20% -->
+            <a href="library/index.html" class="map-node top-[18%] right-[12%] md:top-[30%] md:left-[20%] md:right-auto group">
                 <div class="node-icon float-mid"><i data-lucide="library" class="w-8 h-8"></i></div>
                 <div class="node-label">圖書館</div>
                 <div class="absolute -top-6 -left-6 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="search" class="w-6 h-6 text-[#6B8E23] animate-bounce"></i></div>
@@ -236,20 +237,20 @@
             <a href="daily/index.html" class="map-node center-hub top-1/2 left-1/2 group">
                 <div class="node-icon w-24 h-24 z-10 float-slow"><i data-lucide="book-open-check" class="w-10 h-10"></i></div>
                 <div class="node-label text-lg font-bold">通識中心</div>
-                <!-- 修正：移除下方的每日靈糧文字 -->
+                <!-- 已移除多餘文字 -->
             </a>
 
             <!-- 5. 學霸養成班 (School) - 左下 -->
-            <!-- 手機: top-80% left-15% (往旁邊推開) / 電腦: top-30% right-20% -->
-            <a href="school/index.html" class="map-node top-[80%] left-[15%] md:top-[30%] md:right-[20%] md:left-auto group">
+            <!-- 手機: top-82% left-12% (更靠邊、更往下) / 電腦: top-30% right-20% -->
+            <a href="school/index.html" class="map-node top-[82%] left-[12%] md:top-[30%] md:right-[20%] md:left-auto group">
                 <div class="node-icon float-fast"><i data-lucide="graduation-cap" class="w-8 h-8"></i></div>
                 <div class="node-label">學霸養成班</div>
                 <div class="absolute -top-4 -right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-[#D85C42] text-white text-[10px] px-2 py-1 rounded-full shadow-sm">Quiz!</div>
             </a>
 
             <!-- 6. 課外活動 (Games) - 右下 -->
-            <!-- 手機: top-80% right-15% (往旁邊推開) / 電腦: bottom-15% right-15% -->
-            <a href="games/index.html" class="map-node top-[80%] right-[15%] md:bottom-[15%] md:right-[15%] md:top-auto group">
+            <!-- 手機: top-82% right-12% (更靠邊、更往下) / 電腦: bottom-15% right-15% -->
+            <a href="games/index.html" class="map-node top-[82%] right-[12%] md:bottom-[15%] md:right-[15%] md:top-auto group">
                 <div class="node-icon float-mid"><i data-lucide="tent" class="w-8 h-8"></i></div>
                 <div class="node-label">課外活動</div>
                 <div class="absolute bottom-0 right-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="gamepad-2" class="w-5 h-5 text-[#8FA4AE]"></i></div>
