@@ -4,8 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>機智的門徒生活 | 校園地圖</title>
-    <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="assets/images/favicon.svg">
+    
+    <!-- 瀏覽器分頁圖示 (SVG) -->
+    <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml">
+    <!-- 手機主畫面圖示 (請務必自行轉檔為 PNG 並命名為 logo.png) -->
+    <link rel="apple-touch-icon" href="assets/images/logo.png">
+    
+    <meta name="apple-mobile-web-app-title" content="機智門徒">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
@@ -14,10 +21,16 @@
     <style>
         /* 地圖容器 */
         .map-container {
-            /* 修正：移除背景色與點狀圖，消除灰色色塊感 */
-            background: transparent;
+            background-color: var(--bg-paper);
+            background-image: 
+                radial-gradient(#D6D2CC 1px, transparent 1px),
+                radial-gradient(#D6D2CC 1px, transparent 1px);
+            background-position: 0 0, 25px 25px;
+            background-size: 50px 50px;
             position: relative;
-            /* overflow: hidden; 移除 hidden 以免陰影被切掉，視情況調整 */
+            overflow: hidden;
+            border-radius: 40px;
+            box-shadow: inset 0 0 60px rgba(0,0,0,0.05), 0 20px 40px rgba(0,0,0,0.1);
             
             /* 電腦版高度 */
             height: 600px;
@@ -27,7 +40,7 @@
         }
 
         /* 路徑動畫 */
-        .path-line { stroke-dasharray: 8 6; animation: dash 60s linear infinite; }
+        .path-line { stroke-dasharray: 10; animation: dash 60s linear infinite; }
         @keyframes dash { to { stroke-dashoffset: -1000; } }
 
         /* 地標節點共用樣式 */
@@ -46,10 +59,10 @@
         }
 
         .node-icon {
-            width: 70px; height: 70px; background: rgba(255, 255, 255, 0.95);
+            width: 70px; height: 70px; background: rgba(255, 255, 255, 0.9);
             border: 2px solid var(--accent-brown); border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 10px rgba(141, 123, 104, 0.15);
+            box-shadow: 0 8px 0 rgba(141, 123, 104, 0.2);
             transition: all 0.3s ease; position: relative; color: var(--text-primary);
         }
         
@@ -60,9 +73,9 @@
 
         .node-label {
             background: var(--text-primary); color: #fff; padding: 4px 12px;
-            border-radius: 20px; font-size: 0.85rem; margin-top: 8px;
-            font-family: 'Noto Serif TC', serif; opacity: 0.9; transition: all 0.3s;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-radius: 12px; font-size: 0.85rem; margin-top: 10px;
+            font-family: 'Noto Serif TC', serif; opacity: 0.8; transition: all 0.3s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
         .map-node:hover .node-label { background: var(--accent-green); opacity: 1; transform: scale(1.05); }
 
@@ -70,20 +83,20 @@
         .notice-board-container { animation: swing 3s ease-in-out infinite; transform-origin: top center; }
         @keyframes swing { 0%, 100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
         .notice-board-icon {
-            width: 70px; height: 50px;
+            width: 80px; height: 60px;
             background: #8D7B68; border: 3px solid #5D4037; border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 4px 0 #3E2723, 0 10px 15px rgba(0,0,0,0.1); position: relative; transition: all 0.3s;
+            box-shadow: 0 6px 0 #3E2723, 0 10px 15px rgba(0,0,0,0.2); position: relative; transition: all 0.3s;
         }
         .notice-paper {
-            width: 50px; height: 30px; background: #FFF; transform: rotate(-2deg);
-            display: flex; align-items: center; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            width: 60px; height: 40px; background: #FFF; transform: rotate(-2deg);
+            display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .map-node:hover .notice-board-icon { transform: scale(1.1) translateY(-5px); background: #A18E78; }
         .notice-badge {
             position: absolute; top: -8px; right: -8px;
             background: #D85C42; color: white; border-radius: 50%;
-            width: 20px; height: 20px; font-size: 12px;
+            width: 24px; height: 24px; font-size: 13px;
             display: flex; align-items: center; justify-content: center;
             font-weight: bold; border: 2px solid #fff;
             box-shadow: 0 2px 5px rgba(0,0,0,0.2); animation: pulse-red 1.5s infinite; z-index: 20;
@@ -117,20 +130,22 @@
         /* RWD 手機版特別調整 */
         @media (max-width: 768px) {
             .map-container {
-                /* 手機版高度 */
-                height: 85vh; 
+                height: 80vh; 
                 min-height: 600px; 
                 max-height: 800px;
                 display: block; 
             }
             
-            /* 手機版圖示尺寸調整 */
+            /* 手機版圖示微調 */
             .node-icon { width: 64px; height: 64px; }
             .map-node.center-hub .node-icon { width: 88px; height: 88px; border-width: 3px; border-color: #6B8E23; }
             
             /* 切換 SVG */
             .desktop-svg { display: none; }
             .mobile-svg { display: block; }
+            
+            /* 公告欄圖示縮小一點 */
+            .notice-board-icon { width: 70px; height: 50px; }
         }
         
         @media (min-width: 769px) {
@@ -145,6 +160,7 @@
     <header class="pt-4 pb-2 md:pt-8 md:pb-4 text-center z-20 flex-shrink-0">
         <div class="flex flex-col items-center gap-2 mb-2">
             <div class="w-16 h-16 md:w-24 md:h-24 hero-logo hover:scale-105 transition-transform duration-500 text-[#3E3B39]">
+                <!-- 新的 Logo SVG (嵌入式) -->
                 <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <circle cx="50" cy="50" r="48" fill="#FDFBF7" stroke="#6B8E23" stroke-width="2"/>
                     <circle cx="50" cy="35" r="18" fill="#6B8E23" opacity="0.9"/>
@@ -174,19 +190,13 @@
                 <path d="M500 450 Q 650 480 800 500" stroke="#8D7B68" stroke-width="4" fill="none" class="path-line opacity-30" />
             </svg>
 
-            <!-- 手機版路徑 (放射狀連接：5條線) -->
+            <!-- 手機版路徑 (放射狀連接) -->
             <svg class="mobile-svg absolute inset-0 w-full h-full pointer-events-none z-0" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none" viewBox="0 0 100 100">
-                <!-- 中心(50,50) 連到 各點 -->
-                <!-- 正上 (校牧) -->
                 <path d="M50 50 L 50 12" stroke="#8D7B68" stroke-width="1.5" stroke-dasharray="4" opacity="0.4" />
-                <!-- 左上 (公告) -->
-                <path d="M50 50 L 20 22" stroke="#8D7B68" stroke-width="1.5" stroke-dasharray="4" opacity="0.4" />
-                <!-- 右上 (圖書館) -->
-                <path d="M50 50 L 80 22" stroke="#8D7B68" stroke-width="1.5" stroke-dasharray="4" opacity="0.4" />
-                <!-- 左下 (學霸) -->
-                <path d="M50 50 L 20 78" stroke="#8D7B68" stroke-width="1.5" stroke-dasharray="4" opacity="0.4" />
-                <!-- 右下 (課外) -->
-                <path d="M50 50 L 80 78" stroke="#8D7B68" stroke-width="1.5" stroke-dasharray="4" opacity="0.4" />
+                <path d="M50 50 L 15 15" stroke="#8D7B68" stroke-width="1.5" stroke-dasharray="4" opacity="0.4" />
+                <path d="M50 50 L 85 15" stroke="#8D7B68" stroke-width="1.5" stroke-dasharray="4" opacity="0.4" />
+                <path d="M50 50 L 15 80" stroke="#8D7B68" stroke-width="1.5" stroke-dasharray="4" opacity="0.4" />
+                <path d="M50 50 L 85 80" stroke="#8D7B68" stroke-width="1.5" stroke-dasharray="4" opacity="0.4" />
             </svg>
 
             <!-- 裝飾樹木 -->
@@ -208,8 +218,8 @@
                 <div class="node-label" style="background: #8D7B68; color: white;">校牧室</div>
             </a>
 
-            <!-- 3. 公告欄 (Notice) - 左上 (22%, 20%) -->
-            <div class="map-node top-[22%] left-[20%] md:top-[15%] md:right-[10%] md:left-auto group z-30" onclick="openNoticeModal()">
+            <!-- 3. 公告欄 (Notice) - 左上 (15%, 15%) -->
+            <div class="map-node top-[15%] left-[15%] md:top-[15%] md:right-[10%] md:left-auto group z-30" onclick="openNoticeModal()">
                 <div class="notice-board-container scale-75 md:scale-100">
                     <div class="notice-board-icon">
                         <div class="notice-paper"><i data-lucide="bell" class="w-6 h-6 text-[#D85C42]"></i></div>
@@ -220,22 +230,22 @@
                 <div class="node-label mt-2" style="background: #8D7B68; border: 2px solid #5D4037; font-size: 0.75rem;">公告</div>
             </div>
 
-            <!-- 4. 圖書館 (Library) - 右上 (22%, 80%) -->
-            <a href="library/index.html" class="map-node top-[22%] left-[80%] md:top-[30%] md:left-[20%] group">
+            <!-- 4. 圖書館 (Library) - 右上 (15%, 85%) -->
+            <a href="library/index.html" class="map-node top-[15%] left-[85%] md:top-[30%] md:left-[20%] group">
                 <div class="node-icon float-mid"><i data-lucide="library" class="w-8 h-8"></i></div>
                 <div class="node-label">圖書館</div>
                 <div class="absolute -top-6 -left-6 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="search" class="w-6 h-6 text-[#6B8E23] animate-bounce"></i></div>
             </a>
 
-            <!-- 5. 學霸養成班 (School) - 左下 (78%, 20%) -->
-            <a href="school/index.html" class="map-node top-[78%] left-[20%] md:top-[30%] md:right-[20%] md:left-auto group">
+            <!-- 5. 學霸養成班 (School) - 左下 (80%, 15%) -->
+            <a href="school/index.html" class="map-node top-[80%] left-[15%] md:top-[30%] md:right-[20%] md:left-auto group">
                 <div class="node-icon float-fast"><i data-lucide="graduation-cap" class="w-8 h-8"></i></div>
                 <div class="node-label">學霸養成班</div>
                 <div class="absolute -top-4 -right-4 opacity-0 group-hover:opacity-100 transition-opacity bg-[#D85C42] text-white text-[10px] px-2 py-1 rounded-full shadow-sm">Quiz!</div>
             </a>
 
-            <!-- 6. 課外活動 (Games) - 右下 (78%, 80%) -->
-            <a href="games/index.html" class="map-node top-[78%] left-[80%] md:bottom-[15%] md:right-[15%] md:left-auto md:top-auto group">
+            <!-- 6. 課外活動 (Games) - 右下 (80%, 85%) -->
+            <a href="games/index.html" class="map-node top-[80%] left-[85%] md:bottom-[15%] md:right-[15%] md:left-auto md:top-auto group">
                 <div class="node-icon float-mid"><i data-lucide="tent" class="w-8 h-8"></i></div>
                 <div class="node-label">課外活動</div>
                 <div class="absolute bottom-0 right-full mr-2 opacity-0 group-hover:opacity-100 transition-opacity"><i data-lucide="gamepad-2" class="w-5 h-5 text-[#8FA4AE]"></i></div>
