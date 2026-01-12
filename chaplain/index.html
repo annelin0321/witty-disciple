@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 保留 Lucide 供其他部分使用，但列表按鈕改用內嵌 SVG -->
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="../assets/js/common.js"></script>
@@ -42,54 +43,53 @@
             .form-input, input, textarea, select { font-size: 16px !important; }
         }
         .journal-item {
-            background-color: rgba(255, 255, 255, 0.8); /* 不透明度提高 */
+            background-color: rgba(255, 255, 255, 0.9);
             border: 1px solid #d1d5db;
             border-radius: 12px; 
             padding: 1rem; 
-            padding-right: 5rem; /* 重要：預留右側空間給按鈕，避免重疊 */
+            padding-right: 5.5rem; /* 預留更多空間給按鈕 */
             margin-bottom: 0.75rem; 
-            position: relative; /* 讓絕對定位的按鈕參考此容器 */
+            position: relative;
         }
         .journal-item:last-child { margin-bottom: 0; }
         
-        /* 強制顯示的操作按鈕 */
+        /* 操作按鈕樣式 */
         .action-btns {
             position: absolute; 
-            top: 0.5rem; 
-            right: 0.5rem; 
+            top: 0.75rem; 
+            right: 0.75rem; 
             display: flex; 
-            gap: 0.25rem;
-            z-index: 50; /* 確保浮在最上層 */
-            background-color: white;
+            gap: 0.5rem;
+            z-index: 20;
+            background-color: rgba(255,255,255,0.8);
             padding: 2px;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
-            border: 1px solid #eee;
+            border-radius: 6px;
         }
         .action-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
+            width: 30px;
+            height: 30px;
             color: #555; 
-            background-color: #f9fafb;
-            border: 1px solid #e5e7eb;
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
             border-radius: 6px;
-            cursor: pointer !important; /* 強制手型游標 */
+            cursor: pointer !important;
             transition: all 0.2s;
         }
         .action-btn:hover { 
-            background-color: #ecfccb; /* 淺綠背景 */
+            background-color: #ecfccb; 
             color: #6B8E23; 
             border-color: #6B8E23;
         }
         .action-btn.delete:hover { 
-            background-color: #fee2e2; /* 淺紅背景 */
+            background-color: #fee2e2; 
             color: #ef4444; 
             border-color: #ef4444;
         }
-        .action-btn i { pointer-events: none; } /* 避免點到圖示本身沒反應 */
+        /* 讓 SVG 繼承文字顏色 */
+        .action-btn svg { width: 16px; height: 16px; stroke-width: 2; }
     </style>
 </head>
 <body class="pb-20" role="application">
@@ -127,7 +127,6 @@
     </nav>
 
     <div class="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
-        <!-- 雲端同步狀態列 -->
         <div class="flex justify-end mb-4">
             <div id="auth-container" class="inline-flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full border border-gray-200 shadow-sm text-sm">
                 <span id="user-status" class="text-gray-500">未登入 (僅存本機)</span>
@@ -147,7 +146,6 @@
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCHn_OgHIg553J-h6EOByNYKwwWfRX2i2k",
             authDomain: "witty-disciple.firebaseapp.com",
@@ -254,6 +252,10 @@
         let currentTabId = 'tab-devotion'; 
         let editingId = null;
         let editingKey = null;
+
+        // 直接定義SVG字串，確保一定顯示
+        const ICON_EDIT = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
+        const ICON_TRASH = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
 
         const emotionCategories = {
             "愉悅與連結": ["幸福", "滿足", "興奮", "感激", "自豪", "樂觀", "被愛", "敬畏", "熱情", "平靜"],
@@ -541,7 +543,17 @@
             const filtered = list.filter(item => item.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(item => {
-                html += `<div class="journal-item"><div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div><div class="text-sm text-gray-600 whitespace-pre-wrap">${item.summary || item.verse || '內容...'}</div><div class="action-btns"><button onclick="startEditing('witty_devotions', ${item.id})" class="action-btn"><i data-lucide="edit" class="w-4 h-4"></i></button><button onclick="deleteItem('witty_devotions', ${item.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+                // 使用內嵌 SVG
+                html += `
+                    <div class="journal-item">
+                        <div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div>
+                        <div class="text-sm text-gray-600 whitespace-pre-wrap">${item.summary || item.verse || '內容...'}</div>
+                        <div class="action-btns">
+                            <button onclick="startEditing('witty_devotions', ${item.id})" class="action-btn" title="編輯">${ICON_EDIT}</button>
+                            <button onclick="deleteItem('witty_devotions', ${item.id})" class="action-btn delete" title="刪除">${ICON_TRASH}</button>
+                        </div>
+                    </div>
+                `;
             });
             document.getElementById('devotion-list').innerHTML = html;
         }
@@ -569,7 +581,19 @@
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(p => {
                 const isDone = p.status === 'answered';
-                html += `<div class="journal-item border-l-4 ${isDone ? 'border-green-400' : 'border-yellow-400'}"><div class="flex justify-between items-start mb-1"><h4 class="font-bold text-[#3E3B39]">${p.topic}</h4><span class="text-xs ${isDone ? 'text-green-600' : 'text-yellow-600'} border px-1 rounded">${isDone ? '已成就' : '禱告中'}</span></div><p class="text-sm text-gray-600 whitespace-pre-wrap">${p.content}</p><div class="action-btns"><button onclick="startEditing('witty_prayers', ${p.id})" class="action-btn"><i data-lucide="edit" class="w-4 h-4"></i></button><button onclick="deleteItem('witty_prayers', ${p.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+                html += `
+                    <div class="journal-item border-l-4 ${isDone ? 'border-green-400' : 'border-yellow-400'}">
+                        <div class="flex justify-between items-start mb-1">
+                            <h4 class="font-bold text-[#3E3B39]">${p.topic}</h4>
+                            <span class="text-xs ${isDone ? 'text-green-600' : 'text-yellow-600'} border px-1 rounded">${isDone ? '已成就' : '禱告中'}</span>
+                        </div>
+                        <p class="text-sm text-gray-600 whitespace-pre-wrap">${p.content}</p>
+                        <div class="action-btns">
+                            <button onclick="startEditing('witty_prayers', ${p.id})" class="action-btn" title="編輯">${ICON_EDIT}</button>
+                            <button onclick="deleteItem('witty_prayers', ${p.id})" class="action-btn delete" title="刪除">${ICON_TRASH}</button>
+                        </div>
+                    </div>
+                `;
             });
             document.getElementById('prayer-list-display').innerHTML = html;
         }
@@ -594,7 +618,15 @@
             const filtered = list.filter(g => g.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(g => { 
-                html += `<div class="journal-item"><div class="text-sm text-[#3E3B39] whitespace-pre-wrap">${g.content}</div><div class="action-btns"><button onclick="startEditing('witty_gratitude', ${g.id})" class="action-btn"><i data-lucide="edit" class="w-4 h-4"></i></button><button onclick="deleteItem('witty_gratitude', ${g.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`; 
+                html += `
+                    <div class="journal-item">
+                        <div class="text-sm text-[#3E3B39] whitespace-pre-wrap">${g.content}</div>
+                        <div class="action-btns">
+                            <button onclick="startEditing('witty_gratitude', ${g.id})" class="action-btn" title="編輯">${ICON_EDIT}</button>
+                            <button onclick="deleteItem('witty_gratitude', ${g.id})" class="action-btn delete" title="刪除">${ICON_TRASH}</button>
+                        </div>
+                    </div>
+                `; 
             });
             document.getElementById('gratitude-list').innerHTML = html;
         }
@@ -624,7 +656,17 @@
             const filtered = list.filter(e => e.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(item => {
-                html += `<div class="journal-item"><div class="font-bold text-[#3E3B39] mb-1">${item.event}</div><div class="flex gap-1 mb-2 flex-wrap">${item.emotions.map(e => `<span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">${e}</span>`).join('')}</div><div class="text-xs text-gray-500">信念: ${item.belief}</div><div class="action-btns"><button onclick="startEditing('witty_emotions', ${item.id})" class="action-btn"><i data-lucide="edit" class="w-4 h-4"></i></button><button onclick="deleteItem('witty_emotions', ${item.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+                html += `
+                    <div class="journal-item">
+                        <div class="font-bold text-[#3E3B39] mb-1">${item.event}</div>
+                        <div class="flex gap-1 mb-2 flex-wrap">${item.emotions.map(e => `<span class="text-xs bg-gray-200 px-2 py-0.5 rounded-full">${e}</span>`).join('')}</div>
+                        <div class="text-xs text-gray-500">信念: ${item.belief}</div>
+                        <div class="action-btns">
+                            <button onclick="startEditing('witty_emotions', ${item.id})" class="action-btn" title="編輯">${ICON_EDIT}</button>
+                            <button onclick="deleteItem('witty_emotions', ${item.id})" class="action-btn delete" title="刪除">${ICON_TRASH}</button>
+                        </div>
+                    </div>
+                `;
             });
             document.getElementById('emotion-list').innerHTML = html;
         }
@@ -647,7 +689,15 @@
             const filtered = list.filter(l => (l.createdDate === date) || (!l.createdDate && l.date === date)); 
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無寫信紀錄</p>';
             filtered.forEach(l => {
-                html += `<div class="journal-item"><div class="text-xs text-gray-500 mb-1">預計於 ${l.date} 開啟</div><div class="text-sm text-[#3E3B39] line-clamp-2">${l.content}</div><div class="action-btns"><button onclick="deleteItem('witty_letters', ${l.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+                html += `
+                    <div class="journal-item">
+                        <div class="text-xs text-gray-500 mb-1">預計於 ${l.date} 開啟</div>
+                        <div class="text-sm text-[#3E3B39] line-clamp-2">${l.content}</div>
+                        <div class="action-btns">
+                            <button onclick="deleteItem('witty_letters', ${l.id})" class="action-btn delete" title="刪除">${ICON_TRASH}</button>
+                        </div>
+                    </div>
+                `;
             });
             document.getElementById('letter-list-daily').innerHTML = html;
         }
@@ -672,7 +722,15 @@
             }
             let html = '';
             unlocked.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(l => {
-                html += `<div class="bg-white p-3 rounded-lg border border-[#8D7B68]/30 shadow-sm relative"><div class="text-xs text-[#8D7B68] font-bold mb-1 flex justify-between items-center"><span>📅 來自 ${l.createdDate || '過去'} 的信</span><button onclick="deleteItem('witty_letters', ${l.id})" class="text-gray-300 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div><div class="text-sm text-[#3E3B39] whitespace-pre-wrap leading-relaxed">${l.content}</div></div>`;
+                html += `
+                    <div class="bg-white p-3 rounded-lg border border-[#8D7B68]/30 shadow-sm relative">
+                        <div class="text-xs text-[#8D7B68] font-bold mb-1 flex justify-between items-center">
+                            <span>📅 來自 ${l.createdDate || '過去'} 的信</span>
+                            <button onclick="deleteItem('witty_letters', ${l.id})" class="text-gray-300 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                        </div>
+                        <div class="text-sm text-[#3E3B39] whitespace-pre-wrap leading-relaxed">${l.content}</div>
+                    </div>
+                `;
             });
             listEl.innerHTML = html;
         }
@@ -698,7 +756,15 @@
             const filtered = list.filter(n => n.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(n => {
-                html += `<div class="journal-item"><div class="text-sm text-[#3E3B39] whitespace-pre-wrap">${n.content}</div><div class="action-btns"><button onclick="startEditing('witty_blank_notes', ${n.id})" class="action-btn"><i data-lucide="edit" class="w-4 h-4"></i></button><button onclick="deleteItem('witty_blank_notes', ${n.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
+                html += `
+                    <div class="journal-item">
+                        <div class="text-sm text-[#3E3B39] whitespace-pre-wrap">${n.content}</div>
+                        <div class="action-btns">
+                            <button onclick="startEditing('witty_blank_notes', ${n.id})" class="action-btn" title="編輯">${ICON_EDIT}</button>
+                            <button onclick="deleteItem('witty_blank_notes', ${n.id})" class="action-btn delete" title="刪除">${ICON_TRASH}</button>
+                        </div>
+                    </div>
+                `;
             });
             document.getElementById('blank-note-list').innerHTML = html;
         }
