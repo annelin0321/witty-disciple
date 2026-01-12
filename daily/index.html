@@ -113,12 +113,10 @@
                 if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const buffer = await response.arrayBuffer();
                 db = new SQL.Database(new Uint8Array(buffer));
-                
                 const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0].values;
                 let validTable = tables.find(t => /bible|verse|scripture/i.test(t[0]));
                 if (!validTable) validTable = tables.find(t => t[0] !== 'sqlite_sequence');
                 const tableName = validTable ? validTable[0] : tables[0][0];
-                
                 const cols = db.exec(`PRAGMA table_info(${tableName})`)[0].values.map(r=>r[1]);
                 dbCols = {
                     tableName: tableName,
@@ -149,7 +147,6 @@
             return null;
         }
 
-        // 修改後的開啟經文函式：增加自動備援機制
         async function openScripture(reference) {
             reference = reference.replace(/\(.*\)/, '').trim();
 
@@ -163,61 +160,82 @@
             const database = await initBibleDB();
             if (!database) { modalBody.innerHTML = `<p class="text-center text-red-500">資料庫讀取中...</p>`; return; }
 
-            const parsed = parseBibleReference(reference);
-            
-            // 內部函式：執行查詢並渲染
-            const executeQuery = (query, subtitle) => {
-                try {
-                    const res = database.exec(query);
-                    if (res.length > 0) {
-                        let html = '';
-                        let currentChap = -1;
-                        res[0].values.forEach(row => {
-                            if (row.length === 3) { 
-                                const c = row[0], v = row[1], t = row[2];
-                                if (c !== currentChap && (parsed?.endChapter || subtitle)) {
-                                    html += `<div class="text-center my-4"><span class="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-600">第 ${c} 章</span></div>`;
-                                    currentChap = c;
+            try {
+                const parsed = parseBibleReference(reference);
+                
+                // Helper to generate the correct subtitle (精確顯示範圍)
+                const getSubtitle = () => {
+                    if (!parsed) return reference;
+                    let s = `${parsed.book} 第 ${parsed.chapter} 章`;
+                    if (parsed.endChapter) s = `${parsed.book} 第 ${parsed.chapter}-${parsed.endChapter} 章`;
+                    // 修正：如果指定了節數範圍，標題要顯示出來
+                    else if (parsed.endVerse && parsed.endVerse > parsed.verse) s += ` ${parsed.verse}-${parsed.endVerse} 節`;
+                    else if (parsed.verse && !parsed.endVerse && !parsed.endChapter && reference.includes(':')) s += ` ${parsed.verse} 節`; 
+                    return s;
+                };
+
+                const executeQuery = (query, subtitle) => {
+                    try {
+                        const res = database.exec(query);
+                        if (res.length > 0) {
+                            let html = '';
+                            let currentChap = -1;
+                            res[0].values.forEach(row => {
+                                if (row.length === 3) { 
+                                    const c = row[0], v = row[1], t = row[2];
+                                    if (c !== currentChap && parsed?.endChapter) {
+                                        html += `<div class="text-center my-4"><span class="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-600">第 ${c} 章</span></div>`;
+                                        currentChap = c;
+                                    }
+                                    html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
+                                } else {
+                                    const v = row[0], t = row[1];
+                                    html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
                                 }
-                                html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
-                            } else {
-                                const v = row[0], t = row[1];
-                                html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
-                            }
-                        });
-                        modalTitle.innerText = subtitle || (parsed ? `${parsed.book} 第 ${parsed.chapter} 章` : reference);
-                        modalBody.innerHTML = html;
-                        return true;
-                    }
-                    return false;
-                } catch(e) { console.error(e); return false; }
-            };
+                            });
+                            modalTitle.innerText = subtitle;
+                            modalBody.innerHTML = html;
+                            return true;
+                        }
+                        return false;
+                    } catch(e) { console.error(e); return false; }
+                };
 
-            if (parsed) {
-                let query;
-                // 1. 嘗試查詢指定範圍
-                if (parsed.endChapter && parsed.endChapter > parsed.chapter) {
-                     query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} >= ${parsed.chapter} AND ${dbCols.chap} <= ${parsed.endChapter} ORDER BY ${dbCols.chap}, ${dbCols.ver}`;
-                } else if (parsed.endVerse && parsed.endVerse > parsed.verse) {
-                    query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} >= ${parsed.verse} AND ${dbCols.ver} <= ${parsed.endVerse} ORDER BY ${dbCols.ver}`;
-                } else if (parsed.endVerse === null) {
-                    query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY ${dbCols.ver}`;
+                if (parsed) {
+                    let query;
+                    const subtitle = getSubtitle();
+
+                    // 修正：在查詢中使用 CAST(ver AS INTEGER) 確保數字比對正確
+                    if (parsed.endChapter && parsed.endChapter > parsed.chapter) {
+                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND CAST(${dbCols.chap} AS INTEGER) >= ${parsed.chapter} AND CAST(${dbCols.chap} AS INTEGER) <= ${parsed.endChapter} ORDER BY ${dbCols.chap}, CAST(${dbCols.ver} AS INTEGER)`;
+                    } else if (parsed.endVerse && parsed.endVerse > parsed.verse) {
+                        query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND CAST(${dbCols.ver} AS INTEGER) >= ${parsed.verse} AND CAST(${dbCols.ver} AS INTEGER) <= ${parsed.endVerse} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
+                    } else if (parsed.endVerse === null) {
+                        if (reference.includes(':') && parsed.verse) {
+                             query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} = ${parsed.verse}`;
+                        } else {
+                             query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
+                        }
+                    } else {
+                        query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} = ${parsed.verse}`;
+                    }
+
+                    if (!executeQuery(query, subtitle)) {
+                        // 自動備援：如果指定範圍找不到，嘗試顯示整章 (並在標題註明)
+                        console.log("Range not found, fallback to chapter");
+                        const fallbackQuery = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
+                        
+                        if (!executeQuery(fallbackQuery, `${parsed.book} 第 ${parsed.chapter} 章 (完整章節)`)) {
+                             modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}<br><span class="text-sm text-gray-400">請確認書卷名稱是否正確</span></p>`;
+                        }
+                    }
                 } else {
-                    query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} = ${parsed.verse}`;
+                    modalTitle.innerText = reference;
+                    modalBody.innerHTML = `<p class="text-center py-6">無法解析經文格式</p>`;
                 }
-
-                if (!executeQuery(query, parsed.endChapter ? `${parsed.book} 第 ${parsed.chapter}-${parsed.endChapter} 章` : `${parsed.book} 第 ${parsed.chapter} 章`)) {
-                    // 2. 如果失敗 (找不到)，自動備援：顯示整章
-                    console.log("Range not found, falling back to full chapter.");
-                    const fallbackQuery = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY ${dbCols.ver}`;
-                    
-                    if (!executeQuery(fallbackQuery, `${parsed.book} 第 ${parsed.chapter} 章 (完整章節)`)) {
-                        modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}<br><span class="text-sm text-gray-400">請確認書卷名稱是否正確</span></p>`;
-                    }
-                }
-            } else {
-                modalTitle.innerText = reference;
-                modalBody.innerHTML = `<p class="text-center py-6">無法解析經文格式</p>`;
+            } catch (e) {
+                console.error(e);
+                modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤</p>`;
             }
         }
 
@@ -226,13 +244,14 @@
             document.getElementById('bible-modal').classList.remove('show');
         }
 
-        // --- 萬能讀經計畫 (修正版：顯示節數) ---
+        // --- 萬能讀經計畫 (優化版：精確對應一年讀一遍) ---
         function getComputedPlan(dObj) {
             const startOfYear = new Date(dObj.getFullYear(), 0, 0);
             const diff = dObj - startOfYear;
             const oneDay = 1000 * 60 * 60 * 24;
-            const dayOfYear = Math.floor(diff / oneDay);
+            const dayOfYear = Math.floor(diff / oneDay); // 1-365
 
+            // 書卷資料
             const otBooks = [
                 {n:"創世記",c:50}, {n:"出埃及記",c:40}, {n:"利未記",c:27}, {n:"民數記",c:36}, {n:"申命記",c:34},
                 {n:"約書亞記",c:24}, {n:"士師記",c:21}, {n:"路得記",c:4}, {n:"撒母耳記上",c:31}, {n:"撒母耳記下",c:24},
@@ -263,33 +282,47 @@
                 return { name: books[books.length-1].n, chapter: books[books.length-1].c };
             }
 
+            // 1. 舊約 (每天約2.05章)
             const otTotal = 748;
             const otStartVal = (dayOfYear - 1) / 365 * otTotal;
             const otEndVal = dayOfYear / 365 * otTotal;
             const otStartLoc = findLocation(otBooks, otStartVal);
             const otEndLoc = findLocation(otBooks, otEndVal - 0.1);
             let otStr = (otStartLoc.name === otEndLoc.name) ?
-                `${otStartLoc.name} ${otStartLoc.chapter}-${otEndLoc.chapter}` :
+                (otStartLoc.chapter === otEndLoc.chapter ? `${otStartLoc.name} ${otStartLoc.chapter}` : `${otStartLoc.name} ${otStartLoc.chapter}-${otEndLoc.chapter}`) :
                 `${otStartLoc.name} ${otStartLoc.chapter} - ${otEndLoc.name} ${otEndLoc.chapter}`;
-            if (otStartLoc.name === otEndLoc.name && otStartLoc.chapter === otEndLoc.chapter) otStr = `${otStartLoc.name} ${otStartLoc.chapter}`;
 
+            // 2. 新約 (每天約0.71章 -> 3天讀2章)
             const ntTotal = 260;
             const ntStartVal = (dayOfYear - 1) / 365 * ntTotal;
             const ntEndVal = dayOfYear / 365 * ntTotal;
             const ntLoc = findLocation(ntBooks, ntEndVal - 0.01);
             const ntPrevLoc = findLocation(ntBooks, ntStartVal);
             let ntStr = `${ntLoc.name} ${ntLoc.chapter}`;
+            // 如果這章被分多天讀，計算節數
             if (ntLoc.name === ntPrevLoc.name && ntLoc.chapter === ntPrevLoc.chapter) {
+                // 簡易模擬：單數天讀前半，雙數天讀後半
+                // 實際節數需查表，這裡用 1-20, 21-40 模擬
                 ntStr += (dayOfYear % 2 !== 0) ? ":1-20" : ":21-40";
             }
 
-            const psChap = (dayOfYear % 150) + 1;
-            let psStr = `詩篇 ${Math.min(150, psChap)}`;
+            // 3. 詩篇 (150篇/365天 = 2.5天/篇 -> 兩天讀一半，第三天換篇)
+            // 修正：避免永遠顯示第1篇
+            // dayOfYear * (150/365) = current psalm index
+            const psIndex = (dayOfYear - 1) * (150/365);
+            const psChap = Math.floor(psIndex) + 1;
+            let psStr = `詩篇 ${psChap}`;
+            // 判斷這篇詩篇是否跨多天 (若小數點部分 < 0.5 則為前半，> 0.5 為後半)
+            const psProgress = psIndex % 1; 
+            if (psProgress < 0.5) psStr += ":1-15"; // 前半
+            else psStr += ":16-30"; // 後半
 
-            const daysPerChapter = 365 / 31; 
-            const prChap = Math.min(31, Math.floor((dayOfYear - 1) / daysPerChapter) + 1);
-            const dayInChap = Math.floor((dayOfYear - 1) % daysPerChapter); 
-            const startVer = (dayInChap * 3) + 1;
+            // 4. 箴言 (31篇/365天 = 11.7天/篇)
+            const prIndex = (dayOfYear - 1) * (31/365);
+            const prChap = Math.floor(prIndex) + 1;
+            // 計算這是該章的第幾天 (0~10)
+            const dayInChap = Math.floor(((prIndex % 1) * 12)); 
+            const startVer = (dayInChap * 3) + 1; // 每天讀3節
             const endVer = startVer + 2;
             let prStr = `箴言 ${prChap}:${startVer}-${endVer}`;
 
@@ -309,7 +342,6 @@
 
         async function init() {
             if(window.lucide) lucide.createIcons();
-            // 強制掛載到 window
             window.openScripture = openScripture;
             await generateReadingPlan(); 
             
