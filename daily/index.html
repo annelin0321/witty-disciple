@@ -20,6 +20,7 @@
         <div class="absolute top-0 left-0 w-full h-64 bg-gradient-to-b from-white/60 to-transparent pointer-events-none"></div>
     </div>
 
+    <!-- 導覽列 -->
     <nav class="nature-nav sticky top-0 z-50">
         <div class="container mx-auto px-6 max-w-5xl">
             <div class="flex flex-col md:flex-row justify-between items-center py-3">
@@ -90,7 +91,6 @@
 
     <script>
         const DEVOTION_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/devotionals.json';
-        // 讀經計畫檔路徑
         const READING_PLAN_URL = '../assets/data/reading-plan.json'; 
         const BIBLE_DB_URL = 'https://raw.githubusercontent.com/annelin0321/bible-zh/main/bible_complete.db';
         
@@ -98,11 +98,13 @@
         let bibleReadingPlan = {}; 
         let isPlanLoadedFromFile = false; 
         let planLoadError = "";
+        let debugInfo = "";
         
         let db = null;
         let isDbLoading = false;
         let dbCols = {};
 
+        // DB 初始化
         async function initBibleDB() {
             if (db) return db;
             if (isDbLoading) return new Promise(resolve => {
@@ -133,6 +135,7 @@
             } catch (err) { console.error("DB Error", err); return null; } finally { isDbLoading = false; }
         }
 
+        // 解析經文
         function parseBibleReference(text) {
             if (!text) return null;
             text = text.replace(/[\(\)\uff08\uff09]/g, ' ').replace(/：/g, ':').trim();
@@ -153,7 +156,6 @@
 
         async function openScripture(reference) {
             reference = reference.replace(/\(.*\)/, '').trim();
-
             const modal = document.getElementById('bible-modal');
             const modalTitle = document.getElementById('modal-title');
             const modalBody = document.getElementById('modal-body');
@@ -166,7 +168,6 @@
 
             try {
                 const parsed = parseBibleReference(reference);
-                
                 const getSubtitle = () => {
                     if (!parsed) return reference;
                     let s = `${parsed.book} 第 ${parsed.chapter} 章`;
@@ -205,7 +206,6 @@
 
                 if (parsed) {
                     let query;
-                    // 使用 CAST AS INTEGER 確保數字比對正確
                     if (parsed.endChapter && parsed.endChapter > parsed.chapter) {
                          query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND CAST(${dbCols.chap} AS INTEGER) >= ${parsed.chapter} AND CAST(${dbCols.chap} AS INTEGER) <= ${parsed.endChapter} ORDER BY CAST(${dbCols.chap} AS INTEGER), CAST(${dbCols.ver} AS INTEGER)`;
                     } else if (parsed.endVerse && parsed.endVerse > parsed.verse) {
@@ -221,9 +221,7 @@
                     }
 
                     if (!executeQuery(query, getSubtitle())) {
-                        console.log("Range not found, fallback to chapter");
                         const fallbackQuery = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
-                        
                         if (!executeQuery(fallbackQuery, `${parsed.book} 第 ${parsed.chapter} 章 (完整章節)`)) {
                              modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}<br><span class="text-sm text-gray-400">請確認書卷名稱是否正確</span></p>`;
                         }
@@ -232,10 +230,7 @@
                     modalTitle.innerText = reference;
                     modalBody.innerHTML = `<p class="text-center py-6">無法解析經文格式</p>`;
                 }
-            } catch (e) {
-                console.error(e);
-                modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤</p>`;
-            }
+            } catch (e) { console.error(e); modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤</p>`; }
         }
 
         function closeBibleModal(event) {
@@ -243,16 +238,35 @@
             document.getElementById('bible-modal').classList.remove('show');
         }
 
-        // --- 讀經計畫生成 (嚴格讀取檔案) ---
-        async function generateReadingPlan() {
+        // --- 讀經計畫 (混合：檔案優先 + 內建備援) ---
+        async function loadReadingPlan() {
+            // 1. 內建 1/1 - 1/12 資料 (您的需求)
+            const hardcodedData = [
+                { "date": "1-1", "ot": "創世記 1-2", "nt": "馬太福音 1:1-25", "ps": "詩篇 1:1-6", "pr": "箴言 1:1-6" },
+                { "date": "1-2", "ot": "創世記 3-4", "nt": "馬太福音 2:1-23", "ps": "詩篇 2:1-6", "pr": "箴言 1:7-9" },
+                { "date": "1-3", "ot": "創世記 5-6", "nt": "馬太福音 3:1-17", "ps": "詩篇 2:7-12", "pr": "箴言 1:10-19" },
+                { "date": "1-4", "ot": "創世記 7-8", "nt": "馬太福音 4:1-25", "ps": "詩篇 3:1-8", "pr": "箴言 1:20-23" },
+                { "date": "1-5", "ot": "創世記 9-10", "nt": "馬太福音 5:1-26", "ps": "詩篇 4:1-8", "pr": "箴言 1:24-28" },
+                { "date": "1-6", "ot": "創世記 11-12", "nt": "馬太福音 5:27-48", "ps": "詩篇 5:1-6", "pr": "箴言 1:29-33" },
+                { "date": "1-7", "ot": "創世記 13-14", "nt": "馬太福音 6:1-34", "ps": "詩篇 5:7-12", "pr": "箴言 2:1-5" },
+                { "date": "1-8", "ot": "創世記 15-16", "nt": "馬太福音 7:1-29", "ps": "詩篇 6:1-5", "pr": "箴言 2:6-15" },
+                { "date": "1-9", "ot": "創世記 17-18", "nt": "馬太福音 8:1-34", "ps": "詩篇 6:6-10", "pr": "箴言 2:16-22" },
+                { "date": "1-10", "ot": "創世記 19-20", "nt": "馬太福音 9:1-38", "ps": "詩篇 7:1-5", "pr": "箴言 3:1-6" },
+                { "date": "1-11", "ot": "創世記 21-22", "nt": "馬太福音 10:1-25", "ps": "詩篇 7:6-12", "pr": "箴言 3:7-8" },
+                { "date": "1-12", "ot": "創世記 23-24", "nt": "馬太福音 10:26-42", "ps": "詩篇 7:13-17", "pr": "箴言 3:9-10" }
+            ];
+            
+            // 先載入內建資料
+            hardcodedData.forEach(day => { bibleReadingPlan[day.date] = day; });
+
+            // 2. 嘗試讀取外部檔案 (覆蓋內建)
             try {
-                // 加入時間戳記防止快取
                 const res = await fetch(`${READING_PLAN_URL}?t=${Date.now()}`);
                 if (res.ok) {
                     const data = await res.json();
                     data.forEach(day => { bibleReadingPlan[day.date] = day; });
                     isPlanLoadedFromFile = true;
-                    console.log("Reading plan loaded from file successfully.");
+                    console.log("External plan loaded.");
                 } else {
                     planLoadError = `HTTP ${res.status}`;
                 }
@@ -266,7 +280,7 @@
             if(window.lucide) lucide.createIcons();
             window.openScripture = openScripture;
             
-            await generateReadingPlan(); 
+            await loadReadingPlan(); 
             
             try {
                 const response = await fetch(DEVOTION_DATA_URL);
@@ -290,15 +304,17 @@
             const container = document.getElementById('daily-content');
             const dObj = new Date();
             
-            // 處理日期格式：支援 M-D (1-1) 與 MM-DD (01-01)
             const m = dObj.getMonth() + 1;
             const d = dObj.getDate();
             const keySimple = `${m}-${d}`;
             const keyPadded = `${m.toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
             
-            // 優先找有資料的 key
+            // 查詢計畫 (優先: M-D, 次要: MM-DD)
             let plan = bibleReadingPlan[keySimple] || bibleReadingPlan[keyPadded];
             
+            // Debug Info for user
+            debugInfo = `Looking for: ${keySimple} or ${keyPadded}`;
+
             const start = new Date(dObj.getFullYear(), 0, 0);
             const diff = dObj - start;
             const oneDay = 1000 * 60 * 60 * 24;
@@ -323,7 +339,10 @@
                                 </button>
                             ` : '').join('')}
                         </div>
-                        ${isPlanLoadedFromFile ? '<p class="text-[10px] text-gray-300 mt-4">來源：檔案讀取成功</p>' : ''}
+                        <div class="text-[10px] text-gray-300 mt-4">
+                            來源：${isPlanLoadedFromFile ? '外部檔案' : '內建資料'} 
+                            ${!isPlanLoadedFromFile ? '(若您已上傳檔案，請檢查路徑)' : ''}
+                        </div>
                     </div>
                     <div class="divider-water opacity-50 mb-10 w-full"></div>
                 `;
@@ -333,9 +352,12 @@
                         <div class="p-6 bg-white/50 rounded-xl border border-dashed border-gray-300 inline-block">
                              <p class="text-gray-600 mb-2 font-bold">📅 今日 (${keySimple}) 尚無讀經進度</p>
                              <div class="text-xs text-gray-400 text-left mt-2 space-y-1">
-                                <p>無法讀取 assets/data/reading-plan.json</p>
-                                <p>請確認檔案已上傳且格式正確。</p>
-                                <p class="text-red-400">錯誤訊息: ${planLoadError || '無資料'}</p>
+                                <p>系統嘗試讀取了以下內容：</p>
+                                <ul class="list-disc pl-4">
+                                    <li>內建資料 (1/1 ~ 1/12)</li>
+                                    <li>外部檔案 (${READING_PLAN_URL})</li>
+                                </ul>
+                                <p class="text-red-400 mt-2">如果您確定今天是 1/12，請檢查您的電腦時間是否正確。</p>
                              </div>
                         </div>
                     </div>
