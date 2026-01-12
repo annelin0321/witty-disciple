@@ -97,6 +97,7 @@
         let devotionalsData = [];
         let bibleReadingPlan = {}; 
         let isPlanLoadedFromFile = false; 
+        let planLoadError = "";
         
         let db = null;
         let isDbLoading = false;
@@ -219,9 +220,7 @@
                     }
 
                     if (!executeQuery(query, getSubtitle())) {
-                        console.log("Range not found, fallback to chapter");
                         const fallbackQuery = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
-                        
                         if (!executeQuery(fallbackQuery, `${parsed.book} 第 ${parsed.chapter} 章 (完整章節)`)) {
                              modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}<br><span class="text-sm text-gray-400">請確認書卷名稱是否正確</span></p>`;
                         }
@@ -230,10 +229,7 @@
                     modalTitle.innerText = reference;
                     modalBody.innerHTML = `<p class="text-center py-6">無法解析經文格式</p>`;
                 }
-            } catch (e) {
-                console.error(e);
-                modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤</p>`;
-            }
+            } catch (e) { console.error(e); modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤</p>`; }
         }
 
         function closeBibleModal(event) {
@@ -241,20 +237,35 @@
             document.getElementById('bible-modal').classList.remove('show');
         }
 
-        // --- 讀經計畫生成 (讀取 JSON) ---
+        // --- 讀經計畫生成 ---
         async function generateReadingPlan() {
+            // 1. 內建 1/1 ~ 1/12 正確資料 (作為 Fallback) - 更新為您的 JSON 欄位格式
+            const hardcodedData = [
+                { "date": "1-1", "old_testament": "創世記 1-2", "new_testament": "馬太福音 1:1-25", "psalms": "詩篇 1:1-6", "proverbs": "箴言 1:1-6" },
+                { "date": "1-2", "old_testament": "創世記 3-4", "new_testament": "馬太福音 2:1-23", "psalms": "詩篇 2:1-6", "proverbs": "箴言 1:7-9" },
+                { "date": "1-3", "old_testament": "創世記 5-6", "new_testament": "馬太福音 3:1-17", "psalms": "詩篇 2:7-12", "proverbs": "箴言 1:10-19" },
+                { "date": "1-4", "old_testament": "創世記 7-8", "new_testament": "馬太福音 4:1-25", "psalms": "詩篇 3:1-8", "proverbs": "箴言 1:20-23" },
+                { "date": "1-5", "old_testament": "創世記 9-10", "new_testament": "馬太福音 5:1-26", "psalms": "詩篇 4:1-8", "proverbs": "箴言 1:24-28" },
+                { "date": "1-6", "old_testament": "創世記 11-12", "new_testament": "馬太福音 5:27-48", "psalms": "詩篇 5:1-6", "proverbs": "箴言 1:29-33" },
+                { "date": "1-7", "old_testament": "創世記 13-14", "new_testament": "馬太福音 6:1-34", "psalms": "詩篇 5:7-12", "proverbs": "箴言 2:1-5" },
+                { "date": "1-8", "old_testament": "創世記 15-16", "new_testament": "馬太福音 7:1-29", "psalms": "詩篇 6:1-5", "proverbs": "箴言 2:6-15" },
+                { "date": "1-9", "old_testament": "創世記 17-18", "new_testament": "馬太福音 8:1-34", "psalms": "詩篇 6:6-10", "proverbs": "箴言 2:16-22" },
+                { "date": "1-10", "old_testament": "創世記 19-20", "new_testament": "馬太福音 9:1-38", "psalms": "詩篇 7:1-5", "proverbs": "箴言 3:1-6" },
+                { "date": "1-11", "old_testament": "創世記 21-22", "new_testament": "馬太福音 10:1-25", "psalms": "詩篇 7:6-12", "proverbs": "箴言 3:7-8" },
+                { "date": "1-12", "old_testament": "創世記 23-24", "new_testament": "馬太福音 10:26-42", "psalms": "詩篇 7:13-17", "proverbs": "箴言 3:9-10" }
+            ];
+            
+            hardcodedData.forEach(day => { bibleReadingPlan[day.date] = day; });
+
+            // 2. 嘗試讀取外部檔案
             try {
-                // 加入時間戳記防止快取
                 const res = await fetch(`${READING_PLAN_URL}?t=${Date.now()}`);
                 if (res.ok) {
                     const data = await res.json();
                     data.forEach(day => { bibleReadingPlan[day.date] = day; });
                     isPlanLoadedFromFile = true;
-                    console.log("Reading plan loaded from file successfully.");
                 }
-            } catch (e) { 
-                console.log("Fetching plan failed:", e);
-            }
+            } catch (e) { }
         }
 
         async function init() {
@@ -290,7 +301,7 @@
             const keySimple = `${m}-${d}`;
             const keyPadded = `${m.toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
             
-            // 查詢計畫 (優先: M-D, 次要: MM-DD)
+            // 查詢計畫 (優先找有資料的 key)
             let plan = bibleReadingPlan[keySimple] || bibleReadingPlan[keyPadded];
             
             const start = new Date(dObj.getFullYear(), 0, 0);
@@ -300,7 +311,7 @@
             
             let html = '';
 
-            // 讀經進度
+            // 讀經進度 - 使用新欄位名稱
             if (plan) {
                 html += `
                     <div class="mb-10 text-center w-full">
@@ -309,13 +320,16 @@
                             <p class="text-xs text-[#8D7B68] uppercase mt-1">Date: ${plan.date} (Day ${dayOfYear})</p>
                         </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto px-2">
-                            ${['ot','nt','ps','pr'].map(k => plan[k] ? `
+                            ${['old_testament', 'new_testament', 'psalms', 'proverbs'].map(k => plan[k] ? `
                                 <button onclick="window.openScripture('${plan[k]}')" class="reading-plan-btn">
                                     <span class="label">${getLabel(k)}</span>
                                     <span class="content">${plan[k]}</span>
                                     <i data-lucide="book-open"></i>
                                 </button>
                             ` : '').join('')}
+                        </div>
+                        <div class="text-[10px] text-gray-300 mt-4 text-center">
+                            資料來源：${isPlanLoadedFromFile ? '外部檔案' : '內建資料'}
                         </div>
                     </div>
                     <div class="divider-water opacity-50 mb-10 w-full"></div>
@@ -328,8 +342,11 @@
                              <div class="text-xs text-gray-400 text-left mt-2 space-y-1">
                                 <p>可能原因：</p>
                                 <ul class="list-disc pl-4">
-                                    <li>檔案中沒有設定今天的日期 (請檢查 assets/data/reading-plan.json)</li>
+                                    <li>檔案中沒有設定今天的日期</li>
+                                    <li>日期格式不符 (請確認是 ${keySimple} 或 ${keyPadded})</li>
+                                    <li>檔案讀取失敗 (${planLoadError || '未知錯誤'})</li>
                                 </ul>
+                                <p class="mt-2 text-[#8D7B68]">請確認 assets/data/reading-plan.json 已更新。</p>
                              </div>
                         </div>
                     </div>
@@ -349,7 +366,12 @@
         }
         
         function getLabel(key) {
-            const map = { ot: 'OLD TESTAMENT (舊約)', nt: 'NEW TESTAMENT (新約)', ps: 'PSALMS (詩篇)', pr: 'PROVERBS (箴言)' };
+            const map = {
+                'old_testament': 'OLD TESTAMENT',
+                'new_testament': 'NEW TESTAMENT',
+                'psalms': 'PSALMS',
+                'proverbs': 'PROVERBS'
+            };
             return map[key] || key;
         }
 
