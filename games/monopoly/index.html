@@ -438,6 +438,9 @@
                             <div className={`text-6xl mb-6 ${winner.filter} drop-shadow-[0_0_15px_rgba(255,0,0,0.5)]`}>{winner.icon}</div>
                             <p className="text-sm text-[#BDBDBD] mb-8 font-bold">"仇敵如同吼叫的獅子，遍地遊行，尋找可吞吃的人。"</p>
                             <button onClick={onRestart} className="w-full bg-[#424242] hover:bg-[#616161] text-white text-xl font-black py-4 rounded-xl shadow-lg border-2 border-[#212121] transition-all relative z-50 pointer-events-auto">重新挑戰</button>
+                            <a href="https://witty-disciple.pages.dev/games/" className={`block w-full text-center mt-3 py-3 rounded-xl font-bold border-2 transition-all relative z-50 pointer-events-auto bg-[#616161] text-white border-[#212121] hover:bg-[#757575]`}>
+                                <Home size={20} className="inline mr-1" /> 回首頁
+                            </a>
                         </div>
                     </div>
                 );
@@ -453,6 +456,9 @@
                         <div className={`text-6xl mb-6 ${winner.filter}`}>{winner.icon}</div>
                         <p className="text-sm text-[#5D4037] mb-8 font-bold">"那美好的仗我已經打過了，當跑的路我已經跑盡了，所信的道我已經守住了。"</p>
                         <button onClick={onRestart} className="w-full bg-[#B8860B] hover:bg-[#9A7D0A] text-white text-xl font-black py-4 rounded-xl shadow-lg border-2 border-[#3E2723] relative z-50 pointer-events-auto">再來一局</button>
+                        <a href="https://witty-disciple.pages.dev/games/" className={`block w-full text-center mt-3 py-3 rounded-xl font-bold border-2 transition-all relative z-50 pointer-events-auto bg-[#FFE0B2] text-[#E65100] border-[#FFB74D] hover:bg-[#FFCC80]`}>
+                            <Home size={20} className="inline mr-1" /> 回首頁
+                        </a>
                     </div>
                 </div>
             );
@@ -491,7 +497,7 @@
                     </div>
                 </div>
             )}
-            <div className="text-left mb-6 space-y-3 bg-[#E6D5B8] p-4 rounded border border-[#8B4513]/30 shadow-inner"><h3 className="font-bold text-[#8B4513] mb-3 flex items-center gap-2 border-b border-[#8B4513]/20 pb-2"><Info size={18} /> 遊戲規則</h3><div className="flex items-start gap-3"><div className="bg-[#8B4513] text-[#F3E5AB] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</div><p className="text-sm font-bold text-[#3E2723]">擲骰子，累積信心 ({WIN_CONDITION_FAITH})。</p></div><div className="flex items-start gap-3"><div className="bg-[#8B4513] text-[#F3E5AB] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</div><p className="text-sm font-bold text-[#3E2723]">攻佔 {WIN_CONDITION_CITIES} 座城池，或建立 {WIN_CONDITION_ALTARS} 座祭壇。</p></div><div className="flex items-start gap-3"><div className="bg-[#8B4513] text-[#F3E5AB] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">3</div><p className="text-sm font-bold text-[#3E2723]">小心破產 (信心 &lt; 0)。</p></div></div><button onClick={()=>onStart(playerCount)} className="w-full bg-[#8B4513] hover:bg-[#5D4037] text-[#F3E5AB] text-xl font-black py-4 rounded shadow-md border-2 border-[#3E2723]"><Sword size={24} className="inline mr-2"/> {playerCount===1?'開始挑戰':'開始遊戲'}</button><div className="mt-8 pt-6 border-t border-[#8B4513]/30"><p className="text-[#3E2723] font-bold mb-4">耶穌加油站 x 微光新事</p><div className="flex justify-center gap-4"><a href="https://www.facebook.com/profile.php?id=100068500932557" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><Facebook size={24} /></a><a href="https://www.instagram.com/forever.believe.in.jesus/" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><Instagram size={24} /></a><a href="https://www.threads.net/@forever.believe.in.jesus" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><AtSign size={24} /></a><a href="https://line.me/R/ti/p/@469cjlho" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><MessageCircle size={24} /></a><a href="mailto:newthingsinthelittlelight@gmail.com" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><Mail size={24} /></a></div></div></div></div>);
+            <div className="text-left mb-6 space-y-3 bg-[#E6D5B8] p-4 rounded border border-[#8B4513]/30 shadow-inner"><h3 className="font-bold text-[#8B4513] mb-3 flex items-center gap-2 border-b border-[#8B4513]/20 pb-2"><Info size={18} /> 遊戲規則</h3><div className="flex items-start gap-3"><div className="bg-[#8B4513] text-[#F3E5AB] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">1</div><p className="text-sm font-bold text-[#3E2723]">擲骰子，累積信心 ({WIN_CONDITION_FAITH})。</p></div><div className="flex items-start gap-3"><div className="bg-[#8B4513] text-[#F3E5AB] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">2</div><p className="text-sm font-bold text-[#3E2723]">攻佔 {WIN_CONDITION_CITIES} 座城池，或建立 {WIN_CONDITION_ALTARS} 座祭壇。</p></div><div className="flex items-start gap-3"><div className="bg-[#8B4513] text-[#F3E5AB] w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0">3</div><p className="text-sm font-bold text-[#3E2723]">小心破產 (信心 &lt; 0)。</p></div></div><button onClick={()=>onStart(playerCount)} className="w-full bg-[#8B4513] hover:bg-[#5D4037] text-[#F3E5AB] text-xl font-black py-4 rounded shadow-md border-2 border-[#3E2723]"><Sword size={24} className="inline mr-2"/> {playerCount===1?'開始挑戰':'開始遊戲'}</button><div className="mt-8 pt-6 border-t border-[#8B4513]/30"><a href="https://witty-disciple.pages.dev/games/" className="flex items-center justify-center gap-2 w-full bg-[#EFEBE9] hover:bg-[#D7CCC8] text-[#5D4037] font-bold py-3 rounded-lg border-2 border-[#D7CCC8] transition-all mb-6"><Home size={20} /> 回到遊戲大廳</a><p className="text-[#3E2723] font-bold mb-4">耶穌加油站 x 微光新事</p><div className="flex justify-center gap-4"><a href="https://www.facebook.com/profile.php?id=100068500932557" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><Facebook size={24} /></a><a href="https://www.instagram.com/forever.believe.in.jesus/" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><Instagram size={24} /></a><a href="https://www.threads.net/@forever.believe.in.jesus" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><AtSign size={24} /></a><a href="https://line.me/R/ti/p/@469cjlho" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><MessageCircle size={24} /></a><a href="mailto:newthingsinthelittlelight@gmail.com" target="_blank" className="text-[#3E2723] hover:text-[#8B4513] transition-colors"><Mail size={24} /></a></div></div></div></div>);
         };
 
         // ==========================================
@@ -838,6 +844,10 @@
             <div className="min-h-screen flex flex-col items-center justify-center p-2 relative overflow-hidden">
                <BackgroundMap />
                
+               <a href="https://witty-disciple.pages.dev/games/" className="fixed top-2 left-2 z-50 bg-white/80 p-2 rounded-full shadow-lg text-[#8B4513] border border-[#8B4513]/30 hover:bg-white transition-all">
+                   <Home size={20} />
+               </a>
+
                <div className="w-full max-w-md fixed top-4 z-30 px-2">
                    <div className="glass-panel rounded-xl p-2 shadow-floating border border-[#8B4513]/40 bg-[#FFF8E7]/90 backdrop-blur-md flex justify-between items-center relative h-auto min-h-[100px] py-2">
                        <div className="flex-1 flex justify-start pl-1">
