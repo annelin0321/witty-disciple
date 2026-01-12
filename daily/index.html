@@ -91,7 +91,7 @@
 
     <script>
         const DEVOTION_DATA_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/devotionals.json';
-        const READING_PLAN_URL = 'https://raw.githubusercontent.com/annelin0321/witty-bible-data/main/reading-plan.json'; 
+        const READING_PLAN_URL = '../assets/data/reading-plan.json'; // 指向您建立的 JSON 檔案
         const BIBLE_DB_URL = 'https://raw.githubusercontent.com/annelin0321/bible-zh/main/bible_complete.db';
         
         let devotionalsData = [];
@@ -113,10 +113,12 @@
                 if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const buffer = await response.arrayBuffer();
                 db = new SQL.Database(new Uint8Array(buffer));
+                
                 const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0].values;
                 let validTable = tables.find(t => /bible|verse|scripture/i.test(t[0]));
                 if (!validTable) validTable = tables.find(t => t[0] !== 'sqlite_sequence');
                 const tableName = validTable ? validTable[0] : tables[0][0];
+                
                 const cols = db.exec(`PRAGMA table_info(${tableName})`)[0].values.map(r=>r[1]);
                 dbCols = {
                     tableName: tableName,
@@ -163,65 +165,53 @@
             try {
                 const parsed = parseBibleReference(reference);
                 
+                // 標題顯示邏輯
                 const getSubtitle = () => {
                     if (!parsed) return reference;
                     let s = `${parsed.book} 第 ${parsed.chapter} 章`;
-                    if (parsed.endChapter) s = `${parsed.book} 第 ${parsed.chapter}-${parsed.endChapter} 章`;
+                    if (parsed.endChapter) s += `-${parsed.endChapter} 章`;
                     else if (parsed.endVerse && parsed.endVerse > parsed.verse) s += ` ${parsed.verse}-${parsed.endVerse} 節`;
-                    else if (parsed.verse && !parsed.endVerse && !parsed.endChapter && reference.includes(':')) s += ` ${parsed.verse} 節`; 
+                    else if (parsed.verse && reference.includes(':')) s += ` ${parsed.verse} 節`; 
                     return s;
-                };
-
-                const executeQuery = (query, subtitle) => {
-                    try {
-                        const res = database.exec(query);
-                        if (res.length > 0) {
-                            let html = '';
-                            let currentChap = -1;
-                            res[0].values.forEach(row => {
-                                if (row.length === 3) { 
-                                    const c = row[0], v = row[1], t = row[2];
-                                    if (c !== currentChap && parsed?.endChapter) {
-                                        html += `<div class="text-center my-4"><span class="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-600">第 ${c} 章</span></div>`;
-                                        currentChap = c;
-                                    }
-                                    html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
-                                } else {
-                                    const v = row[0], t = row[1];
-                                    html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
-                                }
-                            });
-                            modalTitle.innerText = subtitle;
-                            modalBody.innerHTML = html;
-                            return true;
-                        }
-                        return false;
-                    } catch(e) { console.error(e); return false; }
                 };
 
                 if (parsed) {
                     let query;
-                    const subtitle = getSubtitle();
-
-                    // 修正：使用 CAST AS INTEGER 進行數值比對，確保節數範圍查詢正確
+                    // 使用 CAST AS INTEGER 確保數字比對正確
                     if (parsed.endChapter && parsed.endChapter > parsed.chapter) {
                          query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND CAST(${dbCols.chap} AS INTEGER) >= ${parsed.chapter} AND CAST(${dbCols.chap} AS INTEGER) <= ${parsed.endChapter} ORDER BY CAST(${dbCols.chap} AS INTEGER), CAST(${dbCols.ver} AS INTEGER)`;
                     } else if (parsed.endVerse && parsed.endVerse > parsed.verse) {
                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND CAST(${dbCols.ver} AS INTEGER) >= ${parsed.verse} AND CAST(${dbCols.ver} AS INTEGER) <= ${parsed.endVerse} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
-                    } else if (parsed.endVerse === null) {
-                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
+                    } else if (parsed.endVerse === null && !reference.includes(':')) {
+                        // 整章
+                        query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
                     } else {
                         // 單節
                         query = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} AND ${dbCols.ver} = ${parsed.verse}`;
                     }
 
-                    if (!executeQuery(query, subtitle)) {
-                        console.log("Range not found, fallback to chapter");
-                        const fallbackQuery = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
-                        
-                        if (!executeQuery(fallbackQuery, `${parsed.book} 第 ${parsed.chapter} 章 (完整章節)`)) {
-                             modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}<br><span class="text-sm text-gray-400">請確認書卷名稱是否正確</span></p>`;
-                        }
+                    const res = database.exec(query);
+                    if (res.length > 0) {
+                        let html = '';
+                        let currentChap = -1;
+                        res[0].values.forEach(row => {
+                            if (row.length === 3) { 
+                                const c = row[0], v = row[1], t = row[2];
+                                if (c !== currentChap && parsed.endChapter) {
+                                    html += `<div class="text-center my-4"><span class="bg-gray-200 px-3 py-1 rounded-full text-sm text-gray-600">第 ${c} 章</span></div>`;
+                                    currentChap = c;
+                                }
+                                html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
+                            } else {
+                                const v = row[0], t = row[1];
+                                html += `<p class="verse-text"><span class="verse-num">${v}</span>${t}</p>`;
+                            }
+                        });
+                        modalTitle.innerText = getSubtitle();
+                        modalBody.innerHTML = html;
+                    } else {
+                        // 查無資料時，不自動跳回整章，而是顯示找不到，避免誤導
+                        modalBody.innerHTML = `<p class="text-center py-6">找不到經文範圍：${reference}<br><span class="text-sm text-gray-400">請確認資料庫中是否有此章節</span></p>`;
                     }
                 } else {
                     modalTitle.innerText = reference;
@@ -238,101 +228,23 @@
             document.getElementById('bible-modal').classList.remove('show');
         }
 
-        // --- 萬能讀經計畫 (優化版) ---
-        function getComputedPlan(dObj) {
-            const startOfYear = new Date(dObj.getFullYear(), 0, 0);
-            const diff = dObj - startOfYear;
-            const oneDay = 1000 * 60 * 60 * 24;
-            const dayOfYear = Math.floor(diff / oneDay);
-
-            const otBooks = [
-                {n:"創世記",c:50}, {n:"出埃及記",c:40}, {n:"利未記",c:27}, {n:"民數記",c:36}, {n:"申命記",c:34},
-                {n:"約書亞記",c:24}, {n:"士師記",c:21}, {n:"路得記",c:4}, {n:"撒母耳記上",c:31}, {n:"撒母耳記下",c:24},
-                {n:"列王紀上",c:22}, {n:"列王紀下",c:25}, {n:"歷代志上",c:29}, {n:"歷代志下",c:36}, {n:"以斯拉記",c:10},
-                {n:"尼希米記",c:13}, {n:"以斯帖記",c:10}, {n:"約伯記",c:42}, {n:"傳道書",c:12}, {n:"雅歌",c:8}, 
-                {n:"以賽亞書",c:66}, {n:"耶利米書",c:52}, {n:"耶利米哀歌",c:5}, {n:"以西結書",c:48}, {n:"但以理書",c:12}, 
-                {n:"何西阿書",c:14}, {n:"約珥書",c:3}, {n:"阿摩司書",c:9}, {n:"俄巴底亞書",c:1}, {n:"約拿書",c:4}, 
-                {n:"彌迦書",c:7}, {n:"那鴻書",c:3}, {n:"哈巴谷書",c:3}, {n:"西番雅書",c:3}, {n:"哈該書",c:2}, 
-                {n:"撒迦利亞書",c:14}, {n:"瑪拉基書",c:4}
-            ]; 
-            const ntBooks = [
-                {n:"馬太福音",c:28}, {n:"馬可福音",c:16}, {n:"路加福音",c:24}, {n:"約翰福音",c:21}, {n:"使徒行傳",c:28},
-                {n:"羅馬書",c:16}, {n:"哥林多前書",c:16}, {n:"哥林多後書",c:13}, {n:"加拉太書",c:6}, {n:"以弗所書",c:6},
-                {n:"腓立比書",c:4}, {n:"歌羅西書",c:4}, {n:"帖撒羅尼迦前書",c:5}, {n:"帖撒羅尼迦後書",c:3}, {n:"提摩太前書",c:6},
-                {n:"提摩太後書",c:4}, {n:"提多書",c:3}, {n:"腓利門書",c:1}, {n:"希伯來書",c:13}, {n:"雅各書",c:5},
-                {n:"彼得前書",c:5}, {n:"彼得後書",c:3}, {n:"約翰一書",c:5}, {n:"約翰二書",c:1}, {n:"約翰三書",c:1},
-                {n:"猶大書",c:1}, {n:"啟示錄",c:22}
-            ];
-
-            function findLocation(books, progress) {
-                let count = 0;
-                for(let b of books) {
-                    if (count + b.c > progress) {
-                        return { name: b.n, chapter: Math.floor(progress - count) + 1 };
-                    }
-                    count += b.c;
-                }
-                return { name: books[books.length-1].n, chapter: books[books.length-1].c };
-            }
-
-            // 1. 舊約
-            const otTotal = 748;
-            const otStartVal = (dayOfYear - 1) / 365 * otTotal;
-            const otEndVal = dayOfYear / 365 * otTotal;
-            const otStartLoc = findLocation(otBooks, otStartVal);
-            const otEndLoc = findLocation(otBooks, otEndVal - 0.1);
-            let otStr = (otStartLoc.name === otEndLoc.name) ?
-                (otStartLoc.chapter === otEndLoc.chapter ? `${otStartLoc.name} ${otStartLoc.chapter}` : `${otStartLoc.name} ${otStartLoc.chapter}-${otEndLoc.chapter}`) :
-                `${otStartLoc.name} ${otStartLoc.chapter} - ${otEndLoc.name} ${otEndLoc.chapter}`;
-
-            // 2. 新約 (模擬節數)
-            const ntTotal = 260;
-            const ntStartVal = (dayOfYear - 1) / 365 * ntTotal;
-            const ntEndVal = dayOfYear / 365 * ntTotal;
-            const ntLoc = findLocation(ntBooks, ntEndVal - 0.01);
-            const ntPrevLoc = findLocation(ntBooks, ntStartVal);
-            let ntStr = `${ntLoc.name} ${ntLoc.chapter}`;
-            if (ntLoc.name === ntPrevLoc.name && ntLoc.chapter === ntPrevLoc.chapter) {
-                ntStr += (dayOfYear % 2 !== 0) ? ":1-20" : ":21-40";
-            }
-
-            // 3. 詩篇 (模擬分段)
-            const psChap = (dayOfYear % 150) + 1;
-            let psStr = `詩篇 ${Math.min(150, psChap)}`;
-            // 若為長詩篇(例如119)，模擬分段
-            if(psChap === 119) {
-                 const part = (dayOfYear % 3) + 1;
-                 const s = (part - 1) * 60 + 1;
-                 const e = s + 59;
-                 psStr = `詩篇 119:${s}-${e}`;
-            }
-
-            // 4. 箴言 (模擬節數)
-            const daysPerChapter = 365 / 31; 
-            const prChap = Math.min(31, Math.floor((dayOfYear - 1) / daysPerChapter) + 1);
-            const dayInChap = Math.floor((dayOfYear - 1) % daysPerChapter); 
-            const startVer = (dayInChap * 3) + 1;
-            const endVer = startVer + 2;
-            let prStr = `箴言 ${prChap}:${startVer}-${endVer}`;
-
-            return { ot: otStr, nt: ntStr, ps: psStr, pr: prStr };
-        }
-
         async function generateReadingPlan() {
-            // 修正：停用遠端 Fetch，強制使用本機演算法，確保進度格式一致且可控
-            // try {
-            //     const res = await fetch(READING_PLAN_URL);
-            //     if (res.ok) {
-            //         const data = await res.json();
-            //         data.forEach(day => { bibleReadingPlan[day.date] = day; });
-            //         return;
-            //     }
-            // } catch (e) { }
+            try {
+                const res = await fetch(READING_PLAN_URL);
+                if (res.ok) {
+                    const data = await res.json();
+                    data.forEach(day => { bibleReadingPlan[day.date] = day; });
+                    return;
+                }
+            } catch (e) { console.log("Reading plan not found or parse error."); }
+            // 若無 JSON，這裡暫不使用演算法 fallback，直接留空，讓使用者發現並上傳 JSON
         }
 
         async function init() {
             if(window.lucide) lucide.createIcons();
+            // 強制掛載
             window.openScripture = openScripture;
+            
             await generateReadingPlan(); 
             
             try {
@@ -356,10 +268,16 @@
         function renderDailyDevotional(items) {
             const container = document.getElementById('daily-content');
             const dObj = new Date();
-            const todayDisplay = `${dObj.getFullYear()}-${(dObj.getMonth()+1).toString().padStart(2,'0')}-${dObj.getDate().toString().padStart(2,'0')}`;
+            const todayStr = `${dObj.getMonth()+1}-${dObj.getDate()}`; // 格式: M-D
             
-            // 強制使用計算的計畫
-            const plan = getComputedPlan(dObj);
+            // 查詢計畫 (優先使用 reading-plan.json)
+            let plan = bibleReadingPlan[todayStr];
+            
+            // 如果 JSON 沒資料，提供一個「請上傳」的提示，而不是錯誤的演算法資料
+            if (!plan) {
+                 // 使用今天的日期作為 key，但內容為空
+                 plan = null;
+            }
 
             const start = new Date(dObj.getFullYear(), 0, 0);
             const diff = dObj - start;
@@ -369,39 +287,48 @@
             let html = '';
 
             // 讀經進度
-            html += `
-                <div class="mb-10 text-center w-full">
-                    <div class="inline-block px-6 py-2 border-b-2 border-[#6B8E23] mb-6">
-                        <h2 class="text-2xl font-serif text-[#3E3B39] tracking-widest">今日讀經</h2>
-                        <p class="text-xs text-[#8D7B68] uppercase mt-1">One Year Bible Plan (${todayDisplay})</p>
-                        <span class="text-[10px] bg-[#F1F3F2] text-gray-500 px-2 py-0.5 rounded-full mt-2 inline-block">Day ${dayOfYear} / 365</span>
+            if (plan) {
+                html += `
+                    <div class="mb-10 text-center w-full">
+                        <div class="inline-block px-6 py-2 border-b-2 border-[#6B8E23] mb-6">
+                            <h2 class="text-2xl font-serif text-[#3E3B39] tracking-widest">今日讀經</h2>
+                            <p class="text-xs text-[#8D7B68] uppercase mt-1">${todayStr} (Day ${dayOfYear})</p>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto px-2">
+                            ${['ot','nt','ps','pr'].map(k => plan[k] ? `
+                                <button onclick="window.openScripture('${plan[k]}')" class="reading-plan-btn">
+                                    <span class="label">${getLabel(k)}</span>
+                                    <span class="content">${plan[k]}</span>
+                                    <i data-lucide="book-open"></i>
+                                </button>
+                            ` : '').join('')}
+                        </div>
                     </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-3xl mx-auto px-2">
-                        ${['ot','nt','ps','pr'].map(k => `
-                            <button onclick="window.openScripture('${plan[k]}')" class="reading-plan-btn">
-                                <span class="label">${getLabel(k)}</span>
-                                <span class="content">${plan[k]}</span>
-                                <i data-lucide="book-open"></i>
-                            </button>
-                        `).join('')}
+                    <div class="divider-water opacity-50 mb-10 w-full"></div>
+                `;
+            } else {
+                html += `
+                    <div class="mb-10 text-center w-full">
+                        <div class="p-6 bg-white/50 rounded-xl border border-dashed border-gray-300">
+                             <p class="text-gray-500 mb-2">📅 今日 (${todayStr}) 尚無讀經進度</p>
+                             <p class="text-xs text-gray-400">請確認 assets/data/reading-plan.json 是否包含此日期的資料。</p>
+                        </div>
                     </div>
-                </div>
-                <div class="divider-water opacity-50 mb-10 w-full"></div>
-            `;
+                `;
+            }
 
+            // 靈修文章
             if(items.length > 0) {
                 const index = dayOfYear % items.length;
                 const todayItem = items[index];
                 html += generateSingleDevotionalHtml(todayItem);
-            } else {
-                 html += `<div class="py-10 text-[#8D7B68]">今日暫無額外靈修文章</div>`;
             }
             container.innerHTML = html;
             if(window.lucide) lucide.createIcons();
         }
         
         function getLabel(key) {
-            const map = { ot: 'OLD TESTAMENT (舊約)', nt: 'NEW TESTAMENT (新約)', ps: 'PSALMS (詩篇)', pr: 'PROVERBS (箴言)' };
+            const map = { ot: 'OLD TESTAMENT', nt: 'NEW TESTAMENT', ps: 'PSALMS', pr: 'PROVERBS' };
             return map[key] || key;
         }
 
