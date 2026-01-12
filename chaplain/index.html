@@ -15,7 +15,6 @@
     <script src="../assets/js/common.js"></script>
     
     <style>
-        /* 膠囊按鈕樣式 */
         .chaplain-tab-btn {
             padding: 0.5rem 1.25rem;
             border-radius: 9999px;
@@ -45,18 +44,27 @@
         .journal-item {
             background-color: rgba(255, 255, 255, 0.6); border: 1px solid #e5e7eb;
             border-radius: 12px; padding: 1rem; margin-bottom: 0.75rem; position: relative;
+            padding-right: 4rem; /* 預留右側空間給按鈕 */
         }
         .journal-item:last-child { margin-bottom: 0; }
         
-        /* 操作按鈕樣式 (編輯/刪除) */
+        /* 操作按鈕樣式 (高對比修正) */
         .action-btns {
-            position: absolute; top: 0.75rem; right: 0.75rem; display: flex; gap: 0.5rem;
+            position: absolute; top: 0.5rem; right: 0.5rem; 
+            display: flex; gap: 0.25rem;
+            background: rgba(255,255,255,0.9); /* 白色底確保不被文字干擾 */
+            border-radius: 8px;
+            padding: 2px;
+            z-index: 10;
         }
         .action-btn {
-            color: #d1d5db; transition: color 0.2s; padding: 2px;
+            color: #666666; /* 深灰色，更清楚 */
+            transition: all 0.2s; 
+            padding: 4px;
+            border-radius: 4px;
             cursor: pointer;
         }
-        .action-btn:hover { color: #6B8E23; }
+        .action-btn:hover { background-color: #f3f4f6; color: #6B8E23; }
         .action-btn.delete:hover { color: #ef4444; }
     </style>
 </head>
@@ -437,7 +445,6 @@
             editingId = null;
             editingKey = null;
             
-            // 重置表單
             if (uiType === 'devotion' || !uiType) {
                 ['dev-ref','dev-summary','dev-verse','dev-app','dev-heart','dev-prayer'].forEach(id => {
                     const el = document.getElementById(id);
@@ -480,6 +487,7 @@
             }
         }
 
+        // --- 儲存邏輯 ---
         function saveDevotion() {
             const date = getSelectedDate();
             const ref = document.getElementById('dev-ref').value;
@@ -509,7 +517,6 @@
             const filtered = list.filter(item => item.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(item => {
-                // 加上編輯按鈕
                 html += `<div class="journal-item"><div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div><div class="text-sm text-gray-600 whitespace-pre-wrap">${item.summary || item.verse || '內容...'}</div><div class="action-btns"><button onclick="startEditing('witty_devotions', ${item.id})" class="action-btn"><i data-lucide="edit" class="w-4 h-4"></i></button><button onclick="deleteItem('witty_devotions', ${item.id})" class="action-btn delete"><i data-lucide="trash-2" class="w-4 h-4"></i></button></div></div>`;
             });
             document.getElementById('devotion-list').innerHTML = html;
