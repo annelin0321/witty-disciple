@@ -75,17 +75,19 @@
         </div>
     </div>
 
-    <!-- Modal -->
+    <!-- Modal (修正版) -->
     <div id="bible-modal" onclick="closeBibleModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <button onclick="closeBibleModal()" class="absolute top-6 right-6 flex items-center justify-center gap-1 text-xs text-[#6B8E23] hover:text-[#556B2F] bg-[#F1F3F2] px-4 py-1.5 rounded-full z-50">
+            <!-- 修正：調整按鈕位置 (top-4 right-4) -->
+            <button onclick="closeBibleModal()" class="absolute top-4 right-4 flex items-center justify-center gap-1 text-xs text-[#6B8E23] hover:text-[#556B2F] bg-[#F1F3F2] px-3 py-1.5 rounded-full z-50 border border-[#6B8E23]/20 shadow-sm">
                 <i data-lucide="x" class="w-3 h-3"></i> 關閉
             </button>
-            <div class="text-center mb-6">
-                <h3 id="modal-title" class="text-2xl font-serif text-[#3E3B39] font-bold"></h3>
-                <div class="w-12 h-px bg-[#8D7B68] mx-auto mt-2"></div>
+            <div class="text-center mb-6 mt-2">
+                <!-- 修正：加入 px-12 防止文字被按鈕遮擋 -->
+                <h3 id="modal-title" class="text-2xl font-serif text-[#3E3B39] font-bold px-12 leading-tight"></h3>
+                <div class="w-12 h-px bg-[#8D7B68] mx-auto mt-3"></div>
             </div>
-            <div id="modal-body" class="text-lg text-[#4e342e]"></div>
+            <div id="modal-body" class="text-lg text-[#4e342e] leading-relaxed"></div>
         </div>
     </div>
 
@@ -97,7 +99,6 @@
         let devotionalsData = [];
         let bibleReadingPlan = {}; 
         let isPlanLoadedFromFile = false; 
-        let planLoadError = "";
         
         let db = null;
         let isDbLoading = false;
@@ -133,15 +134,11 @@
             } catch (err) { console.error("DB Error", err); return null; } finally { isDbLoading = false; }
         }
 
-        // 修正 1: 書卷名稱正規化 (Fix typos)
+        // 書卷名稱修正表
         function normalizeBookName(bookName) {
             const map = {
-                "創世紀": "創世記",
-                "啓示錄": "啟示錄",
-                "使徒行傅": "使徒行傳",
-                "羅馬書書": "羅馬書",
-                "約翰褔音": "約翰福音",
-                "彌加書": "彌迦書"
+                "創世紀": "創世記", "啓示錄": "啟示錄", "使徒行傅": "使徒行傳",
+                "羅馬書書": "羅馬書", "約翰褔音": "約翰福音", "彌加書": "彌迦書"
             };
             return map[bookName] || bookName;
         }
@@ -152,14 +149,12 @@
             const bookPat = "([1-3]?\\s?[\\u4e00-\\u9fa5]{1,15}|[1-3]?\\s?[a-zA-Z]+)";
             const chapVersePat = "(\\d+)\\s*:\\s*(\\d+)(?:\\s*[-–~]\\s*(\\d+))?";
             
-            // 處理書卷名修正
+            // 修正書卷名
             let matchBook = text.match(new RegExp(bookPat));
             if (matchBook) {
                 const originalBook = matchBook[0].trim();
                 const fixedBook = normalizeBookName(originalBook);
-                if (originalBook !== fixedBook) {
-                    text = text.replace(originalBook, fixedBook);
-                }
+                if (originalBook !== fixedBook) text = text.replace(originalBook, fixedBook);
             }
 
             const cvRegex = new RegExp(`${bookPat}\\s*${chapVersePat}`, 'g');
@@ -213,7 +208,6 @@
 
             try {
                 const parsed = parseBibleReference(reference);
-                
                 const getSubtitle = () => {
                     if (!parsed) return reference;
                     let s = `${parsed.book} 第 ${parsed.chapter} 章`;
@@ -270,18 +264,14 @@
                     if (!executeQuery(query, getSubtitle())) {
                         const fallbackQuery = `SELECT ${dbCols.chap}, ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
                         if (!executeQuery(fallbackQuery, `${parsed.book} 第 ${parsed.chapter} 章 (完整章節)`)) {
-                             // 修正 3: 顯示更詳細的除錯訊息
-                             modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}<br><span class="text-sm text-gray-400">系統解析書卷為：${parsed.book}</span></p>`;
+                             modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}<br><span class="text-sm text-gray-400">請確認書卷名稱是否正確 (解析: ${parsed.book})</span></p>`;
                         }
                     }
                 } else {
                     modalTitle.innerText = reference;
                     modalBody.innerHTML = `<p class="text-center py-6">無法解析經文格式</p>`;
                 }
-            } catch (e) {
-                console.error(e);
-                modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤</p>`;
-            }
+            } catch (e) { console.error(e); modalBody.innerHTML = `<p class="text-center text-red-500">讀取錯誤</p>`; }
         }
 
         function closeBibleModal(event) {
@@ -289,9 +279,8 @@
             document.getElementById('bible-modal').classList.remove('show');
         }
 
-        // --- 讀經計畫生成 ---
         async function generateReadingPlan() {
-            // 修正 2: 內建 1/1 ~ 1/12 正確資料，並使用 old_testament 等鍵名
+            // 內建資料 (1/1~1/12)
             const hardcodedData = [
                 { "date": "1-1", "old_testament": "創世記 1-2", "new_testament": "馬太福音 1:1-25", "psalms": "詩篇 1:1-6", "proverbs": "箴言 1:1-6" },
                 { "date": "1-2", "old_testament": "創世記 3-4", "new_testament": "馬太福音 2:1-23", "psalms": "詩篇 2:1-6", "proverbs": "箴言 1:7-9" },
@@ -309,7 +298,6 @@
             
             hardcodedData.forEach(day => { bibleReadingPlan[day.date] = day; });
 
-            // 2. 嘗試讀取外部檔案
             try {
                 const res = await fetch(`${READING_PLAN_URL}?t=${Date.now()}`);
                 if (res.ok) {
@@ -323,7 +311,6 @@
         async function init() {
             if(window.lucide) lucide.createIcons();
             window.openScripture = openScripture;
-            
             await generateReadingPlan(); 
             
             try {
@@ -347,15 +334,12 @@
         function renderDailyDevotional(items) {
             const container = document.getElementById('daily-content');
             const dObj = new Date();
-            
             const m = dObj.getMonth() + 1;
             const d = dObj.getDate();
             const keySimple = `${m}-${d}`;
             const keyPadded = `${m.toString().padStart(2,'0')}-${d.toString().padStart(2,'0')}`;
             
-            // 查詢計畫 (優先找有資料的 key)
             let plan = bibleReadingPlan[keySimple] || bibleReadingPlan[keyPadded];
-            
             const start = new Date(dObj.getFullYear(), 0, 0);
             const diff = dObj - start;
             const oneDay = 1000 * 60 * 60 * 24;
@@ -363,7 +347,7 @@
             
             let html = '';
 
-            // 讀經進度 - 使用新欄位名稱
+            // 讀經進度
             if (plan) {
                 html += `
                     <div class="mb-10 text-center w-full">
@@ -391,15 +375,7 @@
                     <div class="mb-10 text-center w-full">
                         <div class="p-6 bg-white/50 rounded-xl border border-dashed border-gray-300 inline-block">
                              <p class="text-gray-600 mb-2 font-bold">📅 今日 (${keySimple}) 尚無讀經進度</p>
-                             <div class="text-xs text-gray-400 text-left mt-2 space-y-1">
-                                <p>可能原因：</p>
-                                <ul class="list-disc pl-4">
-                                    <li>檔案中沒有設定今天的日期</li>
-                                    <li>日期格式不符 (請確認是 ${keySimple} 或 ${keyPadded})</li>
-                                    <li>檔案讀取失敗 (${planLoadError || '未知錯誤'})</li>
-                                </ul>
-                                <p class="mt-2 text-[#8D7B68]">請確認 assets/data/reading-plan.json 已更新。</p>
-                             </div>
+                             <p class="text-xs text-gray-400 text-left mt-2">請確認 assets/data/reading-plan.json 已包含此日期。</p>
                         </div>
                     </div>
                 `;
