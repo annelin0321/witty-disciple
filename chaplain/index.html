@@ -52,7 +52,7 @@
         }
         .journal-item:last-child { margin-bottom: 0; }
         
-        /* 操作按鈕樣式 */
+        /* 操作按鈕樣式 (無框線，滑鼠移過去才顯示) */
         .action-btns {
             position: absolute; 
             top: 0.75rem; 
@@ -69,9 +69,9 @@
             justify-content: center;
             width: 30px;
             height: 30px;
-            color: #555; 
-            background-color: #f3f4f6;
-            border: 1px solid #d1d5db;
+            color: #999;
+            background-color: transparent; /* 背景透明 */
+            border: 1px solid transparent; /* 邊框透明 */
             border-radius: 6px;
             cursor: pointer !important;
             transition: all 0.2s;
@@ -79,12 +79,10 @@
         .action-btn:hover { 
             background-color: #ecfccb; 
             color: #6B8E23; 
-            border-color: #6B8E23;
         }
         .action-btn.delete:hover { 
             background-color: #fee2e2; 
             color: #ef4444; 
-            border-color: #ef4444;
         }
         .action-btn svg { width: 16px; height: 16px; stroke-width: 2; }
     </style>
@@ -124,12 +122,15 @@
     </nav>
 
     <div class="relative z-10 container mx-auto px-4 py-8 max-w-4xl">
-        <div class="flex justify-end mb-4">
+        <!-- 雲端同步狀態列 -->
+        <div class="flex flex-col items-end mb-4 gap-2">
             <div id="auth-container" class="inline-flex items-center gap-2 bg-white/60 px-3 py-1.5 rounded-full border border-gray-200 shadow-sm text-sm">
                 <span id="user-status" class="text-gray-500">未登入 (僅存本機)</span>
                 <button id="btn-login" class="text-[#6B8E23] font-bold hover:underline" onclick="login()">Google 登入同步</button>
                 <button id="btn-logout" class="text-red-400 hover:underline hidden" onclick="logout()">登出</button>
             </div>
+            <!-- 錯誤訊息區 -->
+            <div id="error-message-box" class="hidden mt-2 p-3 bg-red-100 border border-red-200 text-red-700 text-xs rounded-lg max-w-sm text-left break-all"></div>
         </div>
 
         <section id="section-prayers" class="page-section fade-in">
@@ -137,12 +138,13 @@
         </section>
     </div>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (改用穩定的 10.13.1 版本) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
 
+        // Your Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCHn_OgHIg553J-h6EOByNYKwwWfRX2i2k",
             authDomain: "witty-disciple.firebaseapp.com",
@@ -175,18 +177,34 @@
             console.error("Firebase 初始化失敗:", e);
         }
 
+        // 顯示錯誤函式
+        function showError(msg) {
+            const box = document.getElementById('error-message-box');
+            box.innerHTML = `<strong>⚠️ 發生錯誤：</strong><br>${msg}`;
+            box.classList.remove('hidden');
+        }
+
         window.login = async () => {
             if(!auth) return alert("Firebase 未初始化");
+            document.getElementById('error-message-box').classList.add('hidden');
+            
             const provider = new GoogleAuthProvider();
             try {
                 await signInWithPopup(auth, provider);
             } catch (error) {
                 console.error(error);
+                let errorMsg = error.message;
+                
                 if (error.code === 'auth/unauthorized-domain') {
-                    alert(`網域未授權。\n請至 Firebase Console 新增此網域：\n${window.location.hostname}`);
-                } else if (error.code !== 'auth/popup-closed-by-user') {
-                    alert("登入失敗：" + error.message);
+                    errorMsg = `網域未授權 (Auth)。\n請至 Firebase Console 新增您的網域：${window.location.hostname}`;
+                } else if (error.message.includes('requests-from-referer')) {
+                    errorMsg = `API Key 網域限制 (Google Cloud)。\n請至 Google Cloud Console 檢查 API Key 設定。`;
+                } else if (error.code === 'auth/popup-blocked') {
+                    errorMsg = `瀏覽器封鎖了登入視窗，請允許彈出式視窗。`;
                 }
+
+                showError(errorMsg);
+                alert("登入失敗，請查看上方紅字說明。");
             }
         };
 
@@ -221,6 +239,9 @@
                 console.log(`已同步 ${key}`);
             } catch (e) {
                 console.error("同步失敗:", e);
+                if (e.code === 'permission-denied') {
+                    showError('權限不足：無法寫入資料庫。請檢查 Firestore Rules。');
+                }
             }
         };
 
@@ -236,6 +257,10 @@
                             if (window.refreshAllLists) window.refreshAllLists();
                         }
                     }
+                }, (error) => {
+                     if (error.code === 'permission-denied') {
+                        console.warn('權限不足：無法讀取雲端資料。');
+                    }
                 });
                 unsubscribeListeners.push(unsub);
             });
@@ -250,7 +275,7 @@
         let editingId = null;
         let editingKey = null;
 
-        // 直接定義SVG字串，確保一定顯示
+        // 直接定義SVG字串
         const ICON_EDIT = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
         const ICON_TRASH = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
 
@@ -262,6 +287,20 @@
             "自覺與認知": ["羞愧", "內疚", "尷尬", "困惑", "矛盾", "茫然", "疲憊", "嫉妒"]
         };
 
+        // --- 防止螢幕休眠 ---
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('螢幕喚醒鎖定已啟用');
+                }
+            } catch (err) { console.log(`無法啟用喚醒鎖定: ${err.name}, ${err.message}`); }
+        }
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') { await requestWakeLock(); }
+        });
+
         async function init() {
             try {
                 const res = await fetch(PRAYERS_DATA_URL);
@@ -271,6 +310,7 @@
             
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('journal-date').value = today;
+            await requestWakeLock();
             refreshAllLists();
             if(window.lucide) lucide.createIcons();
         }
@@ -337,11 +377,6 @@
                 <div id="tab-blank" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-4">隨手記下聖靈的感動或生活的靈感。</p><div class="space-y-4"><div class="form-group"><textarea id="blank-content" class="form-input" rows="5" placeholder="在此輸入內容..."></textarea></div><div class="text-center flex gap-2 justify-center"><button id="btn-save-blank" onclick="saveBlankNote()" class="nature-btn">儲存筆記</button><button id="btn-cancel-blank" onclick="cancelEdit('blank')" class="nature-btn hidden bg-gray-200 border-gray-300 text-gray-600">取消</button></div><div class="mt-4 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-2 text-sm">📅 當日靈感紀錄</h4><div id="blank-note-list" class="space-y-2 max-h-60 overflow-y-auto"></div></div></div>${getBackupUI('witty_blank_notes', '靈感筆記')}</div></div>
             `;
             document.getElementById('chaplain-content').innerHTML = html;
-            renderPrayerList();
-            renderGratitudeList();
-            renderBlankNoteList();
-            renderTimeCapsule();
-            renderLetterListDaily(); // 確保呼叫此函式
         }
 
         function switchTab(id, btn) {
@@ -362,6 +397,47 @@
             window.refreshAllLists = refreshAllLists; 
             renderDevotionList(); renderPrayerList(); renderGratitudeList(); renderEmotionList(); renderLetterListDaily(); renderBlankNoteList(); renderTimeCapsule();
             if(window.lucide) lucide.createIcons();
+        }
+
+        function exportNotebook(key, title) {
+            const data = localStorage.getItem(key);
+            if (!data || data === '[]') return alert('目前沒有資料可匯出');
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const date = new Date().toISOString().slice(0,10);
+            a.href = url;
+            a.download = `witty_${title}_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importNotebook(input, key) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData)) throw new Error("格式錯誤");
+                    const oldData = JSON.parse(localStorage.getItem(key) || '[]');
+                    const combined = [...importedData, ...oldData];
+                    const unique = [];
+                    const ids = new Set();
+                    combined.forEach(item => {
+                        if (item.id) { if (!ids.has(item.id)) { ids.add(item.id); unique.push(item); } } 
+                        else { unique.push(item); }
+                    });
+                    localStorage.setItem(key, JSON.stringify(unique));
+                    saveData(key, unique); 
+                    alert('匯入成功！');
+                    refreshAllLists();
+                } catch (err) { alert('匯入失敗'); }
+            };
+            reader.readAsText(file);
+            input.value = '';
         }
 
         // --- 編輯功能實作 ---
@@ -417,7 +493,7 @@
                     document.getElementById('btn-save-emotion').innerText = '更新日記';
                     document.getElementById('btn-cancel-emotion').classList.remove('hidden');
                 }
-            } else if (type === 'witty_letters') { // 新增對 witty_letters 的支援
+            } else if (type === 'witty_letters') { 
                 const list = JSON.parse(localStorage.getItem('witty_letters') || '[]');
                 const item = list.find(i => i.id === id);
                 if(item) {
@@ -474,7 +550,7 @@
                 const cBtn = document.getElementById('btn-cancel-emotion');
                 if(cBtn) cBtn.classList.add('hidden');
             }
-            if (uiType === 'letter' || !uiType) { // 新增對 letter 的重置
+            if (uiType === 'letter' || !uiType) {
                 document.getElementById('letter-date').value = '';
                 document.getElementById('letter-content').value = '';
                 const btn = document.getElementById('btn-save-letter');
@@ -521,6 +597,7 @@
             const filtered = list.filter(item => item.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(item => {
+                // 使用內嵌 SVG
                 html += `
                     <div class="journal-item">
                         <div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div>
@@ -648,33 +725,26 @@
             document.getElementById('emotion-list').innerHTML = html;
         }
 
-        // --- 5. 時空膠囊 (更新邏輯：支援編輯) ---
         function saveLetter() {
             const createdDate = getSelectedDate();
             const date = document.getElementById('letter-date').value;
             const content = document.getElementById('letter-content').value;
             if(!date || !content) return alert('請填寫完整');
-            
             let list = JSON.parse(localStorage.getItem('witty_letters') || '[]');
-            const newData = { id: editingId || Date.now(), createdDate, date, content, read: false }; // read 狀態保留
-
+            const newData = { id: editingId || Date.now(), createdDate, date, content, read: false };
             if (editingId) {
                 const index = list.findIndex(i => i.id === editingId);
                 if(index !== -1) {
-                    // 保留原有的 read 狀態與 ID，更新內容與開啟日期
                     list[index] = { ...list[index], ...newData }; 
                 }
             } else {
                 list.push(newData);
             }
-            
             saveData('witty_letters', list);
             alert(editingId ? '信件已更新！' : '信件已投遞！');
             cancelEdit('letter');
-            renderTimeCapsule(); 
-            renderLetterListDaily();
+            renderTimeCapsule(); renderLetterListDaily();
         }
-
         function renderLetterListDaily() {
             const date = getSelectedDate();
             const list = JSON.parse(localStorage.getItem('witty_letters') || '[]');
@@ -694,7 +764,6 @@
             });
             document.getElementById('letter-list-daily').innerHTML = html;
         }
-
         function renderTimeCapsule() {
             const list = JSON.parse(localStorage.getItem('witty_letters') || '[]');
             const today = new Date().toISOString().split('T')[0];
@@ -772,48 +841,6 @@
             refreshAllLists();
             if (editingId === id) cancelEdit();
         };
-
-        // 匯出與匯入功能 (保持原樣，確保能運作)
-        function exportNotebook(key, title) {
-            const data = localStorage.getItem(key);
-            if (!data || data === '[]') return alert('目前沒有資料可匯出');
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const date = new Date().toISOString().slice(0,10);
-            a.href = url;
-            a.download = `witty_${title}_${date}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function importNotebook(input, key) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (!Array.isArray(importedData)) throw new Error("格式錯誤");
-                    const oldData = JSON.parse(localStorage.getItem(key) || '[]');
-                    const combined = [...importedData, ...oldData];
-                    const unique = [];
-                    const ids = new Set();
-                    combined.forEach(item => {
-                        if (item.id) { if (!ids.has(item.id)) { ids.add(item.id); unique.push(item); } } 
-                        else { unique.push(item); }
-                    });
-                    localStorage.setItem(key, JSON.stringify(unique));
-                    saveData(key, unique); 
-                    alert('匯入成功！');
-                    refreshAllLists();
-                } catch (err) { alert('匯入失敗'); }
-            };
-            reader.readAsText(file);
-            input.value = '';
-        }
 
         init();
     </script>
