@@ -52,38 +52,19 @@
         }
         .journal-item:last-child { margin-bottom: 0; }
         
-        /* 操作按鈕樣式 */
         .action-btns {
-            position: absolute; 
-            top: 0.75rem; 
-            right: 0.75rem; 
-            display: flex; 
-            gap: 0.5rem;
-            z-index: 50;
-            padding: 2px;
-            border-radius: 6px;
+            position: absolute; top: 0.75rem; right: 0.75rem; 
+            display: flex; gap: 0.5rem; z-index: 50;
+            padding: 2px; border-radius: 6px;
         }
         .action-btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 30px;
-            height: 30px;
-            color: #999;
-            background-color: transparent;
-            border: 1px solid transparent;
-            border-radius: 6px;
-            cursor: pointer !important;
-            transition: all 0.2s;
+            display: flex; align-items: center; justify-content: center;
+            width: 30px; height: 30px; color: #999;
+            background-color: transparent; border: 1px solid transparent;
+            border-radius: 6px; cursor: pointer !important; transition: all 0.2s;
         }
-        .action-btn:hover { 
-            background-color: #ecfccb; 
-            color: #6B8E23; 
-        }
-        .action-btn.delete:hover { 
-            background-color: #fee2e2; 
-            color: #ef4444; 
-        }
+        .action-btn:hover { background-color: #ecfccb; color: #6B8E23; }
+        .action-btn.delete:hover { background-color: #fee2e2; color: #ef4444; }
         .action-btn svg { width: 16px; height: 16px; stroke-width: 2; pointer-events: none; }
     </style>
 </head>
@@ -130,7 +111,7 @@
                 <button id="btn-logout" class="text-red-400 hover:underline hidden" onclick="logout()">登出</button>
             </div>
             <!-- 錯誤訊息區 -->
-            <div id="error-message-box" class="hidden mt-2 p-3 bg-red-100 border border-red-200 text-red-700 text-xs rounded-lg max-w-sm text-left break-all"></div>
+            <div id="error-message-box" class="hidden mt-2 p-4 bg-red-50 border border-red-200 text-red-800 text-xs rounded-lg max-w-lg text-left shadow-md" style="white-space: normal; word-break: break-all;"></div>
         </div>
 
         <section id="section-prayers" class="page-section fade-in">
@@ -138,13 +119,15 @@
         </section>
     </div>
 
-    <!-- Firebase SDK (改用 10.7.1) -->
+    <!-- Firebase SDK (10.7.1) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Your Firebase Config
+        // ======================================================
+        // 您提供的真實 Firebase Config
+        // ======================================================
         const firebaseConfig = {
             apiKey: "AIzaSyCHn_OgHIg553J-h6EOByNYKwwWfRX2i2k",
             authDomain: "witty-disciple.firebaseapp.com",
@@ -154,15 +137,16 @@
             appId: "1:714502326120:web:946e7e50282b6945d7b8dd",
             measurementId: "G-16G920FLE2"
         };
+        // ======================================================
 
         let app, auth, db, user = null;
         let unsubscribeListeners = [];
 
         try {
-            // 檢查是否為 file:// 協定
+            // file:// 檢查
             if (window.location.protocol === 'file:') {
-                console.warn("Firebase Auth 不支援 file:// 協定，請使用 localhost 或部署後測試。");
-                showError("無法在本地檔案 (file://) 執行登入，請部署到網站後再試。");
+                console.warn("Firebase Auth 不支援 file:// 協定");
+                showError("請注意：Google 登入不支援直接開啟檔案 (file://)。請將網站部署到 Cloudflare 或使用 Localhost 伺服器。");
             } else {
                 app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
@@ -183,7 +167,6 @@
             console.error("Firebase 初始化失敗:", e);
         }
 
-        // 顯示錯誤函式
         function showError(msg) {
             const box = document.getElementById('error-message-box');
             box.innerHTML = `<strong>⚠️ 發生錯誤：</strong><br>${msg}`;
@@ -200,14 +183,22 @@
             } catch (error) {
                 console.error(error);
                 let errorMsg = error.message;
-                
+                const currentUrl = window.location.href;
+                const currentOrigin = window.location.origin;
+
                 if (error.code === 'auth/unauthorized-domain') {
-                    errorMsg = `網域未授權 (Auth)。\n請至 Firebase Console -> Authentication -> Settings -> Authorized domains\n新增您的網域：${window.location.hostname}`;
+                    errorMsg = `<strong>網域未授權 (Auth Domain)</strong><br>
+                                您目前的網域不在 Firebase 允許清單中。<br>
+                                請至 <a href='https://console.firebase.google.com/' target='_blank' class='underline text-blue-600'>Firebase Console</a> -> Authentication -> Settings -> Authorized domains<br>
+                                新增此網域：<br><span class='bg-white px-1 font-mono'>${window.location.hostname}</span>`;
                 } else if (error.message.includes('requests-from-referer') || error.message.includes('The requested action is invalid')) {
-                    errorMsg = `<strong>Firebase 設定錯誤</strong><br>
-                                1. 請至 Google Cloud Console 檢查 "Identity Toolkit API" 是否已啟用。<br>
-                                2. 如果是新專案，API 可能需要幾分鐘生效。<br>
-                                3. 檢查 API Key 網域限制。`;
+                    errorMsg = `<strong>API 金鑰限制 (Key Restriction)</strong><br>
+                                您的 API Key 在 Google Cloud 被限制了，導致無法從此網址存取。<br>
+                                1. 請至 <a href='https://console.cloud.google.com/apis/credentials' target='_blank' class='underline text-blue-600'>Google Cloud Console</a>。<br>
+                                2. 點擊您的 API Key (Browser key)。<br>
+                                3. 在「網站限制 (Website restrictions)」中，加入以下網址：<br>
+                                <span class='bg-white px-1 font-mono'>${currentOrigin}/*</span><br>
+                                <span class='text-gray-500'>(建議暫時設為「無限制 (None)」以排除問題)</span>`;
                 } else if (error.code === 'auth/popup-blocked') {
                     errorMsg = `瀏覽器封鎖了登入視窗，請允許彈出式視窗。`;
                 }
@@ -248,7 +239,7 @@
             } catch (e) {
                 console.error("同步失敗:", e);
                 if (e.code === 'permission-denied') {
-                    showError('權限不足：無法寫入資料庫。請檢查 Firestore Rules。');
+                    showError('<strong>權限不足 (Permission Denied)</strong><br>無法寫入資料庫。請至 Firebase Console -> Firestore Database -> Rules，將規則改為：<br><code class="bg-gray-100 p-1">allow read, write: if request.auth != null;</code>');
                 }
             }
         };
@@ -385,11 +376,6 @@
                 <div id="tab-blank" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-4">隨手記下聖靈的感動或生活的靈感。</p><div class="space-y-4"><div class="form-group"><textarea id="blank-content" class="form-input" rows="5" placeholder="在此輸入內容..."></textarea></div><div class="text-center flex gap-2 justify-center"><button id="btn-save-blank" onclick="saveBlankNote()" class="nature-btn">儲存筆記</button><button id="btn-cancel-blank" onclick="cancelEdit('blank')" class="nature-btn hidden bg-gray-200 border-gray-300 text-gray-600">取消</button></div><div class="mt-4 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-2 text-sm">📅 當日靈感紀錄</h4><div id="blank-note-list" class="space-y-2 max-h-60 overflow-y-auto"></div></div></div>${getBackupUI('witty_blank_notes', '靈感筆記')}</div></div>
             `;
             document.getElementById('chaplain-content').innerHTML = html;
-            renderPrayerList();
-            renderGratitudeList();
-            renderBlankNoteList();
-            renderTimeCapsule();
-            renderLetterListDaily();
         }
 
         function switchTab(id, btn) {
@@ -569,6 +555,7 @@
             const filtered = list.filter(item => item.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(item => {
+                // 使用內嵌 SVG
                 html += `
                     <div class="journal-item">
                         <div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div>
