@@ -69,9 +69,9 @@
             justify-content: center;
             width: 30px;
             height: 30px;
-            color: #555; 
-            background-color: #f3f4f6;
-            border: 1px solid #d1d5db;
+            color: #999;
+            background-color: transparent;
+            border: 1px solid transparent;
             border-radius: 6px;
             cursor: pointer !important;
             transition: all 0.2s;
@@ -79,12 +79,10 @@
         .action-btn:hover { 
             background-color: #ecfccb; 
             color: #6B8E23; 
-            border-color: #6B8E23;
         }
         .action-btn.delete:hover { 
             background-color: #fee2e2; 
             color: #ef4444; 
-            border-color: #ef4444;
         }
         .action-btn svg { width: 16px; height: 16px; stroke-width: 2; pointer-events: none; }
     </style>
@@ -140,7 +138,7 @@
         </section>
     </div>
 
-    <!-- Firebase SDK (使用穩定的 10.7.1) -->
+    <!-- Firebase SDK (改用 10.7.1) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -193,7 +191,7 @@
         }
 
         window.login = async () => {
-            if(!auth) return alert("Firebase 未初始化 (可能是本機檔案執行)");
+            if(!auth) return alert("Firebase 未初始化");
             document.getElementById('error-message-box').classList.add('hidden');
             
             const provider = new GoogleAuthProvider();
@@ -204,12 +202,12 @@
                 let errorMsg = error.message;
                 
                 if (error.code === 'auth/unauthorized-domain') {
-                    errorMsg = `網域未授權。\n請至 Firebase Console -> Authentication -> Settings -> Authorized domains\n新增您的網域：${window.location.hostname}`;
+                    errorMsg = `網域未授權 (Auth)。\n請至 Firebase Console -> Authentication -> Settings -> Authorized domains\n新增您的網域：${window.location.hostname}`;
                 } else if (error.message.includes('requests-from-referer') || error.message.includes('The requested action is invalid')) {
-                    errorMsg = `<strong>API 設定問題 (Google Cloud)</strong><br>
+                    errorMsg = `<strong>Firebase 設定錯誤</strong><br>
                                 1. 請至 Google Cloud Console 檢查 "Identity Toolkit API" 是否已啟用。<br>
-                                2. 檢查 API Key 是否限制了網域 (Referer)。<br>
-                                3. 確認您不是在預覽視窗中測試。`;
+                                2. 如果是新專案，API 可能需要幾分鐘生效。<br>
+                                3. 檢查 API Key 網域限制。`;
                 } else if (error.code === 'auth/popup-blocked') {
                     errorMsg = `瀏覽器封鎖了登入視窗，請允許彈出式視窗。`;
                 }
@@ -387,6 +385,11 @@
                 <div id="tab-blank" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-4">隨手記下聖靈的感動或生活的靈感。</p><div class="space-y-4"><div class="form-group"><textarea id="blank-content" class="form-input" rows="5" placeholder="在此輸入內容..."></textarea></div><div class="text-center flex gap-2 justify-center"><button id="btn-save-blank" onclick="saveBlankNote()" class="nature-btn">儲存筆記</button><button id="btn-cancel-blank" onclick="cancelEdit('blank')" class="nature-btn hidden bg-gray-200 border-gray-300 text-gray-600">取消</button></div><div class="mt-4 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-2 text-sm">📅 當日靈感紀錄</h4><div id="blank-note-list" class="space-y-2 max-h-60 overflow-y-auto"></div></div></div>${getBackupUI('witty_blank_notes', '靈感筆記')}</div></div>
             `;
             document.getElementById('chaplain-content').innerHTML = html;
+            renderPrayerList();
+            renderGratitudeList();
+            renderBlankNoteList();
+            renderTimeCapsule();
+            renderLetterListDaily();
         }
 
         function switchTab(id, btn) {
@@ -566,7 +569,6 @@
             const filtered = list.filter(item => item.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(item => {
-                // 使用內嵌 SVG
                 html += `
                     <div class="journal-item">
                         <div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div>
