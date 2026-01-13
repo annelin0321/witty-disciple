@@ -10,6 +10,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
 
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 保留 Lucide 供其他部分使用，但列表按鈕改用內嵌 SVG -->
     <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
     <link rel="stylesheet" href="../assets/css/style.css">
     <script src="../assets/js/common.js"></script>
@@ -46,7 +47,7 @@
             border: 1px solid #d1d5db;
             border-radius: 12px; 
             padding: 1rem; 
-            padding-right: 5.5rem; 
+            padding-right: 5.5rem; /* 預留更多空間給按鈕 */
             margin-bottom: 0.75rem; 
             position: relative;
         }
@@ -60,8 +61,7 @@
             display: flex; 
             gap: 0.5rem;
             z-index: 20;
-            /* 移除背景色，讓它更融入 */
-            /* background-color: rgba(255,255,255,0.8); */
+            background-color: rgba(255,255,255,0.8);
             padding: 2px;
             border-radius: 6px;
         }
@@ -71,9 +71,9 @@
             justify-content: center;
             width: 30px;
             height: 30px;
-            color: #999; /* 顏色調淡一點 */
-            background-color: transparent; /* 背景透明 */
-            border: 1px solid transparent; /* 邊框透明 */
+            color: #555; 
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
             border-radius: 6px;
             cursor: pointer !important;
             transition: all 0.2s;
@@ -81,13 +81,14 @@
         .action-btn:hover { 
             background-color: #ecfccb; 
             color: #6B8E23; 
-            /* border-color: #6B8E23; 滑鼠移上去才顯示邊框 */
+            border-color: #6B8E23;
         }
         .action-btn.delete:hover { 
             background-color: #fee2e2; 
             color: #ef4444; 
-            /* border-color: #ef4444; */
+            border-color: #ef4444;
         }
+        /* 讓 SVG 繼承文字顏色 */
         .action-btn svg { width: 16px; height: 16px; stroke-width: 2; }
     </style>
 </head>
@@ -264,6 +265,25 @@
             "自覺與認知": ["羞愧", "內疚", "尷尬", "困惑", "矛盾", "茫然", "疲憊", "嫉妒"]
         };
 
+        // --- 防止螢幕休眠 (Wake Lock API) ---
+        let wakeLock = null;
+        async function requestWakeLock() {
+            try {
+                if ('wakeLock' in navigator) {
+                    wakeLock = await navigator.wakeLock.request('screen');
+                    console.log('螢幕喚醒鎖定已啟用');
+                }
+            } catch (err) {
+                console.log(`無法啟用喚醒鎖定: ${err.name}, ${err.message}`);
+            }
+        }
+        // 當頁面重新顯示時，重新取得鎖定
+        document.addEventListener('visibilitychange', async () => {
+            if (wakeLock !== null && document.visibilityState === 'visible') {
+                await requestWakeLock();
+            }
+        });
+
         async function init() {
             try {
                 const res = await fetch(PRAYERS_DATA_URL);
@@ -273,6 +293,10 @@
             
             const today = new Date().toISOString().split('T')[0];
             document.getElementById('journal-date').value = today;
+            
+            // 啟用螢幕防休眠 (針對語音輸入優化)
+            await requestWakeLock();
+
             refreshAllLists();
             if(window.lucide) lucide.createIcons();
         }
@@ -298,10 +322,10 @@
                             </p>
                             <div class="flex flex-wrap gap-2">
                                 <button onclick="exportNotebook('${storageKey}', '${title}')" class="px-3 py-1.5 bg-white border border-yellow-300 rounded-lg hover:bg-yellow-100 text-yellow-900 text-xs transition-colors flex items-center gap-1 shadow-sm">
-                                    <i data-lucide="download" class="w-3 h-3"></i> 匯出
+                                    <i data-lucide="download" class="w-3 h-3"></i> 匯出備份
                                 </button>
                                 <button onclick="document.getElementById('import-${storageKey}').click()" class="px-3 py-1.5 bg-white border border-yellow-300 rounded-lg hover:bg-yellow-100 text-yellow-900 text-xs transition-colors flex items-center gap-1 shadow-sm">
-                                    <i data-lucide="upload" class="w-3 h-3"></i> 匯入
+                                    <i data-lucide="upload" class="w-3 h-3"></i> 匯入還原
                                 </button>
                                 <input type="file" id="import-${storageKey}" class="hidden" accept=".json" onchange="importNotebook(this, '${storageKey}')">
                             </div>
@@ -721,7 +745,15 @@
             }
             let html = '';
             unlocked.sort((a,b) => new Date(b.date) - new Date(a.date)).forEach(l => {
-                html += `<div class="bg-white p-3 rounded-lg border border-[#8D7B68]/30 shadow-sm relative"><div class="text-xs text-[#8D7B68] font-bold mb-1 flex justify-between items-center"><span>📅 來自 ${l.createdDate || '過去'} 的信</span><button onclick="deleteItem('witty_letters', ${l.id})" class="text-gray-300 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button></div><div class="text-sm text-[#3E3B39] whitespace-pre-wrap leading-relaxed">${l.content}</div></div>`;
+                html += `
+                    <div class="bg-white p-3 rounded-lg border border-[#8D7B68]/30 shadow-sm relative">
+                        <div class="text-xs text-[#8D7B68] font-bold mb-1 flex justify-between items-center">
+                            <span>📅 來自 ${l.createdDate || '過去'} 的信</span>
+                            <button onclick="deleteItem('witty_letters', ${l.id})" class="text-gray-300 hover:text-red-400 p-1"><i data-lucide="trash-2" class="w-3 h-3"></i></button>
+                        </div>
+                        <div class="text-sm text-[#3E3B39] whitespace-pre-wrap leading-relaxed">${l.content}</div>
+                    </div>
+                `;
             });
             listEl.innerHTML = html;
         }
