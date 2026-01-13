@@ -15,57 +15,23 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.js"></script>
     
     <style>
-        /* 經文選取樣式 */
         .verse-text {
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 8px;
-            padding: 8px 12px;
-            margin-bottom: 4px;
-            border-left: 4px solid transparent;
-            line-height: 1.8;
-            scroll-margin-top: 100px; /* 預留捲動空間，避免被置頂標題擋住 */
+            cursor: pointer; transition: all 0.2s; border-radius: 8px; padding: 8px 12px; margin-bottom: 4px; border-left: 4px solid transparent; line-height: 1.8; scroll-margin-top: 100px;
         }
-        .verse-text:hover {
-            background-color: rgba(0,0,0,0.03);
-        }
-        /* 選取狀態 (點擊) */
-        .verse-text.selected {
-            background-color: rgba(107, 142, 35, 0.15); 
-            border-left-color: #6B8E23;
-        }
-        /* 高亮狀態 (搜尋跳轉) */
-        .verse-text.highlighted {
-            background-color: #FEF9C3; /* 黃色背景 */
-            border-left-color: #EAB308; /* 黃色邊框 */
-            font-weight: 500;
-        }
+        .verse-text:hover { background-color: rgba(0,0,0,0.03); }
+        .verse-text.selected { background-color: rgba(107, 142, 35, 0.15); border-left-color: #6B8E23; }
+        .verse-text.highlighted { background-color: #FEF9C3; border-left-color: #EAB308; font-weight: 500; }
         
-        /* 懸浮複製按鈕 (FAB) */
         #copy-fab {
-            position: absolute; 
-            bottom: 2rem; 
-            right: 2rem;
-            background-color: #3E3B39; 
-            color: white;
-            padding: 0.8rem 1.5rem; 
-            border-radius: 50px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            display: none; 
-            align-items: center; 
-            gap: 0.5rem;
-            z-index: 60; 
-            cursor: pointer; 
-            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            font-weight: bold;
-            font-size: 0.95rem;
+            position: absolute; bottom: 2rem; right: 2rem; background-color: #3E3B39; color: white;
+            padding: 0.8rem 1.5rem; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            display: none; align-items: center; gap: 0.5rem; z-index: 60; cursor: pointer; 
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); font-weight: bold; font-size: 0.95rem;
         }
         #copy-fab:hover { background-color: #6B8E23; transform: translateY(-2px); }
         #copy-fab.show { display: flex; }
         
         @keyframes popIn { from { transform: scale(0); } to { transform: scale(1); } }
-
-        /* 複製成功提示 Toast */
         #toast-msg {
             position: fixed; bottom: 5rem; left: 50%; transform: translateX(-50%);
             background: rgba(0,0,0,0.8); color: white; padding: 8px 16px; border-radius: 20px;
@@ -142,7 +108,7 @@
         </section>
     </div>
 
-    <!-- Modal (含複製按鈕) -->
+    <!-- Modal -->
     <div id="bible-modal" onclick="closeBibleModal(event)">
         <!-- 浮動複製按鈕 -->
         <button id="copy-fab" onclick="copyVerses()">
@@ -163,7 +129,6 @@
         </div>
     </div>
     
-    <!-- 提示訊息 -->
     <div id="toast-msg">已複製到剪貼簿</div>
 
     <script>
@@ -173,7 +138,6 @@
         let db = null;
         let isDbLoading = false;
         let dbCols = {};
-        
         let selectedVerses = new Set(); 
 
         async function initBibleDB() {
@@ -181,7 +145,6 @@
             if (isDbLoading) return new Promise(resolve => {
                 const check = setInterval(() => { if(db || !isDbLoading) { clearInterval(check); resolve(db); } }, 100);
             });
-
             isDbLoading = true;
             try {
                 const SQL = await initSqlJs({ locateFile: file => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/sql-wasm.wasm` });
@@ -189,14 +152,11 @@
                 if(!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
                 const buffer = await response.arrayBuffer();
                 db = new SQL.Database(new Uint8Array(buffer));
-                
                 const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table'")[0].values;
                 let validTable = tables.find(t => /bible|verse|scripture/i.test(t[0]));
                 if (!validTable) validTable = tables.find(t => t[0] !== 'sqlite_sequence');
                 const tableName = validTable ? validTable[0] : tables[0][0];
-                
                 const cols = db.exec(`PRAGMA table_info(${tableName})`)[0].values.map(r=>r[1]);
-                
                 dbCols = {
                     tableName: tableName,
                     book: cols.find(c => /book|b|書|vol/i.test(c)) || cols[0],
@@ -208,19 +168,61 @@
             } catch (err) { console.error("DB Error", err); return null; } finally { isDbLoading = false; }
         }
 
+        // 新增：書卷名稱校正 (解決 創世紀 vs 創世記 問題)
+        function normalizeBookName(bookName) {
+            const map = {
+                "創世紀": "創世記", "啓示錄": "啟示錄", "使徒行傅": "使徒行傳",
+                "羅馬書書": "羅馬書", "約翰褔音": "約翰福音", "彌加書": "彌迦書"
+            };
+            return map[bookName] || bookName;
+        }
+
         function parseBibleReference(text) {
             if (!text) return null;
             text = text.replace(/[\(\)\uff08\uff09]/g, ' ').replace(/：/g, ':').trim();
             const bookPat = "([1-3]?\\s?[\\u4e00-\\u9fa5]{1,15}|[1-3]?\\s?[a-zA-Z]+)";
             const chapVersePat = "(\\d+)\\s*:\\s*(\\d+)(?:\\s*[-–~]\\s*(\\d+))?";
+            
+            // 修正書卷名
+            let matchBook = text.match(new RegExp(bookPat));
+            if (matchBook) {
+                const originalBook = matchBook[0].trim();
+                const fixedBook = normalizeBookName(originalBook);
+                if (originalBook !== fixedBook) text = text.replace(originalBook, fixedBook);
+            }
+
             const cvRegex = new RegExp(`${bookPat}\\s*${chapVersePat}`, 'g');
             let match = null;
-            while ((match = cvRegex.exec(text)) !== null) { let lastMatch = match; return { book: lastMatch[1].trim(), chapter: parseInt(lastMatch[2]), verse: parseInt(lastMatch[3]), endVerse: lastMatch[4] ? parseInt(lastMatch[4]) : parseInt(lastMatch[3]) }; }
+            while ((match = cvRegex.exec(text)) !== null) { 
+                return { 
+                    book: normalizeBookName(match[1].trim()), 
+                    chapter: parseInt(match[2]), 
+                    verse: parseInt(match[3]), 
+                    endVerse: match[4] ? parseInt(match[4]) : parseInt(match[3]) 
+                }; 
+            }
+            
             const chapRangePat = "(\\d+)\\s*[-–~]\\s*(\\d+)";
             const rangeRegex = new RegExp(`${bookPat}\\s*${chapRangePat}`, 'g');
-            while ((match = rangeRegex.exec(text)) !== null) { return { book: match[1].trim(), chapter: parseInt(match[2]), verse: 1, endVerse: null, endChapter: parseInt(match[3]) }; }
+            while ((match = rangeRegex.exec(text)) !== null) { 
+                return { 
+                    book: normalizeBookName(match[1].trim()), 
+                    chapter: parseInt(match[2]), 
+                    verse: 1, 
+                    endVerse: null, 
+                    endChapter: parseInt(match[3]) 
+                }; 
+            }
+
             const chapRegex = new RegExp(`${bookPat}\\s*(\\d+)\\s*$`, 'g'); 
-            while ((match = chapRegex.exec(text)) !== null) { return { book: match[1].trim(), chapter: parseInt(match[2]), verse: 1, endVerse: null }; }
+            while ((match = chapRegex.exec(text)) !== null) { 
+                return { 
+                    book: normalizeBookName(match[1].trim()), 
+                    chapter: parseInt(match[2]), 
+                    verse: 1, 
+                    endVerse: null 
+                }; 
+            }
             return null;
         }
 
@@ -245,56 +247,60 @@
                     if (!parsed) return reference;
                     let s = `${parsed.book} 第 ${parsed.chapter} 章`;
                     if (parsed.endChapter) s += `-${parsed.endChapter} 章`;
-                    // 如果有高亮節數 (搜尋結果)，標題顯示整章，但內容會標註
-                    // 注意：不再顯示 "1-3節"，因為我們現在總是顯示整章
+                    // 修正：在 Modal 標題中不顯示節數，只顯示「章」，保持簡潔
                     return s;
                 };
 
-                // 修改：如果指定了高亮節數 (highlightVerse)，或是只有單節/範圍，我們都改為查詢「整章」
-                // 然後在渲染時加上 highlighted class
+                const executeQuery = (query, subtitle) => {
+                    try {
+                        const res = database.exec(query);
+                        if (res.length > 0) {
+                            let html = '';
+                            let currentChap = -1;
+                            res[0].values.forEach(row => {
+                                let c, v, t;
+                                if (row.length === 3) { 
+                                    c = row[0]; v = row[1]; t = row[2];
+                                    if (c !== currentChap && parsed?.endChapter) {
+                                        html += `<div class="text-center my-4 font-bold text-gray-500">第 ${c} 章</div>`;
+                                        currentChap = c;
+                                    }
+                                } else {
+                                    c = parsed.chapter; v = row[0]; t = row[1];
+                                }
+                                
+                                let isHighlight = (highlightVerse && v === highlightVerse);
+                                if (!isHighlight && !highlightVerse) {
+                                    if (parsed.endVerse && v >= parsed.verse && v <= parsed.endVerse) isHighlight = true;
+                                    else if (!parsed.endVerse && parsed.verse && v === parsed.verse && reference.includes(':')) isHighlight = true;
+                                }
+
+                                const highlightClass = isHighlight ? 'highlighted' : '';
+                                const idAttr = `id="verse-${v}"`;
+                                const refString = `${parsed.book} ${c}:${v}`;
+                                html += `<p ${idAttr} class="verse-text ${highlightClass}" onclick="toggleVerse(this)" data-ref="${refString}" data-text="${t}"><span class="verse-num">${v}</span>${t}</p>`;
+                            });
+                            
+                            modalTitle.innerText = subtitle;
+                            modalBody.innerHTML = html;
+                            
+                            const targetV = highlightVerse || parsed.verse || 1;
+                            setTimeout(() => {
+                                const target = document.getElementById(`verse-${targetV}`);
+                                if(target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            }, 300);
+                            return true;
+                        }
+                        return false;
+                    } catch(e) { console.error(e); return false; }
+                };
+
                 if (parsed) {
-                    // 總是查詢整章，並依節數排序 (CAST AS INTEGER 重要！)
+                    // 總是查詢整章 (使用 CAST 確保排序正確)
                     const query = `SELECT ${dbCols.ver}, ${dbCols.text} FROM ${dbCols.tableName} WHERE ${dbCols.book} LIKE '%${parsed.book}%' AND ${dbCols.chap} = ${parsed.chapter} ORDER BY CAST(${dbCols.ver} AS INTEGER)`;
                     
-                    const res = database.exec(query);
-                    if (res.length > 0) {
-                        let html = '';
-                        res[0].values.forEach(row => {
-                            const v = row[0], t = row[1];
-                            
-                            // 判斷是否高亮
-                            // 1. 指定單節 (搜尋結果)
-                            let isHighlight = (highlightVerse && v === highlightVerse);
-                            
-                            // 2. 範圍引用 (例如 3:16-18)，如果在範圍內也高亮
-                            if (!isHighlight && !highlightVerse) {
-                                if (parsed.endVerse && v >= parsed.verse && v <= parsed.endVerse) {
-                                    isHighlight = true;
-                                } else if (!parsed.endVerse && parsed.verse && v === parsed.verse && reference.includes(':')) {
-                                    // 單節引用 (無範圍)
-                                    isHighlight = true;
-                                }
-                            }
-
-                            const highlightClass = isHighlight ? 'highlighted' : '';
-                            const idAttr = `id="verse-${v}"`; // 用於捲動定位
-                            
-                            const refString = `${parsed.book} ${parsed.chapter}:${v}`;
-                            html += `<p ${idAttr} class="verse-text ${highlightClass}" onclick="toggleVerse(this)" data-ref="${refString}" data-text="${t}"><span class="verse-num">${v}</span>${t}</p>`;
-                        });
-                        
-                        modalTitle.innerText = getSubtitle();
-                        modalBody.innerHTML = html;
-                        
-                        // 自動捲動到目標節數
-                        const targetV = highlightVerse || parsed.verse || 1;
-                        setTimeout(() => {
-                            const target = document.getElementById(`verse-${targetV}`);
-                            if(target) target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                        }, 300);
-
-                    } else {
-                        modalBody.innerHTML = `<p class="text-center py-6">找不到經文資料</p>`;
+                    if (!executeQuery(query, getSubtitle())) {
+                        modalBody.innerHTML = `<p class="text-center py-6">找不到經文：${reference}</p>`;
                     }
                 } else {
                     modalTitle.innerText = reference;
@@ -308,7 +314,8 @@
 
         function closeBibleModal(event) {
             if (event && event.target.closest('.modal-content') && event.target.id !== 'bible-modal') return;
-            document.getElementById('bible-modal').classList.remove('show');
+            const modal = document.getElementById('bible-modal');
+            if(modal) modal.classList.remove('show');
             selectedVerses.clear();
             updateCopyBtn();
         }
@@ -317,17 +324,8 @@
             el.classList.toggle('selected');
             const ref = el.getAttribute('data-ref');
             const text = el.getAttribute('data-text');
-            
-            if (el.classList.contains('selected')) {
-                selectedVerses.add({ ref, text, el }); 
-            } else {
-                for (let item of selectedVerses) {
-                    if (item.ref === ref) {
-                        selectedVerses.delete(item);
-                        break;
-                    }
-                }
-            }
+            if (el.classList.contains('selected')) selectedVerses.add({ ref, text, el }); 
+            else { for (let item of selectedVerses) { if (item.ref === ref) { selectedVerses.delete(item); break; } } }
             updateCopyBtn();
         }
 
@@ -337,16 +335,12 @@
             if (selectedVerses.size > 0) {
                 btn.classList.add('show');
                 countSpan.innerText = `複製 (${selectedVerses.size})`;
-            } else {
-                btn.classList.remove('show');
-            }
+            } else { btn.classList.remove('show'); }
         }
 
         function copyVerses() {
             if (selectedVerses.size === 0) return;
-            const sortedVerses = Array.from(selectedVerses).sort((a, b) => {
-                return (a.el.offsetTop - b.el.offsetTop);
-            });
+            const sortedVerses = Array.from(selectedVerses).sort((a, b) => (a.el.offsetTop - b.el.offsetTop));
             const textToCopy = sortedVerses.map(v => `${v.ref} ${v.text}`).join('\n');
             navigator.clipboard.writeText(textToCopy).then(() => {
                 showToast();
@@ -401,11 +395,7 @@
                     if (ref) {
                         btnLabel = `${ref} | 閱讀整章`;
                         const p = parseBibleReference(ref);
-                        if (p) {
-                            chapterRef = `${p.book} ${p.chapter}`;
-                        } else {
-                            chapterRef = ref.split(/[:：]/)[0]; 
-                        }
+                        if (p) chapterRef = `${p.book} ${p.chapter}`;
                     }
 
                     document.getElementById('blessing-card-area').innerHTML = `
@@ -431,19 +421,13 @@
         async function renderBibleBrowserHome() {
             const container = document.getElementById('bible-display-area');
             const database = await initBibleDB();
-            if (!database) {
-                container.innerHTML = '<p class="text-center text-red-500">資料庫讀取失敗</p>';
-                return;
-            }
+            if (!database) { container.innerHTML = '<p class="text-center text-red-500">資料庫讀取失敗</p>'; return; }
 
             try {
                 const res = database.exec(`SELECT DISTINCT ${dbCols.book} FROM ${dbCols.tableName}`);
                 const books = [...new Set(res[0].values.flat())];
-
                 let html = '<div class="bible-book-grid">';
-                books.forEach(book => {
-                    html += `<div class="bible-book-item" onclick="renderChapters('${book}')">${book}</div>`;
-                });
+                books.forEach(book => { html += `<div class="bible-book-item" onclick="renderChapters('${book}')">${book}</div>`; });
                 html += '</div>';
                 container.innerHTML = html;
             } catch (e) { console.error(e); }
@@ -454,7 +438,6 @@
             const database = await initBibleDB();
             const res = database.exec(`SELECT DISTINCT ${dbCols.chap} FROM ${dbCols.tableName} WHERE ${dbCols.book} = '${book}'`);
             const chapters = [...new Set(res[0].values.flat())].sort((a,b) => a - b);
-
             let html = `
                 <div class="mb-4 flex items-center gap-2">
                     <button onclick="renderBibleBrowserHome()" class="text-sm text-[#6B8E23] hover:underline">< 返回書卷</button>
@@ -462,9 +445,7 @@
                 </div>
                 <div class="chapter-grid">
             `;
-            chapters.forEach(c => {
-                html += `<div class="chapter-item" onclick="openScripture('${book} ${c}')">${c}</div>`;
-            });
+            chapters.forEach(c => { html += `<div class="chapter-item" onclick="openScripture('${book} ${c}')">${c}</div>`; });
             html += '</div>';
             container.innerHTML = html;
         }
@@ -472,7 +453,6 @@
         async function performSearch() {
             const keyword = document.getElementById('bible-search-input').value.trim();
             if(!keyword) { renderBibleBrowserHome(); return; }
-            
             const container = document.getElementById('bible-display-area');
             container.innerHTML = '<div class="text-center py-10"><i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto text-[#6B8E23]"></i></div>';
             if(window.lucide) lucide.createIcons();
@@ -489,7 +469,7 @@
             let html = `<div class="mb-4 flex justify-between"><span class="text-sm text-gray-500">搜尋結果</span><button onclick="renderBibleBrowserHome()" class="text-sm text-[#6B8E23]">返回目錄</button></div><div class="space-y-2">`;
             res[0].values.forEach(row => {
                 const b=row[0], c=row[1], v=row[2], t=row[3];
-                // 這裡的 onclick 會傳入 highlightVerse = v
+                // 修正：傳入 highlightVerse = v，讓 openScripture 自動高亮
                 html += `<div class="search-result-item" onclick="openScripture('${b} ${c}:${v}', ${v})">
                             <div class="text-xs text-[#6B8E23] font-bold mb-1">${b} ${c}:${v}</div>
                             <div class="text-[#3E3B39] text-sm">${t}</div>
