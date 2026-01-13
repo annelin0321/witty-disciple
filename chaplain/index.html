@@ -46,32 +46,34 @@
             border: 1px solid #d1d5db;
             border-radius: 12px; 
             padding: 1rem; 
-            padding-right: 5.5rem; 
+            padding-right: 6rem; /* 預留足夠空間給按鈕 */
             margin-bottom: 0.75rem; 
             position: relative;
         }
         .journal-item:last-child { margin-bottom: 0; }
         
-        /* 操作按鈕樣式 (無框線，滑鼠移過去才顯示) */
+        /* 操作按鈕樣式 (高對比度修正) */
         .action-btns {
             position: absolute; 
             top: 0.75rem; 
             right: 0.75rem; 
             display: flex; 
             gap: 0.5rem;
-            z-index: 20;
+            z-index: 50; /* 確保在最上層 */
+            background-color: rgba(255,255,255,0.9);
             padding: 2px;
-            border-radius: 6px;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         .action-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 30px;
-            height: 30px;
-            color: #999;
-            background-color: transparent; /* 背景透明 */
-            border: 1px solid transparent; /* 邊框透明 */
+            width: 32px;
+            height: 32px;
+            color: #555; /* 深灰色，更清晰 */
+            background-color: #f3f4f6; /* 淺灰背景 */
+            border: 1px solid #e5e7eb;
             border-radius: 6px;
             cursor: pointer !important;
             transition: all 0.2s;
@@ -79,12 +81,14 @@
         .action-btn:hover { 
             background-color: #ecfccb; 
             color: #6B8E23; 
+            border-color: #6B8E23;
         }
         .action-btn.delete:hover { 
             background-color: #fee2e2; 
             color: #ef4444; 
+            border-color: #ef4444;
         }
-        .action-btn svg { width: 16px; height: 16px; stroke-width: 2; }
+        .action-btn svg { width: 16px; height: 16px; stroke-width: 2; pointer-events: none; }
     </style>
 </head>
 <body class="pb-20" role="application">
@@ -138,11 +142,11 @@
         </section>
     </div>
 
-    <!-- Firebase SDK (改用穩定的 10.13.1 版本) -->
+    <!-- Firebase SDK (使用穩定的 10.13.0 版本) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.1/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
         // Your Firebase Config
         const firebaseConfig = {
@@ -177,7 +181,6 @@
             console.error("Firebase 初始化失敗:", e);
         }
 
-        // 顯示錯誤函式
         function showError(msg) {
             const box = document.getElementById('error-message-box');
             box.innerHTML = `<strong>⚠️ 發生錯誤：</strong><br>${msg}`;
@@ -196,11 +199,11 @@
                 let errorMsg = error.message;
                 
                 if (error.code === 'auth/unauthorized-domain') {
-                    errorMsg = `網域未授權 (Auth)。\n請至 Firebase Console 新增您的網域：${window.location.hostname}`;
+                    errorMsg = `網域未授權。\n請至 Firebase Console 新增網域：\n${window.location.hostname}`;
                 } else if (error.message.includes('requests-from-referer')) {
-                    errorMsg = `API Key 網域限制 (Google Cloud)。\n請至 Google Cloud Console 檢查 API Key 設定。`;
+                    errorMsg = `API Key 網域限制。\n請至 Google Cloud Console 檢查 API Key 設定。`;
                 } else if (error.code === 'auth/popup-blocked') {
-                    errorMsg = `瀏覽器封鎖了登入視窗，請允許彈出式視窗。`;
+                    errorMsg = `瀏覽器封鎖了登入視窗。`;
                 }
 
                 showError(errorMsg);
@@ -275,7 +278,7 @@
         let editingId = null;
         let editingKey = null;
 
-        // 直接定義SVG字串
+        // SVG Icons
         const ICON_EDIT = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
         const ICON_TRASH = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
 
@@ -287,7 +290,7 @@
             "自覺與認知": ["羞愧", "內疚", "尷尬", "困惑", "矛盾", "茫然", "疲憊", "嫉妒"]
         };
 
-        // --- 防止螢幕休眠 ---
+        // Wake Lock
         let wakeLock = null;
         async function requestWakeLock() {
             try {
@@ -359,7 +362,6 @@
                 let typeClass = 'neutral';
                 if(category.includes('愉悅')) typeClass = 'positive';
                 else if(category.includes('憤怒') || category.includes('悲傷') || category.includes('恐懼')) typeClass = 'negative';
-                
                 emotionHtml += `<div class="mb-3"><div class="emotion-group-title">${category}</div><div class="flex flex-wrap gap-1">${emotions.map(e => `<span class="emotion-chip ${typeClass}" onclick="toggleEmotion(this)">${e}</span>`).join('')}</div></div>`;
             }
 
@@ -397,47 +399,6 @@
             window.refreshAllLists = refreshAllLists; 
             renderDevotionList(); renderPrayerList(); renderGratitudeList(); renderEmotionList(); renderLetterListDaily(); renderBlankNoteList(); renderTimeCapsule();
             if(window.lucide) lucide.createIcons();
-        }
-
-        function exportNotebook(key, title) {
-            const data = localStorage.getItem(key);
-            if (!data || data === '[]') return alert('目前沒有資料可匯出');
-            const blob = new Blob([data], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            const date = new Date().toISOString().slice(0,10);
-            a.href = url;
-            a.download = `witty_${title}_${date}.json`;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function importNotebook(input, key) {
-            const file = input.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                try {
-                    const importedData = JSON.parse(e.target.result);
-                    if (!Array.isArray(importedData)) throw new Error("格式錯誤");
-                    const oldData = JSON.parse(localStorage.getItem(key) || '[]');
-                    const combined = [...importedData, ...oldData];
-                    const unique = [];
-                    const ids = new Set();
-                    combined.forEach(item => {
-                        if (item.id) { if (!ids.has(item.id)) { ids.add(item.id); unique.push(item); } } 
-                        else { unique.push(item); }
-                    });
-                    localStorage.setItem(key, JSON.stringify(unique));
-                    saveData(key, unique); 
-                    alert('匯入成功！');
-                    refreshAllLists();
-                } catch (err) { alert('匯入失敗'); }
-            };
-            reader.readAsText(file);
-            input.value = '';
         }
 
         // --- 編輯功能實作 ---
@@ -597,7 +558,6 @@
             const filtered = list.filter(item => item.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(item => {
-                // 使用內嵌 SVG
                 html += `
                     <div class="journal-item">
                         <div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div>
@@ -841,6 +801,48 @@
             refreshAllLists();
             if (editingId === id) cancelEdit();
         };
+
+        // 匯出與匯入功能 (保持原樣，確保能運作)
+        function exportNotebook(key, title) {
+            const data = localStorage.getItem(key);
+            if (!data || data === '[]') return alert('目前沒有資料可匯出');
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            const date = new Date().toISOString().slice(0,10);
+            a.href = url;
+            a.download = `witty_${title}_${date}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function importNotebook(input, key) {
+            const file = input.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const importedData = JSON.parse(e.target.result);
+                    if (!Array.isArray(importedData)) throw new Error("格式錯誤");
+                    const oldData = JSON.parse(localStorage.getItem(key) || '[]');
+                    const combined = [...importedData, ...oldData];
+                    const unique = [];
+                    const ids = new Set();
+                    combined.forEach(item => {
+                        if (item.id) { if (!ids.has(item.id)) { ids.add(item.id); unique.push(item); } } 
+                        else { unique.push(item); }
+                    });
+                    localStorage.setItem(key, JSON.stringify(unique));
+                    saveData(key, unique); 
+                    alert('匯入成功！');
+                    refreshAllLists();
+                } catch (err) { alert('匯入失敗'); }
+            };
+            reader.readAsText(file);
+            input.value = '';
+        }
 
         init();
     </script>
