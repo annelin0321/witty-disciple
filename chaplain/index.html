@@ -46,25 +46,44 @@
             border: 1px solid #d1d5db;
             border-radius: 12px; 
             padding: 1rem; 
-            padding-right: 6rem; 
+            padding-right: 5.5rem; 
             margin-bottom: 0.75rem; 
             position: relative;
         }
         .journal-item:last-child { margin-bottom: 0; }
         
+        /* 操作按鈕樣式 */
         .action-btns {
-            position: absolute; top: 0.75rem; right: 0.75rem; 
-            display: flex; gap: 0.5rem; z-index: 50;
-            padding: 2px; border-radius: 6px;
+            position: absolute; 
+            top: 0.75rem; 
+            right: 0.75rem; 
+            display: flex; 
+            gap: 0.5rem;
+            z-index: 50;
+            padding: 2px;
+            border-radius: 6px;
         }
         .action-btn {
-            display: flex; align-items: center; justify-content: center;
-            width: 32px; height: 32px; color: #555;
-            background-color: #f3f4f6; border: 1px solid #e5e7eb; border-radius: 6px;
-            cursor: pointer !important; transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 30px;
+            height: 30px;
+            color: #999;
+            background-color: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            cursor: pointer !important;
+            transition: all 0.2s;
         }
-        .action-btn:hover { background-color: #ecfccb; color: #6B8E23; border-color: #6B8E23; }
-        .action-btn.delete:hover { background-color: #fee2e2; color: #ef4444; border-color: #ef4444; }
+        .action-btn:hover { 
+            background-color: #ecfccb; 
+            color: #6B8E23; 
+        }
+        .action-btn.delete:hover { 
+            background-color: #fee2e2; 
+            color: #ef4444; 
+        }
         .action-btn svg { width: 16px; height: 16px; stroke-width: 2; pointer-events: none; }
     </style>
 </head>
@@ -111,7 +130,7 @@
                 <button id="btn-logout" class="text-red-400 hover:underline hidden" onclick="logout()">登出</button>
             </div>
             <!-- 錯誤訊息區 -->
-            <div id="error-message-box" class="hidden mt-2 p-4 bg-red-50 border border-red-200 text-red-800 text-xs rounded-lg max-w-lg text-left shadow-md" style="white-space: normal; word-break: break-all;"></div>
+            <div id="error-message-box" class="hidden mt-2 p-4 bg-red-50 border border-red-200 text-red-800 text-xs rounded-lg max-w-lg text-left shadow-md break-all"></div>
         </div>
 
         <section id="section-prayers" class="page-section fade-in">
@@ -119,13 +138,12 @@
         </section>
     </div>
 
-    <!-- Firebase SDK (10.7.1) -->
+    <!-- Firebase SDK (保持穩定版 10.7.1) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-        // Your Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyCHn_OgHIg553J-h6EOByNYKwwWfRX2i2k",
             authDomain: "witty-disciple.firebaseapp.com",
@@ -163,6 +181,7 @@
             console.error("Firebase 初始化失敗:", e);
         }
 
+        // 顯示錯誤函式
         function showError(msg) {
             const box = document.getElementById('error-message-box');
             box.innerHTML = `<strong>⚠️ 發生錯誤：</strong><br>${msg}`;
@@ -181,13 +200,19 @@
                 let errorMsg = error.message;
                 
                 if (error.code === 'auth/unauthorized-domain') {
-                    errorMsg = `網域未授權。\n請至 Firebase Console 新增您的網域：${window.location.hostname}`;
+                    errorMsg = `網域未授權 (Auth)。\n請至 Firebase Console -> Authentication -> Settings -> Authorized domains\n新增您的網域：${window.location.hostname}`;
                 } else if (error.message.includes('requests-from-referer')) {
                     errorMsg = `API Key 網域限制。\n請至 Google Cloud Console 檢查 API Key 設定。`;
-                } else if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
-                    errorMsg = `<strong>登入視窗被攔截或關閉</strong><br>
-                                1. 請檢查瀏覽器網址列是否有「封鎖彈跳視窗」的圖示，並設為允許。<br>
-                                2. 此預覽環境可能不支援 Google 登入，請將網站部署到 GitHub Pages 或 Cloudflare 後再測試。`;
+                } else if (error.message.includes('The requested action is invalid')) {
+                    // 自動生成修復連結
+                    const projectLink = `https://console.cloud.google.com/marketplace/product/google/identitytoolkit.googleapis.com?project=${firebaseConfig.projectId}`;
+                    errorMsg = `<strong>Google Cloud API 未啟用</strong><br>
+                                "The requested action is invalid" 代表身分驗證 API 被關閉。<br>
+                                1. 請點擊此連結：<a href="${projectLink}" target="_blank" class="underline text-blue-600 font-bold">啟用 Identity Toolkit API</a><br>
+                                2. 按下藍色的「啟用 (ENABLE)」按鈕。<br>
+                                3. 等待幾分鐘後重新整理網頁再試。`;
+                } else if (error.code === 'auth/popup-blocked') {
+                    errorMsg = `瀏覽器封鎖了登入視窗，請允許彈出式視窗。`;
                 }
 
                 showError(errorMsg);
@@ -245,8 +270,8 @@
                     }
                 }, (error) => {
                      if (error.code === 'permission-denied') {
-                        // 靜默處理
-                     }
+                        console.warn('權限不足：無法讀取雲端資料。');
+                    }
                 });
                 unsubscribeListeners.push(unsub);
             });
@@ -261,6 +286,7 @@
         let editingId = null;
         let editingKey = null;
 
+        // SVG Icons
         const ICON_EDIT = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>`;
         const ICON_TRASH = `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>`;
 
@@ -362,11 +388,6 @@
                 <div id="tab-blank" class="chaplain-tab-content hidden fade-in"><div class="notebook-card text-left"><p class="text-center text-sm text-[#8D7B68] mb-4">隨手記下聖靈的感動或生活的靈感。</p><div class="space-y-4"><div class="form-group"><textarea id="blank-content" class="form-input" rows="5" placeholder="在此輸入內容..."></textarea></div><div class="text-center flex gap-2 justify-center"><button id="btn-save-blank" onclick="saveBlankNote()" class="nature-btn">儲存筆記</button><button id="btn-cancel-blank" onclick="cancelEdit('blank')" class="nature-btn hidden bg-gray-200 border-gray-300 text-gray-600">取消</button></div><div class="mt-4 pt-4 border-t border-gray-200/50"><h4 class="font-bold text-[#6B8E23] mb-2 text-sm">📅 當日靈感紀錄</h4><div id="blank-note-list" class="space-y-2 max-h-60 overflow-y-auto"></div></div></div>${getBackupUI('witty_blank_notes', '靈感筆記')}</div></div>
             `;
             document.getElementById('chaplain-content').innerHTML = html;
-            renderPrayerList();
-            renderGratitudeList();
-            renderBlankNoteList();
-            renderTimeCapsule();
-            renderLetterListDaily();
         }
 
         function switchTab(id, btn) {
