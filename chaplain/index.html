@@ -46,34 +46,32 @@
             border: 1px solid #d1d5db;
             border-radius: 12px; 
             padding: 1rem; 
-            padding-right: 6rem; /* 預留足夠空間給按鈕 */
+            padding-right: 5.5rem; 
             margin-bottom: 0.75rem; 
             position: relative;
         }
         .journal-item:last-child { margin-bottom: 0; }
         
-        /* 操作按鈕樣式 (高對比度修正) */
+        /* 操作按鈕樣式 */
         .action-btns {
             position: absolute; 
             top: 0.75rem; 
             right: 0.75rem; 
             display: flex; 
             gap: 0.5rem;
-            z-index: 50; /* 確保在最上層 */
-            background-color: rgba(255,255,255,0.9);
+            z-index: 50;
             padding: 2px;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border-radius: 6px;
         }
         .action-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 32px;
-            height: 32px;
-            color: #555; /* 深灰色，更清晰 */
-            background-color: #f3f4f6; /* 淺灰背景 */
-            border: 1px solid #e5e7eb;
+            width: 30px;
+            height: 30px;
+            color: #555; 
+            background-color: #f3f4f6;
+            border: 1px solid #d1d5db;
             border-radius: 6px;
             cursor: pointer !important;
             transition: all 0.2s;
@@ -142,11 +140,11 @@
         </section>
     </div>
 
-    <!-- Firebase SDK (使用穩定的 10.13.0 版本) -->
+    <!-- Firebase SDK (使用穩定的 10.7.1) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
         // Your Firebase Config
         const firebaseConfig = {
@@ -163,24 +161,31 @@
         let unsubscribeListeners = [];
 
         try {
-            app = initializeApp(firebaseConfig);
-            auth = getAuth(app);
-            db = getFirestore(app);
-            
-            onAuthStateChanged(auth, (currentUser) => {
-                user = currentUser;
-                updateAuthUI();
-                if (user) {
-                    setupRealtimeListeners();
-                } else {
-                    unsubscribeListeners.forEach(unsub => unsub());
-                    unsubscribeListeners = [];
-                }
-            });
+            // 檢查是否為 file:// 協定
+            if (window.location.protocol === 'file:') {
+                console.warn("Firebase Auth 不支援 file:// 協定，請使用 localhost 或部署後測試。");
+                showError("無法在本地檔案 (file://) 執行登入，請部署到網站後再試。");
+            } else {
+                app = initializeApp(firebaseConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                
+                onAuthStateChanged(auth, (currentUser) => {
+                    user = currentUser;
+                    updateAuthUI();
+                    if (user) {
+                        setupRealtimeListeners();
+                    } else {
+                        unsubscribeListeners.forEach(unsub => unsub());
+                        unsubscribeListeners = [];
+                    }
+                });
+            }
         } catch (e) {
             console.error("Firebase 初始化失敗:", e);
         }
 
+        // 顯示錯誤函式
         function showError(msg) {
             const box = document.getElementById('error-message-box');
             box.innerHTML = `<strong>⚠️ 發生錯誤：</strong><br>${msg}`;
@@ -188,7 +193,7 @@
         }
 
         window.login = async () => {
-            if(!auth) return alert("Firebase 未初始化");
+            if(!auth) return alert("Firebase 未初始化 (可能是本機檔案執行)");
             document.getElementById('error-message-box').classList.add('hidden');
             
             const provider = new GoogleAuthProvider();
@@ -199,15 +204,17 @@
                 let errorMsg = error.message;
                 
                 if (error.code === 'auth/unauthorized-domain') {
-                    errorMsg = `網域未授權。\n請至 Firebase Console 新增網域：\n${window.location.hostname}`;
-                } else if (error.message.includes('requests-from-referer')) {
-                    errorMsg = `API Key 網域限制。\n請至 Google Cloud Console 檢查 API Key 設定。`;
+                    errorMsg = `網域未授權。\n請至 Firebase Console -> Authentication -> Settings -> Authorized domains\n新增您的網域：${window.location.hostname}`;
+                } else if (error.message.includes('requests-from-referer') || error.message.includes('The requested action is invalid')) {
+                    errorMsg = `<strong>API 設定問題 (Google Cloud)</strong><br>
+                                1. 請至 Google Cloud Console 檢查 "Identity Toolkit API" 是否已啟用。<br>
+                                2. 檢查 API Key 是否限制了網域 (Referer)。<br>
+                                3. 確認您不是在預覽視窗中測試。`;
                 } else if (error.code === 'auth/popup-blocked') {
-                    errorMsg = `瀏覽器封鎖了登入視窗。`;
+                    errorMsg = `瀏覽器封鎖了登入視窗，請允許彈出式視窗。`;
                 }
 
                 showError(errorMsg);
-                alert("登入失敗，請查看上方紅字說明。");
             }
         };
 
@@ -362,6 +369,7 @@
                 let typeClass = 'neutral';
                 if(category.includes('愉悅')) typeClass = 'positive';
                 else if(category.includes('憤怒') || category.includes('悲傷') || category.includes('恐懼')) typeClass = 'negative';
+                
                 emotionHtml += `<div class="mb-3"><div class="emotion-group-title">${category}</div><div class="flex flex-wrap gap-1">${emotions.map(e => `<span class="emotion-chip ${typeClass}" onclick="toggleEmotion(this)">${e}</span>`).join('')}</div></div>`;
             }
 
@@ -558,6 +566,7 @@
             const filtered = list.filter(item => item.date === date);
             let html = filtered.length ? '' : '<p class="text-center text-gray-400 text-sm">今日無紀錄</p>';
             filtered.forEach(item => {
+                // 使用內嵌 SVG
                 html += `
                     <div class="journal-item">
                         <div class="font-bold text-[#6B8E23] mb-1">${item.ref || '靈修筆記'}</div>
